@@ -7,6 +7,10 @@ RevisionLab is a responsive prototype operations workspace built from `REVISIONL
 The current delivery is a connected front-end MVP shell backed by deterministic local demonstration data. It includes:
 
 - a private prototype catalogue rendered as operational routes;
+- a higher-level Project catalogue, with several prototypes per connected repository;
+- an interactive New Project / Add Prototype import wizard;
+- editable Node runtime contracts for React, Next.js, Angular, Vue, SvelteKit, Astro, and other HTTP applications;
+- advanced environment-variable rows with secret/plain, build/runtime, and preview/replay scopes;
 - prototype overview and activity;
 - real-width phone, tablet, desktop, and custom preview controls;
 - semantic `data-flow-id` journey recording with autosave feedback;
@@ -17,6 +21,10 @@ The current delivery is a connected front-end MVP shell backed by deterministic 
 - accessible responsive behaviour and reduced-motion support.
 
 Production Supabase authentication, Postgres/RLS, private storage, email delivery, Playwright capture/replay workers, and editable third-party board publishing remain explicit integration boundaries.
+
+GitHub App authentication, remote cloning, OCI builds, secret encryption, and isolated preview execution are also explicit runner-service boundaries. The UI saves deterministic local configuration records and discards entered environment values; it does not claim that untrusted repository code was executed.
+
+See `PROJECT_IMPORT_ARCHITECTURE.md` for the control-plane/runner-plane boundary and the intended implementation sequence.
 
 ## Run locally
 

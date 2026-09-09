@@ -218,13 +218,15 @@ The palette combines warm paper neutrals with a dark control rail, a single safe
 
 ## Layout
 
-Desktop uses a fixed 216px navigation rail beside a viewport-height workspace with a 64px utility header and 43px health strip. The main content sits in a fluid container capped at 1500px, with 30px horizontal breathing room. The signature catalogue is a three-column operational table: prototype identity, a six-station route with a 650px minimum track, and actions.
+Desktop uses a fixed 216px navigation rail beside a viewport-height workspace with a 64px utility header and 43px health strip. The main content sits in a fluid container capped at 1500px, with 30px horizontal breathing room. Project and prototype catalogues share a three-column operational table: owning identity, a six-station route with a 650px minimum track, and actions. Project routes summarize repository configuration and open the nested prototype catalogue; prototype routes summarize the runnable application and may unfold supporting evidence in place.
 
 At 1240px expanded journeys stack above activity. At 1024px the side rail disappears in favour of a compact top menu, and multi-panel preview and flow workspaces collapse to one column. At 780px the catalogue becomes bordered route cards, the station track scrolls horizontally, primary page actions become full width, and a four-item bottom navigation plus fixed health strip reserves the bottom 105px. At 520px secondary action groups wrap into practical tap-width rows.
 
 Spacing follows a compact 4px-based rhythm, with 8–16px inside controls and rows, 18–24px inside panels, and 24–30px between major regions. Do not resolve dense route data by shrinking type; preserve the station rhythm and allow deliberate horizontal scrolling.
 
-**The Route Before Card Rule.** When several facts describe one prototype or flow, align them on a shared route or ruled row before considering independent cards.
+Long configuration tasks use one bounded, bordered workspace with a 224px progress route, a separately scrollable work area, and a persistent 67px action row. Below 780px, the progress route moves above the form as a horizontally scrollable sequence, content collapses to one column, and the action row remains the stable exit and continuation point.
+
+**The Route Before Card Rule.** When several facts describe one project, prototype, or flow, align them on a shared route or ruled row before considering independent cards.
 
 ## Elevation & Depth
 
@@ -278,14 +280,19 @@ Borders are functional construction marks, normally one pixel in the line neutra
 - **Style:** White form fields use a 6px corner and strong construction border; global search uses a recessed deep-paper field with a 7px corner and embedded search/keycap affordances.
 - **Focus:** Restore a bright surface and strong border where appropriate, plus the global 3px blue outline with 2px offset.
 - **Error / Disabled:** Errors use danger text on a pale red field and direct focus to the invalid input. Disabled controls retain their form at 48% opacity and use a not-allowed cursor.
+- **Multi-scope Settings:** Repeat related settings as ruled rows rather than nested cards. Keep classification and ownership choices as adjacent, visibly labelled fields on wide screens, then stack the same complete field set on narrow screens.
 
 ### Navigation
 
-The desktop rail uses icon-plus-label items with muted rail text, a raised charcoal hover/active surface, and an inset orange active edge. Below 1024px, navigation moves to a compact top menu; below 780px, four core destinations occupy a fixed bottom bar with a pale orange selected cell. Labels remain visible at every size.
+The desktop rail uses icon-plus-label items with muted rail text, a raised charcoal hover/active surface, and an inset orange active edge. After entering a Project, retain Projects as the top-level destination, insert a compact current-project context control, then label the current Prototype above its local destinations. Below 1024px, navigation moves to a compact top menu; below 780px, four core destinations occupy a fixed bottom bar with a pale orange selected cell. Labels remain visible at every size.
 
 ### Operational Route Row
 
-The signature row aligns six circular stations—screens, flows, replay, version, members, and access—on one orange track. Expanding a row changes its summary to the cool route-selection tone and unfolds the recorded journey plus recent activity in place. On narrow screens the identity and actions stay above a horizontally scrollable route; the route is never replaced by disconnected metric cards.
+The signature row aligns six circular stations on one orange track. At Project level they represent source, branch, prototypes, build, environment, and members; at Prototype level they represent screens, flows, replay, version, members, and access. Project rows open the nested catalogue, while expandable Prototype rows change to the cool route-selection tone and unfold the recorded journey plus recent activity in place. On narrow screens the identity and actions stay above a horizontally scrollable route; the route is never replaced by disconnected metric cards.
+
+### Configuration Route
+
+Multi-step setup is a bordered work surface, not a modal. On desktop, a deep-paper progress rail sits beside the bright-paper form; numbered circular stations use orange for the current step and health green for completed steps. The form header keeps the current step and explicit draft/readiness status visible, while a ruled action row anchors Back or Cancel on the left and Continue or completion on the right. On narrow screens the progress rail becomes a horizontal scroll track above the form without dropping pending steps or shrinking their labels.
 
 ### Health Strip
 
@@ -295,12 +302,13 @@ A ruled, persistent footer closes the application frame. It pairs a chartreuse b
 
 ### Do:
 
-- **Do** align related prototype facts as stations on one continuous route.
+- **Do** align related project and prototype facts as stations on one continuous route.
 - **Do** use warm paper layers and one-pixel rules as the default hierarchy mechanism.
 - **Do** keep primary actions singular, compact, and safety-orange.
 - **Do** pair every semantic color with text or an icon-text label.
 - **Do** preserve visible blue keyboard focus and reduced-motion behaviour.
 - **Do** keep the selected emulated viewport width stable and allow its shell to scroll around it.
+- **Do** keep long configuration work inside one progress-led workspace with a persistent action row.
 
 ### Don't:
 
@@ -308,5 +316,6 @@ A ruled, persistent footer closes the application frame. It pairs a chartreuse b
 - **Don't** use gradients, glass effects, ornamental illustration, or decorative shadow stacks.
 - **Don't** spread orange or chartreuse across large surfaces; their scarcity communicates meaning.
 - **Don't** hide operational metadata merely to avoid horizontal scrolling on small screens.
+- **Don't** flatten Project and Prototype context into one undifferentiated catalogue or navigation list.
 - **Don't** use circular geometry for ordinary panels or rectangular geometry for route stations.
 - **Don't** represent privacy, replay health, warning, or recording state with color alone.

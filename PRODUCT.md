@@ -28,9 +28,14 @@ RevisionLab uses one portable, semantic flow definition across recording, editin
 
 Users work with code-defined screens, stable `data-flow-id` targets, Git revisions, responsive viewport presets, protected snapshots, and JSON or YAML flow definitions. Review and publication may involve Vercel, Supabase, Storybook, Playwright, GitHub, Miro, Mural, Excalidraw, Drawio, and Confluence.
 
+The confirmed information hierarchy is Workspace → Project → Prototype. A Project is the repository, membership, and shared-configuration boundary. One Project may contain several Prototypes rooted in different directories of the same repository; each Prototype owns its screens, flows, versions, comparisons, replay state, and access overrides.
+
 ## Capabilities and Constraints
 
 - Private-by-default prototype catalogue with owner, manager, and viewer permissions.
+- Project catalogue with multiple prototypes per connected repository.
+- UI-based project and prototype import using an editable Node HTTP runtime contract: root directory, install, build, start, port, and health path.
+- Optional project/prototype environment-variable metadata with secret/plain, build/runtime, and preview/replay scopes. Secret values must be encrypted by the production runner and must never be returned to the browser after saving.
 - Responsive live preview at 375 px, 768 px, 1280 px, and validated custom widths.
 - Semantic flow recording, autosaved drafts, ordered steps, diagrams, revisions, and replay health.
 - Immutable prototype versions with screenshots, notes, authorship, Git context, and visual comparison.
@@ -38,6 +43,7 @@ Users work with code-defined screens, stable `data-flow-id` targets, Git revisio
 - Authorization is enforced at route, server, database, and asset layers; UI visibility is not a security boundary.
 - Recording never stores passwords, form values, tokens, cookies, network payloads, or clipboard data.
 - This first implementation is inferred to be a connected front-end MVP shell using deterministic local demo data. Production Supabase, private storage, email delivery, automated capture/replay, and third-party publishing are not inferred as configured services.
+- Repository cloning and execution require a separate isolated runner plane. Repository code must be treated as untrusted, must never execute in the RevisionLab web process, and must launch on a preview origin isolated from control-plane cookies.
 
 ## Brand Commitments
 

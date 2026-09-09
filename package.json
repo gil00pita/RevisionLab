@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",
+    "postbuild": "node scripts/inject-direction-contract.mjs",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/*.test.mjs",
+    "test": "node --no-warnings --experimental-strip-types --test tests/*.test.mjs",
     "flow:validate": "node scripts/flow-validate.mjs",
     "flow:targets:check": "node scripts/flow-targets-check.mjs",
     "flow:capture": "node scripts/flow-capture.mjs"

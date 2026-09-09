@@ -2,58 +2,45 @@
 version: 1
 slug: "app-page-tsx"
 primary_target: "app/page.tsx"
-related_targets: ["app/layout.tsx","app/globals.css","components/app-shell.tsx","components/views/dashboard-view.tsx","components/views/preview-view.tsx"]
+related_targets: ["components/views/projects-view.tsx","components/views/new-project-view.tsx","components/views/dashboard-view.tsx","components/app-shell.tsx","app/globals.css"]
 ---
 
 # RevisionLab application shell
 
 ## Scope and mode
 
-- Primary target: `app/page.tsx`
-- Related targets: authenticated dashboard, prototype overview, responsive preview and recorder, saved flows, history, comparison, access, and account states.
+- Primary target: `app/page.tsx`.
+- Related targets: Project catalogue, Project detail and prototype routes, New Project / Add Prototype import workflow, authenticated shell, prototype overview, responsive preview, flows, history, comparison, access, and account states.
 - Visitor mode: Operate.
 
 ## Audience, job, and task
 
-Designers, prototypers, developers, managers, and invited reviewers need to find a private prototype, inspect its state, open it at a real responsive width, record or review a semantic journey, and revisit version evidence without learning Git.
+Designers, prototypers, and developers first need to connect a code repository, group its runnable applications, and understand what is configured versus what still needs infrastructure. Once inside a Prototype, they need to preview real responsive behaviour, record or inspect flows, and revisit version evidence without learning Git.
 
-The main action is opening the selected prototype. Secondary tasks are recording a flow, reviewing replay health, comparing versions, exporting a flow, and managing access.
+The primary first-run action is creating a Project and configuring its first Prototype. Returning users open a Project, then a Prototype. The import route must make the Project/repository boundary and Prototype/runtime boundary obvious.
 
 ## Content and constraints
 
-- Use deterministic fictional demonstration data and label it as local demo data where ambiguity is possible.
-- Keep privacy, role, version, replay, autosave, and integration status explicit.
-- Preserve the selected test viewport when the browser narrows.
-- Meet WCAG 2.2 AA for the shell and keep every core task keyboard operable.
-- Use standard Chakra UI only; do not use GOV.UK Chakra.
+- The confirmed hierarchy is Workspace → Project → Prototype → flows, history, comparisons, and access.
+- One Project owns one Git repository by default and may expose several Prototype roots.
+- Runtime configuration covers framework preset, repository-relative root, install/build/start commands, port, and health path.
+- Advanced environment variables expose secret/plain, build/runtime, and preview/replay scopes. Public frontend prefixes require a visible browser-exposure warning.
+- This front-end slice stores only local deterministic metadata. Entered environment values are discarded on save; GitHub authentication, cloning, encrypted storage, OCI builds, and sandbox execution remain explicit runner-service boundaries.
+- Repository code is untrusted and must never run in the RevisionLab web process or share its origin.
+- Meet WCAG 2.2 AA, preserve keyboard focus and reduced motion, and use standard Chakra UI only.
 
 ## Chosen direction
 
-Signal Desk / Traffic Table. The approved comp is `.impeccable/mocks/traffic-table.png`. Prototype rows behave as inspectable operational routes: screens, flows, replay, version, membership, and privacy align as stations on one route. One route unfolds into its real journey map and activity. The persistent health strip closes the desktop frame.
+Signal Desk / Traffic Table. Projects inherit the existing operational-route grammar at a higher altitude: source, branch, Prototype count, build, environment, and members align as stations. Opening a Project moves down one level into the established Prototype routes.
 
-Memorable moment: expanding Checkout service turns a compact route row into a connected screen journey without navigating away or changing visual language.
+The import workflow is a compact configuration route rather than a modal: a vertical sequence on desktop becomes a horizontal scrollable step track on mobile. The final review pairs the retained configuration with an honest execution route, distinguishing the one available local step from runner-dependent work.
 
-## Approved comp inventory
-
-| Region | Commitment | Medium |
-| --- | --- | --- |
-| Navigation | 208-224 px matte dark rail; icon-plus-label items; active orange edge; secure-session block at the foot | Semantic Chakra layout + Lucide icons |
-| Utility header | Compact global search, notification, and profile controls; low-height ruled strip | Semantic Chakra controls |
-| Title/action | Strong compact title; brief support line; one orange primary action at upper right | Semantic HTML + Chakra Button |
-| Catalogue header | One quiet ruled header aligned with the operational stations | CSS grid |
-| Prototype route | Broad horizontal band; circular station nodes joined by 2 px orange rail; labels beneath; privacy at end | Semantic HTML + inline SVG/CSS route geometry |
-| Expanded journey | Three main screen thumbnails and a small branch, joined by an orange connector; roughly half of expanded region | Accessible SVG diagram + semantic text alternative |
-| Recent activity | Compact ruled timeline occupying the other half of the expanded region | Semantic list + CSS line and nodes |
-| Additional rows | Dense repeated routes with restrained hover/selection feedback | Reusable React component |
-| Health strip | Persistent desktop status line with explicit healthy labels and last-check time | Semantic status region |
-| Primary action | Solid safety-orange rectangle with restrained corner radius, icon, and visible focus state | Chakra Button |
-| Type | Compressed display silhouette for page title; readable humanist interface face; tabular numerals | Local/system CSS stacks; no raster text |
-| Surfaces | Flat warm ivory field, pale construction rules, shallow selected-band tint, no gradients or glass | Chakra semantic tokens + CSS |
+Memorable moment: completing the wizard produces a real Project and nested Prototype record while the route visibly remains “Runner required,” making progress and infrastructure boundaries legible at once.
 
 ## Responsive translation
 
-At tablet and mobile sizes the rail becomes a compact top bar and bottom navigation. Prototype bands become stacked route cards with the station track horizontally scrollable. Expanded flow and recent activity stack vertically. The preview workspace keeps its chosen emulated width and uses page scrolling or a drawer for controls rather than silently resizing the prototype.
+At tablet and mobile widths, Project routes become stacked bordered bands with a horizontally scrollable station track. The import stepper moves above the form and scrolls horizontally; fields, environment-variable controls, and the review split collapse to one column. Primary and back actions remain visible without using a modal or shrinking the configured prototype viewport.
 
 ## Unresolved decisions
 
-Production Supabase credentials, invitation email provider, private-storage configuration, capture/replay workers, and editable third-party board integrations are not configured in this front-end delivery.
+Production Supabase tables/RLS, GitHub App credentials and repository picker, KMS-backed secret storage, the queue, Cloud Native Buildpacks/Paketo worker, gVisor or equivalent runtime, preview-origin proxy, recorder bridge, build logs, quotas, retention, and cleanup are not configured in this front-end delivery.

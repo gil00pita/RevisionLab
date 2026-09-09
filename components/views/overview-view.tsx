@@ -9,6 +9,7 @@ import {
   GitCompareArrows,
   LockKeyhole,
   Play,
+  ServerCog,
   Share2,
   Workflow,
 } from "lucide-react";
@@ -36,29 +37,63 @@ function JourneyScreen({ number, name, state }: { number: string; name: string; 
   );
 }
 
+function RuntimeConfiguration({ prototype }: { prototype: Prototype }) {
+  const rows = [
+    ["Root directory", prototype.rootDirectory],
+    ["Install", prototype.runtime.installCommand],
+    ["Build", prototype.runtime.buildCommand],
+    ["Start", prototype.runtime.startCommand],
+    ["Health", `:${prototype.runtime.port}${prototype.runtime.healthPath}`],
+  ];
+
+  return (
+    <Box className="journey-board runtime-configuration">
+      <Flex justify="space-between" align="flex-start" gap="4">
+        <Box>
+          <Heading as="h2" fontSize="lg">Runtime configuration</Heading>
+          <Text color="var(--muted)" fontSize="sm" mt="1">{prototype.framework} · saved locally, awaiting the isolated runner</Text>
+        </Box>
+        <StatusChip tone="attention">Runner required</StatusChip>
+      </Flex>
+      <Box as="dl" className="runtime-contract-table">
+        {rows.map(([label, value]) => <Box key={label}><Text as="dt">{label}</Text><Text as="dd" className="data-text">{value}</Text></Box>)}
+      </Box>
+      <Box className="runtime-environment">
+        <Text className="inspector-label">Prototype environment overrides</Text>
+        {prototype.environmentVariables.length === 0 ? <Text fontSize="sm" color="var(--muted)" mt="2">No prototype-specific variables</Text> : (
+          <Box as="ul">
+            {prototype.environmentVariables.map((entry) => <li key={entry.id}><Text as="code">{entry.key}</Text><Text fontSize="xs" color="var(--muted)">{entry.secret ? "Encrypted secret" : "Plain configuration"} · {entry.phase} · {entry.target}</Text></li>)}
+          </Box>
+        )}
+      </Box>
+      <Flex className="integration-boundary" mt="5"><ServerCog size={16} /><Text>Clone, build, and launch stay unavailable until the GitHub App and runner service are connected.</Text></Flex>
+    </Box>
+  );
+}
+
 export function OverviewView({ prototype, onNavigate }: { prototype: Prototype; onNavigate: (view: AppView, message?: string) => void }) {
   return (
     <Box className="view-stack">
       <PageHeader
         title={prototype.name}
         description={prototype.description}
-        onBack={() => onNavigate("dashboard")}
+        onBack={() => onNavigate("project")}
         action={
           <Flex gap="2">
             <Button className="secondary-button" onClick={() => onNavigate("access")}><Share2 size={16} /> Share</Button>
-            <Button className="primary-button" onClick={() => onNavigate("preview")}><ExternalLink size={17} /> Open prototype</Button>
+            <Button className="primary-button" disabled={prototype.buildState === "awaiting-runner"} title={prototype.buildState === "awaiting-runner" ? "Connect the isolated runner before opening this prototype" : undefined} onClick={() => onNavigate("preview")}><ExternalLink size={17} /> Open prototype</Button>
           </Flex>
         }
       />
       <Flex align="center" gap="4" wrap="wrap">
         <PrivacyLabel role={prototype.role} />
-        <StatusChip tone="healthy">Replay healthy</StatusChip>
+        <StatusChip tone={prototype.buildState === "awaiting-runner" ? "attention" : prototype.replay === "healthy" ? "healthy" : "neutral"}>{prototype.buildState === "awaiting-runner" ? "Runner required" : prototype.replay === "healthy" ? "Replay healthy" : "Replay not verified"}</StatusChip>
         <Text fontSize="sm" color="var(--muted)">{prototype.screens} screens · {prototype.flows} saved flows</Text>
       </Flex>
       <DemoDataNote />
 
       <Box className="overview-grid">
-        <Box className="journey-board">
+        {prototype.flows === 0 ? <RuntimeConfiguration prototype={prototype} /> : <Box className="journey-board">
           <Flex justify="space-between" align="flex-start" gap="4" mb="8">
             <Box>
               <Heading as="h2" fontSize="lg">Checkout happy path</Heading>
@@ -80,7 +115,7 @@ export function OverviewView({ prototype, onNavigate }: { prototype: Prototype; 
             <span><i className="legend-node" /> Screen node</span>
             <span><CircleCheck size={14} /> Replay verified</span>
           </Flex>
-        </Box>
+        </Box>}
 
         <Box className="overview-inspector">
           <Box className="inspector-section">
@@ -92,8 +127,8 @@ export function OverviewView({ prototype, onNavigate }: { prototype: Prototype; 
             <Text fontSize="sm" color="var(--muted)" mt="1">Updated {prototype.updated}</Text>
           </Box>
           <button className="inspector-link" onClick={() => onNavigate("history")}>
-            <span><CircleCheck size={17} color="var(--health)" /> Replay health</span>
-            <span>Healthy <ArrowRight size={15} /></span>
+            <span><CircleCheck size={17} color={prototype.replay === "healthy" ? "var(--health)" : "var(--muted)"} /> Replay health</span>
+            <span>{prototype.replay === "healthy" ? "Healthy" : "Not run"} <ArrowRight size={15} /></span>
           </button>
           <button className="inspector-link" onClick={() => onNavigate("access")}>
             <span><LockKeyhole size={17} /> Access</span>
@@ -117,8 +152,8 @@ export function OverviewView({ prototype, onNavigate }: { prototype: Prototype; 
       </Box>
 
       <Flex className="action-dock" gap="2" wrap="wrap">
-        <Button className="primary-button" onClick={() => onNavigate("preview")}><ExternalLink size={17} /> Open prototype</Button>
-        <Button className="secondary-button" onClick={() => onNavigate("preview", "Preview opened; recorder ready")}><Workflow size={17} /> Record flow</Button>
+        <Button className="primary-button" disabled={prototype.buildState === "awaiting-runner"} onClick={() => onNavigate("preview")}><ExternalLink size={17} /> Open prototype</Button>
+        <Button className="secondary-button" disabled={prototype.buildState === "awaiting-runner"} onClick={() => onNavigate("preview", "Preview opened; recorder ready")}><Workflow size={17} /> Record flow</Button>
         <Button className="secondary-button" onClick={() => onNavigate("compare")}><GitCompareArrows size={17} /> Compare</Button>
         <Button className="secondary-button" onClick={() => onNavigate("flows")}><Share2 size={17} /> Export</Button>
       </Flex>
