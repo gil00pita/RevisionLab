@@ -1,0 +1,385 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-09T10:46:05Z",
+  "title": "Design System: RevisionLab",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Warm Paper",
+        "canonical": "#f7f6f1",
+        "tonalRamp": ["oklch(15% 0.012 95)", "oklch(27% 0.012 95)", "oklch(39% 0.012 95)", "oklch(51% 0.012 95)", "oklch(63% 0.012 95)", "oklch(75% 0.012 95)", "oklch(87% 0.012 95)", "oklch(95% 0.012 95)"]
+      },
+      "paper-bright": {
+        "role": "neutral",
+        "displayName": "Bright Paper",
+        "canonical": "#fdfcf8",
+        "tonalRamp": ["oklch(15% 0.008 95)", "oklch(27% 0.008 95)", "oklch(39% 0.008 95)", "oklch(51% 0.008 95)", "oklch(63% 0.008 95)", "oklch(75% 0.008 95)", "oklch(87% 0.008 95)", "oklch(95% 0.008 95)"]
+      },
+      "paper-deep": {
+        "role": "neutral",
+        "displayName": "Deep Paper",
+        "canonical": "#eeeee8",
+        "tonalRamp": ["oklch(15% 0.012 100)", "oklch(27% 0.012 100)", "oklch(39% 0.012 100)", "oklch(51% 0.012 100)", "oklch(63% 0.012 100)", "oklch(75% 0.012 100)", "oklch(87% 0.012 100)", "oklch(95% 0.012 100)"]
+      },
+      "rail": {
+        "role": "neutral",
+        "displayName": "Matte Rail",
+        "canonical": "#20272b",
+        "tonalRamp": ["oklch(15% 0.020 225)", "oklch(27% 0.020 225)", "oklch(39% 0.020 225)", "oklch(51% 0.020 225)", "oklch(63% 0.020 225)", "oklch(75% 0.020 225)", "oklch(87% 0.020 225)", "oklch(95% 0.020 225)"]
+      },
+      "rail-raised": {
+        "role": "neutral",
+        "displayName": "Raised Rail",
+        "canonical": "#2a3338",
+        "tonalRamp": ["oklch(15% 0.020 225)", "oklch(27% 0.020 225)", "oklch(39% 0.020 225)", "oklch(51% 0.020 225)", "oklch(63% 0.020 225)", "oklch(75% 0.020 225)", "oklch(87% 0.020 225)", "oklch(95% 0.020 225)"]
+      },
+      "rail-muted": {
+        "role": "neutral",
+        "displayName": "Rail Label",
+        "canonical": "#aeb9bd",
+        "tonalRamp": ["oklch(15% 0.018 220)", "oklch(27% 0.018 220)", "oklch(39% 0.018 220)", "oklch(51% 0.018 220)", "oklch(63% 0.018 220)", "oklch(75% 0.018 220)", "oklch(87% 0.018 220)", "oklch(95% 0.018 220)"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Primary Ink",
+        "canonical": "#142029",
+        "tonalRamp": ["oklch(15% 0.035 240)", "oklch(27% 0.035 240)", "oklch(39% 0.035 240)", "oklch(51% 0.035 240)", "oklch(63% 0.035 240)", "oklch(75% 0.035 240)", "oklch(87% 0.035 240)", "oklch(95% 0.035 240)"]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "canonical": "#34434c",
+        "tonalRamp": ["oklch(15% 0.030 230)", "oklch(27% 0.030 230)", "oklch(39% 0.030 230)", "oklch(51% 0.030 230)", "oklch(63% 0.030 230)", "oklch(75% 0.030 230)", "oklch(87% 0.030 230)", "oklch(95% 0.030 230)"]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted Metadata",
+        "canonical": "#65727a",
+        "tonalRamp": ["oklch(15% 0.025 225)", "oklch(27% 0.025 225)", "oklch(39% 0.025 225)", "oklch(51% 0.025 225)", "oklch(63% 0.025 225)", "oklch(75% 0.025 225)", "oklch(87% 0.025 225)", "oklch(95% 0.025 225)"]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Construction Line",
+        "canonical": "#cfd6d5",
+        "tonalRamp": ["oklch(15% 0.014 190)", "oklch(27% 0.014 190)", "oklch(39% 0.014 190)", "oklch(51% 0.014 190)", "oklch(63% 0.014 190)", "oklch(75% 0.014 190)", "oklch(87% 0.014 190)", "oklch(95% 0.014 190)"]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Strong Construction Line",
+        "canonical": "#aab5b6",
+        "tonalRamp": ["oklch(15% 0.018 195)", "oklch(27% 0.018 195)", "oklch(39% 0.018 195)", "oklch(51% 0.018 195)", "oklch(63% 0.018 195)", "oklch(75% 0.018 195)", "oklch(87% 0.018 195)", "oklch(95% 0.018 195)"]
+      },
+      "orange": {
+        "role": "primary",
+        "displayName": "Safety Orange",
+        "canonical": "#f25522",
+        "tonalRamp": ["oklch(15% 0.190 40)", "oklch(27% 0.190 40)", "oklch(39% 0.190 40)", "oklch(51% 0.190 40)", "oklch(63% 0.190 40)", "oklch(75% 0.190 40)", "oklch(87% 0.190 40)", "oklch(95% 0.190 40)"]
+      },
+      "orange-dark": {
+        "role": "primary",
+        "displayName": "Burnt Signal Orange",
+        "canonical": "#c83c0c",
+        "tonalRamp": ["oklch(15% 0.180 40)", "oklch(27% 0.180 40)", "oklch(39% 0.180 40)", "oklch(51% 0.180 40)", "oklch(63% 0.180 40)", "oklch(75% 0.180 40)", "oklch(87% 0.180 40)", "oklch(95% 0.180 40)"]
+      },
+      "orange-deep": {
+        "role": "primary",
+        "displayName": "Deep Signal Orange",
+        "canonical": "#a92e05",
+        "tonalRamp": ["oklch(15% 0.170 40)", "oklch(27% 0.170 40)", "oklch(39% 0.170 40)", "oklch(51% 0.170 40)", "oklch(63% 0.170 40)", "oklch(75% 0.170 40)", "oklch(87% 0.170 40)", "oklch(95% 0.170 40)"]
+      },
+      "orange-soft": {
+        "role": "primary",
+        "displayName": "Pale Signal Wash",
+        "canonical": "#fff0e8",
+        "tonalRamp": ["oklch(15% 0.035 45)", "oklch(27% 0.035 45)", "oklch(39% 0.035 45)", "oklch(51% 0.035 45)", "oklch(63% 0.035 45)", "oklch(75% 0.035 45)", "oklch(87% 0.035 45)", "oklch(95% 0.035 45)"]
+      },
+      "health": {
+        "role": "secondary",
+        "displayName": "Chartreuse Health",
+        "canonical": "#94d248",
+        "tonalRamp": ["oklch(15% 0.155 125)", "oklch(27% 0.155 125)", "oklch(39% 0.155 125)", "oklch(51% 0.155 125)", "oklch(63% 0.155 125)", "oklch(75% 0.155 125)", "oklch(87% 0.155 125)", "oklch(95% 0.155 125)"]
+      },
+      "healthy-ink": {
+        "role": "secondary",
+        "displayName": "Healthy Forest",
+        "canonical": "#2d6817",
+        "tonalRamp": ["oklch(15% 0.130 135)", "oklch(27% 0.130 135)", "oklch(39% 0.130 135)", "oklch(51% 0.130 135)", "oklch(63% 0.130 135)", "oklch(75% 0.130 135)", "oklch(87% 0.130 135)", "oklch(95% 0.130 135)"]
+      },
+      "healthy-soft": {
+        "role": "secondary",
+        "displayName": "Pale Health Field",
+        "canonical": "#edf8e7",
+        "tonalRamp": ["oklch(15% 0.035 135)", "oklch(27% 0.035 135)", "oklch(39% 0.035 135)", "oklch(51% 0.035 135)", "oklch(63% 0.035 135)", "oklch(75% 0.035 135)", "oklch(87% 0.035 135)", "oklch(95% 0.035 135)"]
+      },
+      "warning": {
+        "role": "secondary",
+        "displayName": "Amber Warning",
+        "canonical": "#e8a326",
+        "tonalRamp": ["oklch(15% 0.140 75)", "oklch(27% 0.140 75)", "oklch(39% 0.140 75)", "oklch(51% 0.140 75)", "oklch(63% 0.140 75)", "oklch(75% 0.140 75)", "oklch(87% 0.140 75)", "oklch(95% 0.140 75)"]
+      },
+      "warning-ink": {
+        "role": "secondary",
+        "displayName": "Warning Umber",
+        "canonical": "#81500b",
+        "tonalRamp": ["oklch(15% 0.120 70)", "oklch(27% 0.120 70)", "oklch(39% 0.120 70)", "oklch(51% 0.120 70)", "oklch(63% 0.120 70)", "oklch(75% 0.120 70)", "oklch(87% 0.120 70)", "oklch(95% 0.120 70)"]
+      },
+      "warning-soft": {
+        "role": "secondary",
+        "displayName": "Pale Warning Field",
+        "canonical": "#fff5dc",
+        "tonalRamp": ["oklch(15% 0.040 85)", "oklch(27% 0.040 85)", "oklch(39% 0.040 85)", "oklch(51% 0.040 85)", "oklch(63% 0.040 85)", "oklch(75% 0.040 85)", "oklch(87% 0.040 85)", "oklch(95% 0.040 85)"]
+      },
+      "cyan-soft": {
+        "role": "tertiary",
+        "displayName": "Cool Route Selection",
+        "canonical": "#e6f1f2",
+        "tonalRamp": ["oklch(15% 0.025 200)", "oklch(27% 0.025 200)", "oklch(39% 0.025 200)", "oklch(51% 0.025 200)", "oklch(63% 0.025 200)", "oklch(75% 0.025 200)", "oklch(87% 0.025 200)", "oklch(95% 0.025 200)"]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Failure Red",
+        "canonical": "#b73527",
+        "tonalRamp": ["oklch(15% 0.145 30)", "oklch(27% 0.145 30)", "oklch(39% 0.145 30)", "oklch(51% 0.145 30)", "oklch(63% 0.145 30)", "oklch(75% 0.145 30)", "oklch(87% 0.145 30)", "oklch(95% 0.145 30)"]
+      },
+      "focus": {
+        "role": "tertiary",
+        "displayName": "Focus Blue",
+        "canonical": "#1474e5",
+        "tonalRamp": ["oklch(15% 0.165 255)", "oklch(27% 0.165 255)", "oklch(39% 0.165 255)", "oklch(51% 0.165 255)", "oklch(63% 0.165 255)", "oklch(75% 0.165 255)", "oklch(87% 0.165 255)", "oklch(95% 0.165 255)"]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "Pure White",
+        "canonical": "#ffffff",
+        "tonalRamp": ["oklch(15% 0 0)", "oklch(27% 0 0)", "oklch(39% 0 0)", "oklch(51% 0 0)", "oklch(63% 0 0)", "oklch(75% 0 0)", "oklch(87% 0 0)", "oklch(95% 0 0)"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Compressed Display",
+        "purpose": "One page-level heading with a decisive control-board silhouette."
+      },
+      "title": {
+        "displayName": "Identity Title",
+        "purpose": "Wordmark and rare identity-level labels."
+      },
+      "body": {
+        "displayName": "Interface Body",
+        "purpose": "Readable explanations, forms, and general application copy."
+      },
+      "action": {
+        "displayName": "Control Action",
+        "purpose": "Buttons, navigation items, and action links."
+      },
+      "label": {
+        "displayName": "Operational Label",
+        "purpose": "Uppercase table, station, inspector, and metadata labels."
+      },
+      "data": {
+        "displayName": "Stable Data",
+        "purpose": "Versions, viewport dimensions, timestamps, counts, and route values."
+      }
+    },
+    "shadows": [
+      {
+        "name": "active-edge",
+        "value": "inset 1px 0 0 #f25522",
+        "purpose": "Marks active rail navigation and selected flow-index entries."
+      },
+      {
+        "name": "evidence-low",
+        "value": "0 8px 22px rgba(26, 39, 44, 0.08)",
+        "purpose": "Separates screen evidence from a journey canvas."
+      },
+      {
+        "name": "snapshot-medium",
+        "value": "0 10px 27px rgba(29, 41, 41, 0.11)",
+        "purpose": "Lifts comparison snapshots without turning them into decorative cards."
+      },
+      {
+        "name": "viewport-ambient",
+        "value": "0 14px 36px rgba(24, 37, 35, 0.14)",
+        "purpose": "Identifies the live emulated prototype above the preview stage."
+      },
+      {
+        "name": "menu-floating",
+        "value": "0 16px 40px rgba(24, 36, 40, 0.18)",
+        "purpose": "Reserved for the temporary mobile navigation menu."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-fast",
+        "value": "130ms ease",
+        "purpose": "Default color, border, and pressed-state feedback."
+      },
+      {
+        "name": "switch-slide",
+        "value": "160ms cubic-bezier(.2,.8,.2,1)",
+        "purpose": "Moves the switch thumb between explicit states."
+      },
+      {
+        "name": "route-unfold",
+        "value": "280ms cubic-bezier(.2,.8,.2,1)",
+        "purpose": "Reveals an expanded route in place with a short clip, blur, and opacity transition."
+      },
+      {
+        "name": "signal-beacon",
+        "value": "1.3s ease-out infinite",
+        "purpose": "Pulses only live recording or accent beacons."
+      },
+      {
+        "name": "spinner",
+        "value": "0.8s linear infinite",
+        "purpose": "Indicates bounded loading activity."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "route-stack",
+        "value": "1240px"
+      },
+      {
+        "name": "rail-collapse",
+        "value": "1024px"
+      },
+      {
+        "name": "mobile-shell",
+        "value": "780px"
+      },
+      {
+        "name": "compact-actions",
+        "value": "520px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single immediate action in a region, with compact safety-orange emphasis.",
+      "html": "<button class=\"ds-btn-primary\"><svg viewBox=\"0 0 24 24\" width=\"17\" height=\"17\" aria-hidden=\"true\"><path d=\"M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>Open prototype</button>",
+      "css": ".ds-btn-primary { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 16px; border: 1px solid var(--orange-dark, #c83c0c); border-radius: 7px; background: var(--orange-dark, #c83c0c); color: #fff; font-family: \"Figtree Variable\", \"Segoe UI\", sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: background-color 130ms ease, border-color 130ms ease, transform 130ms ease; } .ds-btn-primary:hover { background: #a92e05; border-color: #a92e05; } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 3px solid var(--focus, #1474e5); outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "A bordered paper control for supporting actions that remain visually available.",
+      "html": "<button class=\"ds-btn-secondary\"><svg viewBox=\"0 0 24 24\" width=\"17\" height=\"17\" aria-hidden=\"true\"><path d=\"M4 4v16h16V8l-4-4H4Zm4 0v6h8V4M8 20v-6h8v6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linejoin=\"round\"/></svg>Save flow</button>",
+      "css": ".ds-btn-secondary { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 16px; border: 1px solid var(--line-strong, #aab5b6); border-radius: 7px; background: var(--paper-bright, #fdfcf8); color: var(--ink, #142029); font-family: \"Figtree Variable\", \"Segoe UI\", sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: background-color 130ms ease, border-color 130ms ease; } .ds-btn-secondary:hover { background: var(--paper-deep, #eeeee8); border-color: #899698; } .ds-btn-secondary:active { transform: translateY(1px); } .ds-btn-secondary:focus-visible { outline: 3px solid var(--focus, #1474e5); outline-offset: 2px; }"
+    },
+    {
+      "name": "Workspace Search",
+      "kind": "input",
+      "refersTo": "search-field",
+      "description": "A recessed global search field with a leading icon and visible keyboard shortcut.",
+      "html": "<label class=\"ds-search\"><span class=\"ds-search-label\">Search prototypes and flows</span><svg viewBox=\"0 0 24 24\" width=\"17\" height=\"17\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"m20 20-3.7-3.7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg><input type=\"search\" placeholder=\"Search workspace\"><kbd>/</kbd></label>",
+      "css": ".ds-search { position: relative; width: min(400px, 100%); display: flex; align-items: center; color: var(--muted, #65727a); font-family: \"Figtree Variable\", \"Segoe UI\", sans-serif; } .ds-search-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } .ds-search > svg { position: absolute; left: 12px; z-index: 1; pointer-events: none; } .ds-search input { width: 100%; height: 40px; padding: 0 38px 0 37px; border: 1px solid transparent; border-radius: 7px; background: var(--paper-deep, #eeeee8); color: var(--ink, #142029); font: inherit; transition: background-color 130ms ease, border-color 130ms ease; } .ds-search input:hover { background: var(--paper-bright, #fdfcf8); border-color: var(--line-strong, #aab5b6); } .ds-search input:focus-visible { background: var(--paper-bright, #fdfcf8); border-color: var(--line-strong, #aab5b6); outline: 3px solid var(--focus, #1474e5); outline-offset: 2px; } .ds-search kbd { position: absolute; right: 10px; padding: 1px 6px; border: 1px solid var(--line, #cfd6d5); border-radius: 4px; background: var(--paper-bright, #fdfcf8); color: var(--muted, #65727a); font-size: 12px; }"
+    },
+    {
+      "name": "Active Rail Navigation",
+      "kind": "nav",
+      "refersTo": "nav-active",
+      "description": "The active destination on the matte desktop rail, marked by a raised field and orange edge.",
+      "html": "<nav class=\"ds-rail\"><button class=\"ds-nav-active\" aria-current=\"page\"><svg viewBox=\"0 0 24 24\" width=\"19\" height=\"19\" aria-hidden=\"true\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M7 9h4v6H7zM15 9h2M15 13h2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg><span>Prototypes</span></button></nav>",
+      "css": ".ds-rail { width: 216px; padding: 10px; background: var(--rail, #20272b); } .ds-nav-active { width: 100%; min-height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 12px; border: 0; border-radius: 7px; background: var(--rail-raised, #2a3338); color: #fff; box-shadow: inset 1px 0 0 var(--orange, #f25522); font-family: \"Figtree Variable\", \"Segoe UI\", sans-serif; font-size: 14px; font-weight: 620; cursor: pointer; transition: background-color 130ms ease, color 130ms ease; } .ds-nav-active svg { color: var(--orange, #f25522); } .ds-nav-active:hover { background: #303b40; } .ds-nav-active:active { background: #253035; } .ds-nav-active:focus-visible { outline: 3px solid var(--focus, #1474e5); outline-offset: 2px; }"
+    },
+    {
+      "name": "Healthy Status Chip",
+      "kind": "chip",
+      "refersTo": "chip-healthy",
+      "description": "A compact semantic status with a dot and explicit wording.",
+      "html": "<span class=\"ds-chip-healthy\"><i aria-hidden=\"true\"></i>Replay healthy</span>",
+      "css": ".ds-chip-healthy { width: fit-content; min-height: 28px; display: inline-flex; align-items: center; gap: 7px; padding: 3px 9px; border-radius: 999px; background: var(--healthy-soft, #edf8e7); color: var(--healthy-ink, #2d6817); font-family: \"Figtree Variable\", \"Segoe UI\", sans-serif; font-size: 12px; font-weight: 720; white-space: nowrap; } .ds-chip-healthy i { width: 7px; height: 7px; border-radius: 50%; background: #64b62c; }"
+    },
+    {
+      "name": "Operational Route Row",
+      "kind": "custom",
+      "refersTo": "route-board",
+      "description": "RevisionLab's signature row: one prototype identity and six operational stations on a continuous signal route.",
+      "html": "<article class=\"ds-route-row\"><header class=\"ds-route-id\"><button aria-expanded=\"true\" aria-label=\"Collapse Checkout service\">⌄</button><span><strong>Checkout service</strong><small>4 minutes ago · Owner</small></span></header><div class=\"ds-route-track\"><div class=\"ds-station\"><b>▣</b><small>SCREENS</small><strong>4 screens</strong></div><div class=\"ds-station\"><b>▷</b><small>FLOWS</small><strong>3 saved</strong></div><div class=\"ds-station ds-station-healthy\"><b>⌘</b><small>REPLAY</small><strong>Healthy</strong></div><div class=\"ds-station\"><b>◴</b><small>VERSION</small><strong>v0.8.4</strong></div><div class=\"ds-station\"><b>♙</b><small>MEMBERS</small><strong>JD · MP · +2</strong></div><div class=\"ds-station\"><b>▱</b><small>ACCESS</small><strong>Private</strong></div></div><button class=\"ds-route-open\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>Open</button></article>",
+      "css": ".ds-route-row { min-width: 920px; display: grid; grid-template-columns: 240px minmax(650px, 1fr) 88px; align-items: center; min-height: 82px; padding: 0 16px; border: 1px solid var(--line-strong, #aab5b6); border-radius: 10px; background: var(--cyan-soft, #e6f1f2); color: var(--ink, #142029); font-family: \"Figtree Variable\", \"Segoe UI\", sans-serif; } .ds-route-id { display: flex; align-items: center; gap: 10px; } .ds-route-id button { width: 28px; height: 40px; border: 0; background: transparent; color: inherit; font-size: 20px; cursor: pointer; } .ds-route-id span { display: grid; gap: 3px; } .ds-route-id strong { font-size: 15px; } .ds-route-id small { color: var(--muted, #65727a); font-size: 12px; } .ds-route-track { position: relative; display: grid; grid-template-columns: repeat(6, minmax(100px, 1fr)); } .ds-route-track::before { content: \"\"; position: absolute; top: 17px; left: 8.3%; right: 8.3%; height: 2px; background: var(--orange, #f25522); } .ds-station { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; } .ds-station b:first-child { width: 34px; height: 34px; display: grid; place-items: center; border: 2px solid var(--orange, #f25522); border-radius: 50%; background: var(--cyan-soft, #e6f1f2); font-size: 14px; } .ds-station small { margin-top: 8px; color: var(--muted, #65727a); font-size: 10px; font-weight: 780; letter-spacing: .03em; } .ds-station strong { margin-top: 3px; font-size: 13px; } .ds-station-healthy b:first-child { border-color: #63b92d; background: var(--healthy-soft, #edf8e7); color: var(--healthy-ink, #2d6817); } .ds-route-open { min-height: 40px; display: flex; align-items: center; gap: 7px; border: 0; border-radius: 7px; background: transparent; color: var(--orange-dark, #c83c0c); font-weight: 700; cursor: pointer; } .ds-route-open:hover { background: var(--orange-soft, #fff0e8); } .ds-route-id button:hover { background: var(--paper-bright, #fdfcf8); } .ds-route-open:focus-visible, .ds-route-id button:focus-visible { outline: 3px solid var(--focus, #1474e5); outline-offset: 2px; }"
+    },
+    {
+      "name": "Journey Screen Evidence",
+      "kind": "card",
+      "description": "A restrained browser-frame thumbnail used as evidence inside connected journeys.",
+      "html": "<figure class=\"ds-screen\"><div class=\"ds-screen-bar\"><i></i><i></i><i></i></div><div class=\"ds-screen-body\"><i></i><i></i><i></i><i></i></div><figcaption>Basket</figcaption></figure>",
+      "css": ".ds-screen { width: 140px; margin: 0; color: var(--ink, #142029); font-family: \"Figtree Variable\", \"Segoe UI\", sans-serif; } .ds-screen-bar { height: 19px; display: flex; align-items: center; gap: 4px; padding: 0 7px; border: 1px solid var(--line-strong, #aab5b6); border-bottom: 0; border-radius: 5px 5px 0 0; background: var(--paper-deep, #eeeee8); } .ds-screen-bar i { width: 5px; height: 5px; border-radius: 50%; background: var(--line-strong, #aab5b6); } .ds-screen-body { height: 78px; display: grid; align-content: start; gap: 7px; padding: 13px; border: 1px solid var(--line-strong, #aab5b6); background: #f4f5f2; box-shadow: 0 8px 22px rgba(26,39,44,.08); } .ds-screen-body i { height: 5px; border-radius: 1px; background: #c4cdcd; } .ds-screen-body i:nth-child(1) { width: 58%; height: 10px; background: #8b999c; } .ds-screen-body i:nth-child(2) { width: 88%; } .ds-screen-body i:nth-child(3) { width: 70%; } .ds-screen-body i:nth-child(4) { width: 42%; background: #78868a; } .ds-screen figcaption { margin-top: 8px; font-size: 12px; font-weight: 700; }"
+    },
+    {
+      "name": "System Health Strip",
+      "kind": "custom",
+      "description": "The persistent ruled footer that keeps primary operational health visible.",
+      "html": "<footer class=\"ds-health-strip\"><span class=\"ds-health-beacon\" aria-hidden=\"true\"></span><strong>All local systems operational</strong><span class=\"ds-health-detail\">UI online</span><span class=\"ds-health-detail\">Recorder ready</span><span class=\"ds-health-detail\">Demo storage local</span><small>Checked now</small></footer>",
+      "css": ".ds-health-strip { min-height: 43px; display: flex; align-items: center; gap: 14px; padding: 0 24px; border-top: 1px solid var(--line, #cfd6d5); background: var(--paper-bright, #fdfcf8); color: var(--ink, #142029); font-family: \"Figtree Variable\", \"Segoe UI\", sans-serif; font-size: 12px; } .ds-health-beacon { width: 10px; height: 10px; flex: 0 0 auto; border-radius: 50%; background: #63ba2d; box-shadow: 0 0 0 4px var(--healthy-soft, #edf8e7); } .ds-health-strip strong { font-size: 14px; white-space: nowrap; } .ds-health-detail { padding-left: 14px; border-left: 1px solid var(--line, #cfd6d5); color: var(--muted, #65727a); white-space: nowrap; } .ds-health-strip small { margin-left: auto; color: var(--muted, #65727a); white-space: nowrap; } @media (max-width: 560px) { .ds-health-strip { padding: 0 12px; } .ds-health-detail, .ds-health-strip small { display: none; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Signal Desk / Traffic Table",
+    "overview": "RevisionLab behaves like a calm operations desk for prototype traffic. Warm ivory surfaces hold dense, inspectable information while a matte charcoal rail establishes the secure workspace perimeter. Safety orange connects screens and actions as a route, and chartreuse appears only where the system can assert health.\n\nThe system is compact, professional, and visibly constructed rather than decorative. Rows, stations, timelines, and inspectors make relationships legible without turning the interface into a generic card grid. The design rejects gradients, glass effects, ornamental illustration, and shadow-heavy dashboard tiles; hierarchy comes from alignment, tonal layers, rules, and type.",
+    "keyCharacteristics": [
+      "Warm ivory work surfaces inside a matte charcoal application frame.",
+      "Dense ruled tables that unfold into connected journey maps.",
+      "Safety-orange routes and actions, reserved chartreuse health signals, and explicit status text.",
+      "Compressed Archivo display type paired with readable Figtree interface text.",
+      "Compact rectangular controls, restrained corners, and visible blue keyboard focus."
+    ],
+    "rules": [
+      {
+        "name": "The Signal Rarity Rule",
+        "body": "Orange identifies the route or the immediate action; chartreuse certifies health. Neither becomes a broad decorative fill.",
+        "section": "colors"
+      },
+      {
+        "name": "The Status Has Words Rule",
+        "body": "Never communicate health, warning, privacy, or recording state by color alone; retain the visible label or icon-text pair.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Display Voice Rule",
+        "body": "Reserve compressed Archivo for identity and page-level emphasis; operational reading stays in Figtree.",
+        "section": "typography"
+      },
+      {
+        "name": "The Data Must Hold Still Rule",
+        "body": "Use tabular numerals for versions, timestamps, dimensions, counts, and ordered steps.",
+        "section": "typography"
+      },
+      {
+        "name": "The Route Before Card Rule",
+        "body": "When several facts describe one prototype or flow, align them on a shared route or ruled row before considering independent cards.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Operations Rule",
+        "body": "Resting application surfaces use tone and rules; shadows appear only when a surface floats, represents external visual evidence, or needs a tiny signal halo.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Circle Means Signal Rule",
+        "body": "Use circles for stations, people, and live state; do not round every container into a soft tile.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do align related prototype facts as stations on one continuous route.",
+      "Do use warm paper layers and one-pixel rules as the default hierarchy mechanism.",
+      "Do keep primary actions singular, compact, and safety-orange.",
+      "Do pair every semantic color with text or an icon-text label.",
+      "Do preserve visible blue keyboard focus and reduced-motion behaviour.",
+      "Do keep the selected emulated viewport width stable and allow its shell to scroll around it."
+    ],
+    "donts": [
+      "Don't replace the traffic table with a generic grid of rounded statistic cards.",
+      "Don't use gradients, glass effects, ornamental illustration, or decorative shadow stacks.",
+      "Don't spread orange or chartreuse across large surfaces; their scarcity communicates meaning.",
+      "Don't hide operational metadata merely to avoid horizontal scrolling on small screens.",
+      "Don't use circular geometry for ordinary panels or rectangular geometry for route stations.",
+      "Don't represent privacy, replay health, warning, or recording state with color alone."
+    ]
+  }
+}

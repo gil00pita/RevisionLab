@@ -1,0 +1,45 @@
+{
+  "title": "RevisionLab composition",
+  "question": "Choose the composition to carry the Signal Desk product world.",
+  "options": [
+    {
+      "id": "route-board",
+      "label": "Route board",
+      "kicker": "CATALOGUE + SYSTEM",
+      "lineage": "network control table",
+      "thesis": "One selected prototype expands into a clear end-to-end operating route.",
+      "palette": ["#1f2529", "#f7f6f1", "#ff5a1f", "#91c83e"],
+      "materials": ["matte control surface", "precise route lines"],
+      "viewport": "A dark navigation rail frames one dominant prototype route board and a compact health inspector.",
+      "risk": "The expanded row needs careful responsive compression.",
+      "hero": ".impeccable/mocks/route-board.png"
+    },
+    {
+      "id": "traffic-table",
+      "label": "Traffic table",
+      "kicker": "DENSE CATALOGUE",
+      "lineage": "rail movement board",
+      "thesis": "Every prototype becomes one inspectable route through screens, flows, replay, versions, and access.",
+      "palette": ["#20262a", "#faf9f5", "#ff5a1f", "#70c653"],
+      "materials": ["ruled operations table", "station markers"],
+      "viewport": "A full-width catalogue uses aligned route stations, with one row unfolding into its flow map.",
+      "risk": "High density must remain readable for first-time users.",
+      "hero": ".impeccable/mocks/traffic-table.png"
+    },
+    {
+      "id": "control-island",
+      "label": "Control island",
+      "kicker": "MECHANISM FIRST",
+      "lineage": "live signal diagram",
+      "thesis": "The prototype journey itself owns the canvas, with operations gathered around it.",
+      "palette": ["#20282d", "#f8f7f2", "#ff5a1f", "#9ad94b"],
+      "materials": ["outlined screen frames", "signal connectors"],
+      "viewport": "A large connected four-screen journey dominates the first viewport, with a right inspector and action dock.",
+      "risk": "The dashboard must inherit this focus without turning every screen into a diagram.",
+      "hero": ".impeccable/mocks/control-island.png"
+    }
+  ],
+  "reroll": false,
+  "canon": false,
+  "steer": true
+}

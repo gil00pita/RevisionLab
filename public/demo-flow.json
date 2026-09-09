@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "checkout-happy-path",
+  "prototypeId": "checkout-service",
+  "name": "Checkout happy path",
+  "status": "published",
+  "revision": 3,
+  "startScreenId": "basket",
+  "viewport": {
+    "name": "desktop",
+    "width": 1280,
+    "height": 900
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "order": 1,
+      "action": "click",
+      "fromScreenId": "basket",
+      "toScreenId": "delivery",
+      "target": { "flowId": "continue-to-delivery", "label": "Continue to delivery" }
+    },
+    {
+      "id": "step-2",
+      "order": 2,
+      "action": "click",
+      "fromScreenId": "delivery",
+      "toScreenId": "payment",
+      "target": { "flowId": "confirm-address", "label": "Confirm delivery address" }
+    },
+    {
+      "id": "step-3",
+      "order": 3,
+      "action": "click",
+      "fromScreenId": "payment",
+      "toScreenId": "confirmation",
+      "target": { "flowId": "pay-now", "label": "Pay securely" }
+    }
+  ]
+}
