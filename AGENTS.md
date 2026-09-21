@@ -2,6 +2,16 @@
 
 These rules apply to all authored application code in this repository.
 
+## Keep the product specification current
+
+- `PRODUCT.md` is the living source of truth for product requirements. Use the existing uppercase filename; do not create a separate `Product.md`.
+- Whenever the user introduces or changes a product feature, workflow, requirement, or constraint, update the relevant sections of `PRODUCT.md` in the same turn, including during planning conversations. Do this without waiting for a separate documentation request, unless the user explicitly asks not to edit files.
+- Capture the intended user experience, scope, relevant constraints, and observable acceptance criteria. Revise superseded requirements and resolve contradictions rather than appending duplicate or conflicting descriptions.
+- Distinguish user requirements and accepted decisions from assistant recommendations, assumptions, and open questions. Record unconfirmed options as proposals; asking about an option does not make it an accepted requirement.
+- Keep planned behavior distinct from implemented behavior. Updating the specification does not authorize implementation, installation, deployment, or external service changes.
+- When a confirmed requirement affects `PLAN.md` or the README, keep those documents aligned. `PRODUCT.md` remains authoritative for product intent.
+- Before finishing, verify that the latest product request is represented and briefly mention the specification update. Routine repository maintenance and unrelated questions do not require inventing a product feature.
+
 ## Component authoring: Chakra UI only
 
 - Treat Chakra UI as the canonical implementation for every new or modified UI component. Do not write raw intrinsic HTML or SVG JSX in `src/` when Chakra provides an equivalent primitive or component.
