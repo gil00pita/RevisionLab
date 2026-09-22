@@ -4,8 +4,23 @@
   "description": "Embedded prototype review, flow recording, and feedback for Next.js applications.",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gil00pita/RevisionLab.git",
+    "directory": "packages/revisionlab"
+  },
+  "homepage": "https://github.com/gil00pita/RevisionLab#readme",
+  "bugs": {
+    "url": "https://github.com/gil00pita/RevisionLab/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "files": [
     "dist",
+    "!dist/**/*.test.*",
+    "!dist/**/*test-fixture*",
     "assets",
     "README.md"
   ],

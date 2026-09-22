@@ -7,7 +7,7 @@ Embed prototype recording and review in an existing Next.js project. Mount the w
 Once this package is published:
 
 ```bash
-npx revisionlab init
+npx revisionlab@latest init
 npm run dev
 ```
 
@@ -27,6 +27,8 @@ npx --package /absolute/path/revisionlab-0.1.0.tgz revisionlab init \
 ```
 
 `--package` makes the generated project install that exact local build. Nothing is published by these commands.
+
+The default installer also installs the exact version you invoked: `npx revisionlab@0.1.1 init` uses that published version, while `npx revisionlab@next init` opts into an available prerelease. The repository's GitHub Release workflow publishes stable versions to `latest` and prereleases to `next`, after validation. See the [maintainer release guide](https://github.com/gil00pita/RevisionLab/blob/main/RELEASING.md) for initial publication and trusted-publisher setup.
 
 The installer supports `app/` or `src/app/`, TypeScript or JavaScript, Next.js 15/16, React 19, and Node.js 20.9+. The package's own application code is TypeScript. Standalone React/Vite and the Pages Router are not currently supported because the storage and invitation APIs need a server.
 

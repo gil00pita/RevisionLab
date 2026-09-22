@@ -45,9 +45,15 @@ npx --package /absolute/path/revisionlab-0.1.0.tgz revisionlab init \
   --package /absolute/path/revisionlab-0.1.0.tgz --protect
 ```
 
-Once published, the command becomes `npx revisionlab init --protect`. The installer supports Next.js 15/16 App Router, React 19, TypeScript/JavaScript, and `app/` or `src/app/`. It generates the API, workspace/access routes, configuration, and widget layout integration. `--protect` also generates the prototype access gate (Next.js 15.5+). Existing files are checked before writes, modified host files are backed up, and repeat installation preserves customizations.
+Once published, the command becomes `npx revisionlab@latest init --protect`. The installer installs the exact version invoked, including explicit versions and `@next` prereleases. The installer supports Next.js 15/16 App Router, React 19, TypeScript/JavaScript, and `app/` or `src/app/`. It generates the API, workspace/access routes, configuration, and widget layout integration. `--protect` also generates the prototype access gate (Next.js 15.5+). Existing files are checked before writes, modified host files are backed up, and repeat installation preserves customizations.
 
 See the [package guide](packages/revisionlab/README.md) for all options and manual integration. Standalone React/Vite and the Pages Router are not included in this release.
+
+## Automatic npm releases
+
+[The publishing workflow](.github/workflows/publish.yml) validates pull requests and `main` updates, then publishes the tested package when a matching **GitHub Release** is published. Stable versions use `latest`; prereleases use `next`. It uses npm trusted publishing without a stored npm token.
+
+The intended npm owner is `gil00pita`. The workflow is implemented, but first publication, npm trusted-publisher setup, and the GitHub `npm` environment are still required. Follow [RELEASING.md](RELEASING.md) for the one-time setup and subsequent version/release steps. Nothing has been published by these repository changes.
 
 ## Shared review
 
@@ -69,6 +75,8 @@ Automatic discovery of unrecorded paths, executable action graphs and replay, DO
 npm run lint
 npm run build
 npm run test:package
+npm run test:release
+npm run release:check
 ```
 
 The package builds before the host application. Webpack is selected for compatibility with Chakra/Emotion hydration. Tests use isolated temporary databases and block external email delivery.

@@ -2,6 +2,7 @@
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { initialize } from "./install.js";
+import { resolvePackageSpec } from "./package-spec.js";
 
 const help = `RevisionLab — embedded prototype review for Next.js
 
@@ -9,7 +10,7 @@ Usage: npx revisionlab init [options]
 
   --cwd <directory>   Existing Next.js App Router project (default: current directory)
   --no-install        Generate integration files without running npm install
-  --package <spec>    Install this npm package spec or local .tgz instead of revisionlab
+  --package <spec>    Override this CLI's version with an npm package spec or local .tgz
   --protect           Gate prototype routes with RevisionLab invitations
   --dry-run           Show planned file changes without writing or installing
   --help              Show this help
@@ -33,7 +34,7 @@ async function main() {
   let install = true;
   let protect = false;
   let dryRun = false;
-  let packageSpec = "revisionlab";
+  let packageOverride: string | undefined;
   for (let index = 0; index < args.length; index++) {
     const argument = args[index];
     if (argument === "--no-install") install = false;
@@ -44,10 +45,7 @@ async function main() {
       if (!value || value.startsWith("-"))
         throw new Error(`${argument} requires a value.`);
       if (argument === "--cwd") cwd = path.resolve(value);
-      else
-        packageSpec = /^(?:\.|\/|file:)/.test(value)
-          ? path.resolve(value.replace(/^file:/, ""))
-          : value;
+      else packageOverride = value;
     } else
       throw new Error(
         `Unknown option: ${argument}. Run revisionlab --help for usage.`,
@@ -56,6 +54,7 @@ async function main() {
   const [major, minor] = process.versions.node.split(".").map(Number);
   if (major < 20 || (major === 20 && minor < 9))
     throw new Error("RevisionLab requires Node.js 20.9 or newer.");
+  const packageSpec = await resolvePackageSpec(packageOverride);
   const result = await initialize({ cwd, protect, dryRun });
   console.log(
     `${dryRun ? "Planned" : "Initialized"} RevisionLab in ${result.project.root}`,
@@ -89,7 +88,7 @@ async function main() {
   }
   if (dryRun) return;
   console.log(
-    `\n${install ? "Run your development server" : "Install revisionlab, then run your development server"} and visit /revisionlab.`,
+    `\n${install ? "Run your development server" : `Install ${packageSpec}, then run your development server`} and visit /revisionlab.`,
   );
   console.log(
     "Local data is saved in .revisionlab/revisionlab.db. Modified host files are backed up in .revisionlab/backups/.",

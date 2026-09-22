@@ -11,7 +11,10 @@
     "build": "npm run build:package && next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test:package": "npm run test --workspace revisionlab"
+    "test:package": "npm run test --workspace revisionlab",
+    "test:release": "node --test scripts/*.test.mjs",
+    "release:check": "node scripts/check-release.mjs",
+    "release:pack": "npm pack --workspace revisionlab"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.37.0",

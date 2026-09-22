@@ -6,7 +6,8 @@ Validated on 22 September 2026 with Node.js 22, Next.js 16.3.5, React 19.2.8, an
 
 - `npm run lint`: passed.
 - `npm run build`: passed, including TypeScript, API routes, and the prototype access proxy.
-- `npm run test:package`: 113 tests passed (16 installer/bundler tests, 46 persistence/access/board/thread/discard tests, 15 autosave/Undo tests, 6 canvas geometry tests, 8 speech-balloon layout tests, 8 viewport geometry tests, 6 navigation tests, and 8 recording-storage tests).
+- `npm run test:package`: 121 tests passed (24 installer/bundler/package-version tests, 46 persistence/access/board/thread/discard tests, 15 autosave/Undo tests, 6 canvas geometry tests, 8 speech-balloon layout tests, 8 viewport geometry tests, 6 navigation tests, and 8 recording-storage tests).
+- `npm run test:release`: 12 release-metadata and archive-safety tests passed.
 - `git diff --check`: passed.
 - `.next/`, `.revisionlab/`, browser artifacts, package build output, and local archives are ignored by Git. No `.next/` files are tracked.
 
@@ -15,6 +16,16 @@ The tests cover installation conflicts, backups and idempotency, JavaScript/Type
 The whiteboard increment adds existing-database migration, saved layout reopening, newly captured screen merging, stale/concurrent board-edit rejection, coordinate/membership validation, board-edit permissions, normalized comment anchors, inherited reply context/status, cross-version isolation, and connector/layout geometry coverage.
 
 ## Browser and installation checks
+
+### npm release automation
+
+The repository now includes release-only npm publication with a separate read-only verification job. Local checks validated workflow YAML, release trigger, commit-pinned actions, and permission separation. Release metadata tests cover stable/prerelease routing, exact tag/version/lockfile agreement, repository restrictions, unsafe version strings, and keeping the example application private. No workflow has been pushed or executed on GitHub as part of this change.
+
+Eight new CLI tests confirm that the default install uses the executing package's exact name/version, including prereleases, while explicit registry/local overrides remain intact. Full package and example production builds, lint, all 121 package tests, and 12 release-tool tests pass.
+
+The packed archive contains 396 files, including client/server exports and declarations, an executable CLI, the logo, and the MIT license. Compiled tests/fixtures are excluded; path/type checks reject private/runtime files and archive traversal/links. The extracted CLI passed help, protected initialization, and repeat-initialization checks using isolated temporary fixtures and the repository's existing dependencies. The release tests, packaging, and CLI smoke passed on Node 22.11/npm 10.9 and separately on isolated Node 24.21/npm 11.19.1, matching the workflow's Node/npm major/pinned versions. This is not a fresh host dependency installation or browser validation.
+
+Read-only remote checks confirmed the GitHub repository is public with default branch `main`; npm returned 404 for `revisionlab` and 401 for current authentication. The intended npm account is `gil00pita`, as selected by the maintainer; ownership is not yet established. First publication, the GitHub `npm` environment, npm trusted-publisher setup, and live OIDC publishing remain unverified external steps documented in `RELEASING.md`. No package was published, no credentials were added, and no external settings were changed.
 
 Using the real local application, verified:
 

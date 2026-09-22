@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
+  chmod,
   mkdtemp,
   mkdir,
   readFile,
@@ -264,6 +265,52 @@ test("CLI --no-install completes without running npm and reports invalid flags",
   assert.equal(invalid.status, 1);
   assert.match(invalid.stderr, /Unknown option/);
 });
+
+for (const override of [undefined, "revisionlab@next", "./local build.tgz"]) {
+  test(
+    `CLI installs ${override ?? "its own exact package version"} without contacting npm`,
+    { skip: process.platform === "win32" },
+    async (t) => {
+      const project = await fixture(t);
+      const bin = path.join(project.root, "test-bin");
+      await mkdir(bin);
+      const npm = path.join(bin, "npm");
+      await writeFile(
+        npm,
+        `#!${process.execPath}\nconsole.log("NPM_ARGUMENTS=" + JSON.stringify(process.argv.slice(2)));\n`,
+      );
+      await chmod(npm, 0o755);
+      const cli = fileURLToPath(new URL("./index.js", import.meta.url));
+      const manifest = JSON.parse(
+        await readFile(new URL("../../package.json", import.meta.url), "utf8"),
+      );
+      const expected = override
+        ? override.startsWith(".")
+          ? path.resolve(override)
+          : override
+        : `${manifest.name}@${manifest.version}`;
+      const result = spawnSync(
+        process.execPath,
+        [
+          cli,
+          "init",
+          "--cwd",
+          project.root,
+          ...(override ? ["--package", override] : []),
+        ],
+        { encoding: "utf8", env: { ...process.env, PATH: bin } },
+      );
+      assert.equal(result.status, 0, result.stderr);
+      const captured = result.stdout.match(/NPM_ARGUMENTS=(.+)/);
+      assert.ok(captured, result.stdout);
+      assert.deepEqual(JSON.parse(captured[1]), ["install", expected]);
+      assert.equal(
+        await exists(path.join(project.root, "node_modules")),
+        false,
+      );
+    },
+  );
+}
 
 test("layout parser preserves directives and ignores body-like text in strings", () => {
   const source =
