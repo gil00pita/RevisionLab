@@ -1,0 +1,20 @@
+export { defineRevisionLabConfig } from "./config.js";
+export { createRevisionLabHandler } from "./route-handler.js";
+export { authorizeRevisionLabRequest } from "./authentication.js";
+export { protectRevisionLab } from "./protection.js";
+export { HttpError } from "./security.js";
+export type {
+  RevisionLabActor,
+  RevisionLabArtifactStorage,
+  RevisionLabBoard,
+  RevisionLabComment,
+  RevisionLabConfig,
+  RevisionLabFlow,
+  RevisionLabInvitation,
+  RevisionLabPoint,
+  RevisionLabRole,
+  RevisionLabRouteContext,
+  RevisionLabRouteHandler,
+  RevisionLabState,
+  RevisionLabStep,
+} from "./types.js";

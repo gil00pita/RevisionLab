@@ -2,9 +2,41 @@
 
 This is the living product specification. Update it as new product requests and decisions arise. Requirements describe intended behavior unless explicitly marked implemented; proposals and open questions are not accepted implementation decisions.
 
+## Current delivery boundary — 22 September 2026
+
+The functional release provides embedded recording, saved screen sequences and versions, page/screen comments, invitations, SQLite/libSQL persistence, and Markdown exports. The whiteboard and pinned-comment increment is **implemented**: generated boards, persisted arrangements and labelled paths, normalized screen pins, threaded replies, and resolution. Local browser checks cover saving/reloading layouts and paths, pin placement and replies, resolution, and image zoom; the production build and 50 automated tests pass. Live shared-service verification still requires deployment credentials.
+
+The requested experience is a Miro-like generated flow board, with captured screens arranged and directional arrows showing each recorded or explicitly connected path, plus Figma-like comments placed on the specific screen area being discussed. Screens and their feedback remain tied to the selected recording/persona and exact version. Readable comment cards and anchored speech balloons are implemented. All eligible pinned root comments show previews by default, connected to their saved locations. Selecting one expands the full discussion, replies, and authorized actions. A hide/show control clears previews without removing pins. Local desktop/mobile checks cover placement, zoom, dismissal, and screenshot-failure fallback; see `VALIDATION.md`.
+
+The latest navigation refinement is **implemented**: scrolling the mouse wheel over the full-flow whiteboard, including its screenshot nodes, zooms all screens and connections together around the pointer. The camera remains local; navigation does not alter draft or saved board coordinates. Local browser checks cover pointer anchoring, zoom bounds, panning, retained controls, desktop/narrow-screen Fit, ordinary scrolling outside the board, and unchanged save state. Eight new camera tests bring the package suite to 66 passing tests. See `VALIDATION.md` for evidence and the remaining real-touch and cross-browser validation limits.
+
+The supplied logo and favicon replacement is **implemented and locally verified**. The example homepage, workspace navigation, and email-access header share the supplied blue RevisionLab artwork at its original proportions; the example favicon is generated from the same SVG. Desktop and narrow-screen browser checks verify all three placements, the served five-size favicon, and no horizontal overflow. Lint, the production build, and all 66 existing package tests pass; the package tarball includes the SVG and logo exports. This branding change does not alter task icons, interaction colors, or host-project favicons during installation. A fresh separate-host installation and cross-browser checks were not repeated. See `VALIDATION.md` for evidence and the branding requirements below.
+
+The recording-control refinement is **implemented and locally verified**: **Stop recording** remains visible outside the widget and in its footer on every tab, stops further captures, and saves the completed recording. Explicit **Discard recording**, including the page-leaving warning, stops and deletes the unfinished draft and its captures without publishing a completed version. Normal same-tab page links are guarded; eligible same-origin prototype links also offer continuing the recording on the next page. Lint, the production build, and all 88 package tests pass. Browser checks cover visible Stop controls, Stay, continuing to record a second route, saving a completed two-screen flow, and a failed discard followed by successful cleanup and navigation. Warning-dialog visuals were confirmed at 1440px and 390px widths, with readable stacked text, fitting buttons, and recording controls behind the backdrop. A fresh separate-host installation was not repeated. See `VALIDATION.md` for evidence. Browser-unload and programmatic-navigation boundaries are documented below rather than treated as guaranteed interception of every exit.
+
+The direct-editing request is **partially implemented**: **Paths** enters whiteboard edit mode without opening the legacy form. On-screen **Connect** actions choose source and target; selecting a connection opens its label/removal controls and discussion. The latest confirmed refinement is implemented: **autosave and Undo** replace manual board saving, with recoverable save errors and guarded navigation. Captured images, historical versions, and archived connection discussions are preserved. All 113 package tests pass, including 15 new autosave tests; local browser and desktop/mobile checks are recorded in `VALIDATION.md`. Fresh hosted and separate-host installation checks were not repeated. Decision elements and URL-based screen additions are **not implemented**: their two product choices below remain unanswered.
+
+The implementation approach for this increment is to generate connections from recorded step order, permit owner/editor layout changes and labelled connections, and store screenshot-relative comment pins. Pan, zoom, fit-to-content, automatic arrangement, replies, resolution, and accessible non-pointer controls support that experience. These are implementation choices for the requested workflow, not a promise of Miro/Figma feature parity. Automatic discovery of unrecorded paths, executable branch conditions, action replay, DOM-element anchors, and visual comparison remain later work.
+
 ## Working Name
 
 RevisionLab — embedded prototype review for individual Next.js projects.
+
+## Branding — supplied logo and favicon
+
+Use the user-supplied SVG as RevisionLab's logo and the source of the example application's browser favicon. Preserve its blue `#1E9ADC` artwork, pale `#F4F4F4` rounded background, white outer rectangle, and 222:227 proportions; do not redraw or recolor the mark through UI theme tokens. The canonical native asset is `packages/revisionlab/assets/revisionlab-logo.svg`.
+
+The current implementation uses one shared Chakra image component at 32 CSS pixels high beside the existing RevisionLab wordmark on the example homepage, workspace navigation, and email-access header. Functional icons, including the widget's Review and recording indicators, retain their task-specific meaning and appearance. The rest of the interface palette and layout remain unchanged.
+
+The package includes its own logo asset and resolves it with the client bundle, without requiring a logo file in the host project's public directory. The example favicon is generated from the canonical SVG at 16, 32, 48, 64, and 256 pixels through `scripts/generate-favicon.mjs`. Initializing RevisionLab in another project must preserve that project's favicon and branding.
+
+Observable acceptance criteria:
+
+1. The homepage, workspace, and access-page brand marks display the supplied artwork without stretching or cropping; adjacent RevisionLab text remains readable.
+2. The example application's browser favicon uses the same artwork instead of the previous icon and remains available before email verification.
+3. A packaged installation can display RevisionLab's logo without a host-public asset dependency, while the host application's existing favicon is unchanged.
+4. Screen readers retain a RevisionLab name without duplicate announcements from decorative marks next to the wordmark.
+5. Review/recording controls, functional status colors, and existing workflows remain unchanged by the branding replacement.
 
 ---
 
@@ -164,18 +196,20 @@ The first verified email creates a lightweight `ReviewerIdentity` containing a p
 
 - **Named invitation:** only listed email addresses can verify. Use this by default for sensitive client work.
 - **Open review invitation:** anyone possessing the link may verify an email and join. The link remains revocable and expires; possessing it alone does not create a session or submit comments.
-- **Commenter:** view the scoped review, add and reply to comments, and resolve their own threads where policy permits.
-- **Editor:** commenter permissions plus review-management actions explicitly granted by the owner.
+- **Commenter:** view the scoped review and its board, place screen-area comments, and reply to threads. Resolution follows the installation's permission policy; in the current implementation it remains an owner/editor action.
+- **Editor:** commenter permissions plus recording, board arrangement, connection editing, and comment resolution within their authorized scope.
 - **Owner:** installation configuration, invitations, recording access, destructive actions, exports, and storage settings.
 
 Prototype roles/personas such as Applicant or Administrator are recording contexts and never grant RevisionLab permissions. A display name, email domain, invitation URL, or prototype role alone must never confer editor or owner access.
 
 ## Commenting experience
 
-- Provide **Add comment** in the widget and full workspace. The reviewer selects a screen or element, writes feedback, and submits without navigating to an account page.
-- Capture project, flow, variant, role/persona, screen, prototype version, execution, DOM locator, and fallback coordinates automatically.
+- Provide **Add comment** in the widget and full workspace. In the workspace, a reviewer enters comment mode, clicks the relevant area of a captured screen, writes feedback, and submits without navigating to an account page. Selecting an existing pin opens its discussion instead of creating another comment.
+- Capture the exact project, flow/version, role/persona, and screen context with the comment. Store a screenshot-relative point for a pinned comment; page-level and existing unpinned comments remain valid. DOM locators and replay/execution-aware re-anchoring are later capabilities, not inferred from a screenshot.
 - Show explicit sending, saved, and retry states. Never display a comment as saved until the shared-store transaction commits.
-- Let reviewers reply, mention other invited reviewers, edit their own recent comments, and follow or mute threads according to policy.
+- Support replies and visible open/resolved thread status. Mentions, editing recent comments, and follow/mute policies remain later review capabilities.
+- Present each comment and reply as a readable card, with distinct author/date metadata, full message content, and clearly separated available actions. Use visible card boundaries, internal padding, and spacing between cards; keep replies grouped with their parent discussion. Preserve line breaks and wrap long text or links without clipping or horizontal scrolling on narrow screens. Apply this presentation consistently wherever existing comments are shown, including widget feedback and screen discussions; it does not change pin placement, reply behavior, resolution permissions, or persistence.
+- Show a readable speech-balloon preview for every eligible root pinned comment by default, anchored to its saved image location with a pointer identifying its pin. Honor the current resolved-comment filter. Selecting a bubble or pin expands one full thread with replies, a reply composer, and authorized resolve/reopen actions. Provide a hide/show bubbles control for unobstructed image inspection while keeping pins accessible. Sidebar cards remain an overview and a home for general or unpinned feedback; opening a pin must not scroll mobile reviewers away from its screen.
 - Keep the reviewer identity distinct from the persona demonstrated in the recorded prototype.
 
 ## Deployment boundary
@@ -204,6 +238,29 @@ Acceptance criteria: an employee and a client with different email domains can u
 - Position is configurable; the widget must avoid covering essential application controls and work on mobile and with a keyboard.
 - When a page belongs to several flows, the launcher lets the reviewer choose. When none exists, it offers creating or recording the first flow.
 
+## Recording controls and leaving a page — current refinement
+
+Confirmed user requirements: make **Stop recording** easy to find while recording, warn before leaving the page, and make **Discard** stop the recording without saving it as a completed flow. The implemented behavior has passed local functional checks; evidence and remaining validation limits are recorded in `VALIDATION.md`:
+
+- Show **Stop recording** in the floating recording controls while the widget is closed and in the widget footer regardless of whether Comment or Record is selected. Stopping immediately prevents new captures, waits for an in-flight capture to finish, and completes the recording through the server. Report success only after completion is confirmed; a failed save remains stopped and retryable.
+- Keep **Discard recording** separate from Stop. After confirmation, prevent new captures, wait for any in-flight capture to settle, then remove the unfinished draft, its captured screens, and its associated artifacts. Only its creator or an owner may discard it. Previously completed recordings and versions remain intact. Temporary draft writes during recording are not a promise that a discarded recording remains saved.
+- Before a normal same-tab page-link navigation, show a warning with **Stay and keep recording** and **Discard recording and leave**. For another same-origin prototype page, also offer **Continue recording on next page** so a multi-page journey remains possible. Continuing is unavailable for review-workspace and external destinations, and after a save or discard has started; disable it while a capture is in progress.
+- Wait for confirmed discard success before navigating. A failure keeps the reviewer on the current page, explains the error, retains retry controls and the leaving warning, and does not resume capture. A pending save cannot silently switch to discard after its completion request may have reached the server.
+- Modified clicks, links opening another tab/window, downloads, and hash-only links are not intercepted as page departures. Merely switching tabs or hiding the document never discards a recording.
+
+**Current interpretation, not a separately confirmed warning preference:** “leaving the page” includes ordinary links between prototype pages, with the Continue option above. Whether the user instead wants warnings only when leaving the prototype/review scope remains unconfirmed; do not silently treat that narrower option as accepted.
+
+Browser limits are explicit. Reloading, closing the tab, or a full-document departure uses the browser's native `beforeunload` warning when the browser allows it; its wording and display are browser-controlled. Do not delete a draft on unload, because the user may cancel and cleanup requests may not finish. This warning is not a guaranteed stop/discard operation. The mounted widget automatically guards ordinary same-tab links, including Next.js links. Host code that navigates with `router.push`, `router.replace`, or a location assignment must first await the exported `confirmRecordingNavigation(href)` and navigate only if it returns `true`. Client-side browser Back/Forward is not globally blocked; the integration does not claim a universal Next.js App Router navigation blocker.
+
+Observable acceptance criteria:
+
+1. During a recording, Stop is reachable with the widget closed and with either widget tab open, including a narrow viewport and keyboard use.
+2. Stop during an in-flight capture waits for that capture, prevents later captures, and marks the flow complete only after server success. Failed completion remains stopped with a retry path.
+3. Staying cancels a guarded departure without deleting or completing the draft. Continuing to an eligible prototype page preserves the recording and permits captures there.
+4. Discarding explicitly or from the departure warning removes the unfinished recording and its artifacts before any requested navigation; it does not create a completed flow or remove earlier versions. Unauthorized discard is rejected.
+5. Failed discard retains the page, warning, and retry opportunity without restarting capture or claiming that cleanup succeeded.
+6. New-tab, modified-click, download, and hash-only interactions retain their normal behavior. Reload/close relies on the browser warning without automatic deletion; host integrations document the required helper and Back/Forward limitation.
+
 ## Full-page workspace
 
 The full workspace opens at a configurable route within the host application, with `/revisionlab` as the proposed default. It provides the space needed to inspect flows, screen states, threaded comments, versions, execution history, and reports.
@@ -211,6 +268,8 @@ The full workspace opens at a configurable route within the host application, wi
 The default launch opens a new browser tab so the live prototype's unsaved state remains intact. Provide a normal accessible link and a same-tab option when preferred. Carry the source route and selected flow/version into the workspace; **Back to prototype** returns to the original tab when available, or navigates to the saved project-local route. Exact in-memory state is only retained while the original tab remains open.
 
 The workspace has project-local navigation: **Flows**, **Comments**, **Versions**, **Reviews**, **Reports**, and **Settings**. Within a flow, use **Canvas**, **Steps**, **Comments**, **Runs**, and **History**. The active flow and version remain visible. Direct links can open a particular flow, comment, or version under the same access rules as the workspace.
+
+For the whiteboard increment, the selected flow's generated board is the primary review surface. Selecting a screen opens its detailed screenshot and discussion; the flow, role/persona, and version stay visible. The broader navigation above is target architecture: do not expose placeholder runs, replay, reports, or settings controls for capabilities that are not implemented.
 
 Hide the launcher inside the review workspace and exclude all RevisionLab UI from recorded actions and generated screenshots. Load the heavy canvas and review tools when the workspace is opened, keeping the widget lightweight.
 
@@ -390,6 +449,8 @@ The reviewer opens the existing project, clicks its floating widget, and chooses
 
 ## Record
 
+The current DOM-capture workflow uses **Capture screen**, **Stop recording**, and explicit **Discard recording** as specified above. The Playwright-controlled workflow and richer toolbar described next remain longer-term requirements, not implemented recording controls.
+
 From the widget or full workspace, the user presses:
 
 Record prototype
@@ -430,7 +491,9 @@ Confirmation
 
 Screens are generated automatically for each Step.
 
-Every generated screen identifies its flow variant, role/persona, prototype version, and viewport. The canvas can group variants by profile, and comments stay attached to the exact screen context being reviewed. Replaying a variant restores its profile's starting state and refreshes only that variant's current previews while preserving historical artifacts.
+Every generated screen identifies its flow variant, role/persona, prototype version, and viewport. The generated board arranges captured steps and connects successive steps with directional arrows; it must not invent paths that were not recorded or explicitly added by an editor. A single-screen recording remains a valid board with no fabricated connection. Comments stay attached to the exact screen context being reviewed.
+
+Later profile grouping and replay can restore a variant's starting state and refresh only that variant's current previews while preserving historical artifacts. They are not prerequisites for generating a board from the screen recordings already available.
 
 ---
 
@@ -453,7 +516,7 @@ This editor should feel visual rather than like a testing IDE.
 
 # Review Canvas
 
-The flow becomes a whiteboard-like canvas.
+The flow becomes a generated, whiteboard-like canvas inspired by Miro: captured screens are arranged spatially and directional arrows make each available journey path readable. Opening a saved recording must produce a usable board without requiring the user to take screenshots again or manually connect its sequential steps.
 
 Example:
 
@@ -481,28 +544,112 @@ The canvas should provide only the collaboration functionality relevant to proto
 
 It is not intended to be a general-purpose replacement for Miro.
 
+The implemented board lets owners and editors enter **Paths** edit mode to move screens, connect source and target screens, label/remove connections, and remove or restore screens within the selected flow version. The diagram stays visible; contextual connection controls appear only after selection. Labels document possible paths; they do not create screenshots, discover unvisited routes, or execute branches. Reviewers with commenter access can select saved connections and discuss them without permission to change shared structure.
+
+Node positions and connections are saved through the server to local SQLite or the configured shared libSQL store. Reopening the flow restores its saved arrangement; browser storage is not the authoritative board. Updating an existing installation migrates its data without discarding recordings, comments, or historical versions. A new recording version gets its own board and feedback context rather than silently moving pins from an older screenshot.
+
+Acceptance criteria for this increment:
+
+1. A recording containing three captured screens opens as three nodes with visible directional arrows connecting its recorded sequence, with the flow, persona, and version identified.
+2. An owner/editor can reposition nodes, add a labelled alternative connection, use automatic arrangement, and reload to recover the saved layout and connections. A commenter cannot perform those mutations through either the UI or API.
+3. Pan, zoom, and fit-to-content keep larger flows navigable. A keyboard-accessible screen list and explicit connection/layout controls provide a non-drag alternative; touch and narrow-screen review remain usable.
+4. Clicking a chosen screenshot area in comment mode creates a saved pin and discussion on that exact screen version. Another authorized reviewer can select it, reply, and see the saved discussion after reloading.
+5. A pin stays on the same screenshot location when the image or board is resized or zoomed. Opening a different screen or version never shows the pin on an unrelated image. Existing unpinned comments remain accessible.
+6. Visible loading, empty, saving, failure, and permission states replace fake sample nodes or optimistic claims of a successful save. Failed writes retain recoverable input and are not presented as persisted work.
+
+## Full-flow wheel navigation — current refinement
+
+The reviewer must be able to zoom the entire flow easily with an unmodified mouse wheel over the whiteboard background or any screen node, including its screenshot. Screens and their connections scale together, and the board point under the cursor stays in place. Wheel navigation must feel smooth and predictable without requiring a modifier key or opening an individual screen.
+
+The implementation uses a normal zoom range of 10%–300%; **Fit** may go below 10% when necessary to display a large flow. Keep the zoom buttons, **Reset 100%**, **Fit**, keyboard navigation, background-drag panning, and touch-drag navigation. **Shift+wheel** pans the board. Wheel input outside the board retains ordinary page scrolling. Camera pan/zoom is transient local view state and does not change draft node positions, saved layout coordinates, recording content, connection identity, or screenshot-relative comment anchors.
+
+Acceptance criteria:
+
+1. Wheel up/down over both empty board space and screenshot nodes zooms the complete graph in/out around the pointer, keeping arrows attached to their screens and preventing simultaneous page scrolling within the board.
+2. Repeated wheel input respects the normal 10%–300% bounds; **Fit** can still show every screen of a large flow at a smaller scale, and **Reset 100%** restores the normal scale.
+3. **Shift+wheel**, background dragging, touch dragging, keyboard navigation, and explicit zoom/Fit controls remain usable. Wheel input outside the board scrolls the page normally.
+4. Zooming and panning do not mark a saved board as edited, alter an existing layout draft, or change persisted positions, connections, or comment anchors.
+
+Validation: local browser checks confirm pointer anchoring within one pixel over screenshots and board background, graph-wide scaling, page-scroll isolation, panning, keyboard and explicit controls, 10%–300% bounds, desktop and 390px-wide Fit, and unchanged save state. Fit below 10% is covered by camera unit tests, not a large-flow browser fixture. Real touch gestures and other browsers remain untested; see `VALIDATION.md`.
+
+## Direct whiteboard editing — current partial implementation
+
+Confirmed requirements:
+
+- **Paths** turns on an explicit edit mode within the existing whiteboard. Clicking it must not open the legacy source/destination connection form. Keep the diagram visible, show editing tools and a clear selected state, and provide a way to leave editing.
+- Select an individual connection to access its contextual actions and add comments attached to that connection, rather than to one of its endpoint screens. Connection threads retain authors, replies, resolution, and exact flow/version context when nodes move or the board zooms.
+- Provide an action to add a decision element to the flow. The precise meaning of “decision form” is still open; a diagram decision node is the proposed interpretation, not yet a confirmed choice.
+- Allow screens to be removed from the flow and added by entering a screen URL. Do not require recording an entire journey merely to request one extra screen. The URL addition must have honest validation, pending, success, and failure states.
+- Preserve the existing screenshot pin/speech-balloon experience, navigation, and role boundaries. Owners/editors change flow structure; commenters may discuss permitted connections without acquiring structure-editing permissions.
+
+Implemented interaction and preservation choices:
+
+- Use the keyboard-accessible **Connect** button on a source screen, then **Connect here** on a target. Selecting a connection reveals its contextual label, removal, and discussion controls; entering edit mode alone never opens a form.
+- Autosave structural changes after a short pause (500 ms), or after a screen drag finishes. Remove the manual Save/Discard buttons. Serialize writes and preserve newer local edits while a request is in flight; no-op edits, camera movement, and connection selection do not write to storage.
+- **Undo** reverses the last local board operation and autosaves the inverse. A completed drag and a continuous label-typing burst each count as one operation. Undo covers movement, auto-arrangement, labels, connection creation/removal, and screen removal/restoration, including the original connection identities and adjacent paths. Retain up to 50 operations across successful autosaves within the mounted flow; clear history on reload, changing flow/version, or adopting another editor's board. Comments, captures, and recording controls are outside this history. Redo is not part of this increment.
+- Show waiting/saving/saved status. Failed writes retain the draft with **Retry autosave**; revision conflicts pause writes without overwriting the other editor. **Load saved board** explicitly discards the local conflict and reloads current server state. **Done editing**, workspace/flow changes, sign-out, and starting another recording wait for pending writes; failure keeps the current flow open. A supported browser's native unload warning protects pending work on full-document departures, but abrupt closure/offline shutdown cannot guarantee persistence.
+- Connection comments submit independently of structural drafts and require a saved connection identity. The server binds each identity to its flow/version, endpoints, and recorded/manual origin. Removing a path archives that identity and keeps its existing threads readable and replyable in **All comments**; it cannot transfer feedback to a different path. New threads require a connection on the saved board.
+- **Remove screen** hides the screen from this board and removes its adjacent active connections after confirmation. Persisted removal metadata prevents it from returning on reload or a later capture. **Restore** returns the screen to the draft; paths may be reconnected explicitly. Captured images, recording order, screen pins, historical versions, and discussions are not deleted or rewritten.
+
+Proposals for the two unimplemented tools, pending confirmation:
+
+- Interpret the decision element as a question node with labelled outgoing branches such as **Yes** and **No**, used for documentation rather than executable prototype logic.
+- Initially accept routes and URLs from this prototype installation. Validate and normalize targets; never forward reviewer credentials to another origin or silently run an arbitrary server-side URL fetch. Broader external-page support requires an explicit security and capture design.
+
+Open choices before implementing the decision and URL-addition tools (neither tool is implemented):
+
+1. Does “decision form” mean a diagram decision node with a question and labelled branches, or an interactive form inside the prototype?
+2. Does adding a screen URL capture that page as a real screenshot, or create a clearly labelled URL-only placeholder? If capture is chosen, it needs an explicit authenticated capture workflow; a blank image is not a successful capture.
+
+Acceptance criteria for the implemented subset:
+
+1. **Paths** changes the board's interaction mode without opening the legacy connection form. There is no manual Save button; source/target actions, autosave status, Undo, and exiting are distinguishable and keyboard accessible.
+2. A reviewer can select a saved connection and submit/reopen its own thread. Moving endpoint nodes, zooming, and reloading preserve the connection identity and discussion; other connections and versions never inherit it accidentally.
+3. Removing a screen or connection shows the affected structure, leaves no dangling active connections, and preserves captures and feedback. Removed screens can be restored; archived connection threads remain accessible without appearing on unrelated paths.
+4. Server authorization and revision/conflict checks cover all new mutations; existing flows, captures, screen comments, and historical versions survive migration. Errors retain recoverable input and block internal departure until saving succeeds or conflict recovery is explicitly chosen.
+5. Edits persist without pressing Save. Undo works before and after an autosave, groups a drag or continuous label edit, and restores exact removed paths without losing discussions. A write in flight cannot overwrite a newer local edit or suppress a queued undo; unchanged boards do not save. Stale polls do not reset local history, and another editor's newer revision is never silently overwritten.
+
+Acceptance criteria still pending the two product choices:
+
+1. An authorized editor can add the confirmed decision element and its labelled branches, save, and reopen the same structure. It must not be represented as executable logic unless that scope is separately agreed.
+2. URL-based addition follows the confirmed capture/placeholder choice and cannot invent a screenshot or claim a failed capture succeeded.
+
 ---
 
 # Canvas Capabilities
 
-Required:
+Whiteboard increment:
 
-- infinite canvas
-- pan
-- zoom
-- drag screen
-- connectors
-- connector labels
-- groups
-- sticky notes
-- screen annotations
-- threaded comments
-- decision branches
-- status indicators
-- version indicators
+- a scrollable/pannable spatial board, with zoom and fit-to-content
+- automatic arrangement of recorded screens and directional sequence connections
+- persisted screen positioning and owner/editor drag controls with keyboard alternatives
+- explicit owner/editor connection editing and labels for alternative paths
+- screen selection and detailed screenshot inspection
+- screen-area pins, threaded replies, and open/resolved status
+- visible role/persona and exact version context
 
-Potential future:
+Current navigation refinement (implemented; validation limits in `VALIDATION.md`):
 
+- pointer-centered mouse-wheel zoom of the full graph, including when the pointer is over a screen screenshot
+- Shift+wheel panning and the retained explicit, keyboard, and touch navigation controls
+
+Current editing capabilities (implemented and locally verified; limits in `VALIDATION.md`):
+
+- a Paths edit-mode toggle and contextual, on-canvas connection controls
+- keyboard-accessible source/target connection actions
+- connection-specific comment threads with preserved archived history
+- reversible screen removal/restoration, structural autosave, Undo, and guarded Done editing
+
+Requested editing capabilities still awaiting clarification (not implemented):
+
+- a decision element, with its form/node interpretation to be confirmed
+- adding a screen by URL, with screenshot capture versus a linked placeholder to be confirmed
+
+Later capabilities, not required for these increments:
+
+- unlimited-canvas optimization, groups, and sticky notes
+- executable decision branches and recording from a selected branch
+- DOM-element annotation anchors and automatic re-anchoring
 - freehand drawing
 - presentation mode
 - multiplayer cursors
@@ -525,51 +672,44 @@ It includes:
 - review status
 - change indicator
 
-Actions:
+Actions in the whiteboard increment:
 
 - Open Live
-- Replay
-- Comment
-- Annotate
-- Compare Versions
-- View Actions
+- Select screen and inspect its captured image
+- Place a comment pin and open an existing discussion
+- Arrange or connect screens when authorized
+
+In **Paths** edit mode, **Remove screen** hides a screen and its adjacent active paths from this board; **Restore** returns it without changing its capture or feedback. Save/Discard controls persist or cancel these structural changes. **Add screen** by URL is not implemented: screenshot capture versus a linked placeholder remains an explicit open choice.
+
+Replay, compare versions visually, and view recorded actions remain later actions. Version selection currently means inspecting each saved recording and its own feedback, not automatically detecting visual changes.
 
 ---
 
 # Annotation Experience
 
-The system should allow comments to target actual UI elements rather than only screen coordinates.
+## Screen-area comments — current requested increment
 
-A reviewer selects:
+Use a Figma-like pinned discussion: the reviewer selects a captured screen and, with **Add comment** enabled, clicks the specific area they mean. This mode is enabled initially when opening a screen and can be toggled for inspection. A draft marker shows the target while they write. Canceling the draft creates no saved thread. Submitting creates one pin attached to the root comment; replies stay inside that discussion rather than adding duplicate pins.
 
-Annotate
+Store the point as normalized image coordinates (`x` and `y` from 0 to 1), relative to the actual screenshot bounds rather than the surrounding card, viewport, page scroll, or canvas position. Associate it with the exact step, flow version, and immutable captured image. Pin rendering must account for image scaling and any non-image padding. Dragging a node or zooming the board must never change its stored anchor.
 
-Then clicks a button, field, label, table, or other visible element.
+Show speech-balloon previews for all root pinned comments eligible under the current resolved filter, without requiring each pin to be opened. Each preview identifies its author and comment and points back to the saved image location. A hide/show bubbles control clears the previews for image inspection without removing the pins or their discussions. Selecting a bubble or pin by click, tap, or keyboard expands that thread beside its location. Keep the full comment, author attribution, replies, reply composer, and open/resolved status readable inside the expanded balloon; owners/editors can resolve or reopen the same thread there. Reposition balloons when the image scrolls, zooms, or resizes, and flip or shift them near viewport edges so their content and controls remain reachable. Collision handling must retain a clear association with each original pin; a shifted or clamped bubble must not imply that its displayed corner is the saved target. Balloons are presentations of existing threads, not new comments or stored coordinates. All authenticated reviewers with access to that screen can add a pin and reply. Give each pin and preview an accessible name, support keyboard activation and a close control/Escape for the expanded thread, and restore focus to its activating control on dismissal. Provide a non-pointer way to place/adjust the target. Text-only page and screen comments remain available in the sidebar, including all existing feedback without coordinates.
 
-The system stores a locator for that element.
+Readability acceptance criteria: each root comment and reply has its own visually distinct card; the author, timestamp, message, thread status, and available actions can be distinguished at a glance. At desktop and narrow mobile widths, multi-paragraph feedback and long unbroken text remain fully readable without overlapping controls or overflowing the panel. Selecting a pin still focuses the matching discussion, replies remain attached to that root, and authorized resolve/reopen controls continue to work.
 
-Example:
+Anchored-balloon acceptance criteria: opening a screen shows a preview for every eligible pinned root comment, with a visible pointer to its saved location and the resolved filter respected. Hiding and showing bubbles does not change comments or anchors. Activating a bubble or pin expands its matching discussion without navigating or automatically scrolling to the sidebar. Nearby pins and pins near image or viewport edges remain individually identifiable and usable at desktop and narrow mobile widths; scrolling, image zoom, and resizing preserve each bubble's association with its original pin while full thread content remains accessible. Keyboard users can open, read, reply, and dismiss an expanded balloon and return focus to its activating control. Switching pins, screens, or versions never shows an unrelated thread. Reloading preserves the original anchor, replies, author attribution, and resolved state.
 
-role=button
-name="Submit Application"
+A comment is not shown as saved until the server commits it. On failure, preserve the draft for retry and explain the problem. Pins must remain readable and correctly placed on small screens and zoomed screenshots; loading or missing images must not accept misleading coordinate placement.
 
-Comment:
+## Element-aware anchors — later capability
 
-"Could this CTA be closer to the summary?"
-
-This provides more durable feedback than a coordinate pin.
-
-If the prototype changes, the system attempts to resolve the locator again.
-
-If the element can no longer be found:
-
-"Annotation target changed."
+The longer-term system may also attach feedback to an actual DOM element, for example `role=button` with name `Submit Application`, and attempt to resolve that locator after replay. This requires an explicit element/DOM capture mechanism; a screenshot click alone cannot supply a trustworthy locator. If a future replay cannot resolve a target, show **Annotation target changed** rather than silently moving the pin. Coordinate comments in historical versions remain anchored to their original screenshots and are not automatically copied into newer versions.
 
 ---
 
 # Flow Replay
 
-A recorded Flow can be replayed against the latest prototype.
+Later target capability, not part of the whiteboard/pinned-comment increment: a recorded Flow can be replayed against the latest prototype.
 
 Example:
 
@@ -606,7 +746,9 @@ v14
 Current Prototype
 v18
 
-The system identifies:
+The current workflow lets reviewers switch between saved flow versions, each with its own screen artifacts, board, and comments. Existing pins remain on their original captured screens; creating a new recording version must not silently move or relabel historical feedback.
+
+Later change-detection capabilities identify:
 
 - unchanged screens
 - changed screens
@@ -637,6 +779,8 @@ Deferred
 ---
 
 # Review Workflow
+
+This is the longer-term replay-aware workflow. The current whiteboard review uses immutable captured screens and explicit new recordings rather than automatic replay or annotation re-anchoring.
 
 Prototype changes
 
@@ -923,7 +1067,7 @@ Generate screens
 
 ↓
 
-Open the generated flow in the full-page workspace, grouped by role/persona
+Open the generated flow board in the full-page workspace, with screens automatically arranged, directed paths, and visible role/persona and version context
 
 ↓
 
@@ -931,11 +1075,17 @@ Record another role/persona as a separate variant or flow
 
 ↓
 
-Add comments
+Select a captured screen and click the specific area to place a comment pin
 
 ↓
 
-Annotate UI elements
+Open the pinned discussion, reply, and resolve feedback when authorized
+
+The remaining steps are later replay/element-aware work beyond the current whiteboard increment:
+
+↓
+
+Attach DOM-element anchors when available
 
 ↓
 
@@ -968,6 +1118,8 @@ A reviewer can open a direct flow/comment/version link, navigate between review 
 The installer creates `.revisionlab/revisionlab.db` and applies its schema automatically. Repeated setup preserves existing records. The complete workspace can be backed up and restored without a separately installed database service. Missing artifacts and read-only storage are reported clearly, and no comment is shown as saved before its database transaction commits.
 
 From the widget, a user can record at least two role/persona profiles and generate separately labeled screen sequences. Filtering or switching profiles shows the correct screens and comments. Replaying one profile does not overwrite the other; missing profile setup is explained before capture, and recording never silently changes the user's live prototype session.
+
+For the whiteboard increment, a saved sequence automatically opens as positioned screen nodes and directed arrows. Authorized editors can save arrangements and explicit labelled paths; commenters cannot change the board. A reviewer can place a pin on a precise screenshot area, another reviewer can reply, and both see the same persisted thread after reload. Resizing/zooming preserves pin position, keyboard users have equivalent access, and switching versions keeps every pin and thread with its original screen. The detailed observable checks are in **Review Canvas** above; replay, element-locator anchoring, and change detection are separately scoped later capabilities.
 
 A designer should be able to modify the prototype and update a complete stakeholder review flow without:
 

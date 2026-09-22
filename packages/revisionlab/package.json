@@ -1,0 +1,59 @@
+{
+  "name": "revisionlab",
+  "version": "0.1.0",
+  "description": "Embedded prototype review, flow recording, and feedback for Next.js applications.",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "assets",
+    "README.md"
+  ],
+  "bin": {
+    "revisionlab": "dist/cli/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "import": "./dist/server/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build",
+    "test": "node --test dist/server/*.test.js dist/cli/*.test.js dist/client/*.test.js dist/components/FlowBoard/*.test.js dist/components/PinnedScreen/*.test.js"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^3.37.0",
+    "@emotion/react": "^11.14.0",
+    "@libsql/client": "^0.15.15",
+    "html-to-image": "^1.11.13",
+    "lucide-react": "^1.47.0",
+    "zod": "^4.1.11",
+    "typescript": "^5"
+  },
+  "peerDependencies": {
+    "next": ">=15.0.0 <17",
+    "react": ">=19.0.0 <20",
+    "react-dom": ">=19.0.0 <20"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19"
+  },
+  "engines": {
+    "node": ">=20.9"
+  },
+  "keywords": [
+    "nextjs",
+    "react",
+    "prototype",
+    "review",
+    "feedback"
+  ]
+}

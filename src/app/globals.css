@@ -1,49 +1,7 @@
-:root {
-  --ink: #172234;
-  --muted: #718096;
-  --paper: #f4f5f7;
-  --line: #dce1e8;
-  --navy: #1d3557;
-  --blue: #2f66f6;
-  --red: #d94d4d;
-}
-
-* {
-  box-sizing: border-box;
+html {
+  color-scheme: light;
 }
 
 body {
   margin: 0;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: "Avenir Next", Avenir, Helvetica, sans-serif;
-}
-
-button,
-input {
-  font: inherit;
-}
-
-::selection {
-  background: #cbd9ff;
-  color: var(--navy);
-}
-
-.canvas-grid {
-  background-color: #fbfbfc;
-  background-image: linear-gradient(#eef1f5 1px, transparent 1px), linear-gradient(90deg, #eef1f5 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-
-.screen-card {
-  animation: lift-in 500ms cubic-bezier(.2,.8,.2,1) both;
-}
-
-@keyframes lift-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .screen-card { animation: none; }
 }

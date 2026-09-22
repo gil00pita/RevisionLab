@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-22T09:01:45Z",
+  "title": "Design System: RevisionLab",
+  "extensions": {
+    "colorMeta": {
+      "action-blue": { "role": "primary", "displayName": "Action Blue", "tonalRamp": ["#0c142e", "#14204a", "#173da6", "#2563eb", "#3b82f6", "#60a5fa", "#bfdbfe", "#eff6ff"] },
+      "link-blue": { "role": "primary", "displayName": "Link Blue", "tonalRamp": ["#0c142e", "#14204a", "#173da6", "#2563eb", "#3b82f6", "#60a5fa", "#bfdbfe", "#eff6ff"] },
+      "selection-blue": { "role": "primary", "displayName": "Selection Blue", "tonalRamp": ["#0c142e", "#14204a", "#173da6", "#2563eb", "#3b82f6", "#60a5fa", "#bfdbfe", "#eff6ff"] },
+      "badge-blue": { "role": "primary", "displayName": "Badge Blue", "tonalRamp": ["#0c142e", "#14204a", "#173da6", "#2563eb", "#3b82f6", "#60a5fa", "#bfdbfe", "#eff6ff"] },
+      "tool-navy": { "role": "primary", "displayName": "Tool Navy", "tonalRamp": ["#0c142e", "#14204a", "#173da6", "#2563eb", "#3b82f6", "#60a5fa", "#bfdbfe", "#eff6ff"] },
+      "identity-red": { "role": "secondary", "displayName": "Identity Red", "tonalRamp": ["#1f0808", "#300c0c", "#991919", "#dc2626", "#ef4444", "#f87171", "#fecaca", "#fef2f2"] },
+      "paper": { "role": "neutral", "displayName": "Paper", "tonalRamp": ["#18181b", "#27272a", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8", "#f4f4f5", "#FFFFFF"] },
+      "canvas": { "role": "neutral", "displayName": "Canvas", "tonalRamp": ["#18181b", "#27272a", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8", "#f4f4f5", "#fafafa"] },
+      "subtle-gray": { "role": "neutral", "displayName": "Subtle Gray", "tonalRamp": ["#18181b", "#27272a", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8", "#f4f4f5", "#fafafa"] },
+      "divider": { "role": "neutral", "displayName": "Divider", "tonalRamp": ["#18181b", "#27272a", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8", "#e4e4e7", "#fafafa"] },
+      "boundary": { "role": "neutral", "displayName": "Boundary", "tonalRamp": ["#18181b", "#27272a", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8", "#f4f4f5", "#fafafa"] },
+      "secondary-text": { "role": "neutral", "displayName": "Secondary Text", "tonalRamp": ["#18181b", "#27272a", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8", "#f4f4f5", "#fafafa"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "tonalRamp": ["#18181b", "#27272a", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8", "#f4f4f5", "#fafafa"] },
+      "success": { "role": "secondary", "displayName": "Success", "tonalRamp": ["#03190c", "#042713", "#116932", "#16a34a", "#22c55e", "#4ade80", "#bbf7d0", "#f0fdf4"] },
+      "success-surface": { "role": "secondary", "displayName": "Success Surface", "tonalRamp": ["#03190c", "#042713", "#116932", "#16a34a", "#22c55e", "#4ade80", "#dcfce7", "#f0fdf4"] },
+      "recording": { "role": "secondary", "displayName": "Recording", "tonalRamp": ["#220a04", "#3b1106", "#92310a", "#ea580c", "#f97316", "#fb923c", "#fed7aa", "#fff7ed"] },
+      "recording-surface": { "role": "secondary", "displayName": "Recording Surface", "tonalRamp": ["#220a04", "#3b1106", "#92310a", "#ea580c", "#f97316", "#fb923c", "#ffedd5", "#fff7ed"] },
+      "error": { "role": "secondary", "displayName": "Error", "tonalRamp": ["#1f0808", "#300c0c", "#991919", "#dc2626", "#ef4444", "#f87171", "#fecaca", "#fef2f2"] }
+    },
+    "shadows": [
+      { "name": "md", "value": "0px 4px 8px rgba(24, 24, 27, 0.1), 0px 0px 1px rgba(24, 24, 27, 0.3)", "purpose": "Chakra light semantic shadow on the floating capture control." },
+      { "name": "lg", "value": "0px 8px 16px rgba(24, 24, 27, 0.1), 0px 0px 1px rgba(24, 24, 27, 0.3)", "purpose": "Chakra light semantic shadow on the Review launcher and dialog." }
+    ],
+    "motion": [
+      { "name": "moderate", "value": "200ms", "purpose": "Inherited Chakra button transition, dialog content opening, and backdrop closing." },
+      { "name": "faster", "value": "100ms", "purpose": "Inherited Chakra dialog content closing." },
+      { "name": "slow", "value": "300ms", "purpose": "Inherited Chakra dialog backdrop opening." }
+    ],
+    "breakpoints": [
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Chakra blue solid, default medium size. Static preview of the implemented recipe.",
+      "html": "<button class=\"ds-primary\" type=\"button\">Email me a code</button>",
+      "css": ".ds-primary { background: #2563eb; color: #FFFFFF; border: 1px solid transparent; border-radius: 4px; height: 40px; padding: 0 16px; font: 500 14px/20px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; transition: background-color 200ms; } .ds-primary:hover { background: rgba(37, 99, 235, 0.9); } .ds-primary:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; } .ds-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Blue outline action; the workspace toolbar uses the smaller recipe size.",
+      "html": "<button class=\"ds-outline\" type=\"button\">Finish recording</button>",
+      "css": ".ds-outline { background: transparent; color: #173da6; border: 1px solid #3b82f6; border-radius: 4px; height: 40px; padding: 0 16px; font: 500 14px/20px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; transition: background-color 200ms; } .ds-outline:hover { background: #dbeafe; } .ds-outline:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; } .ds-outline:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Quiet blue secondary action with a subtle hover surface.",
+      "html": "<button class=\"ds-ghost\" type=\"button\">Send a new code</button>",
+      "css": ".ds-ghost { background: transparent; color: #173da6; border: 1px solid transparent; border-radius: 4px; height: 40px; padding: 0 16px; font: 500 14px/20px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; transition: background-color 200ms; } .ds-ghost:hover { background: #dbeafe; } .ds-ghost:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; } .ds-ghost:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Plain Button",
+      "kind": "button",
+      "refersTo": "button-plain",
+      "description": "Muted change-email action without a recipe hover fill.",
+      "html": "<button class=\"ds-plain\" type=\"button\">Use a different email</button>",
+      "css": ".ds-plain { background: transparent; color: #52525b; border: 1px solid transparent; border-radius: 4px; height: 40px; padding: 0 16px; font: 500 14px/20px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; } .ds-plain:hover { background: transparent; } .ds-plain:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; } .ds-plain:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Labeled Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Medium outline input with a persistent label and Chakra-style inside focus ring.",
+      "html": "<label class=\"ds-field\">Email address<input class=\"ds-input\" type=\"email\" autocomplete=\"email\" /></label>",
+      "css": ".ds-field { display: grid; gap: 6px; color: #18181b; font: 500 14px/20px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; } .ds-input { min-width: 0; height: 40px; padding: 0 12px; border: 1px solid #e4e4e7; border-radius: 4px; color: #18181b; background: transparent; font: 400 14px/20px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; } .ds-input:hover { border-color: #e4e4e7; } .ds-input:focus-visible { border-color: #3b82f6; outline: 1px solid #3b82f6; outline-offset: 0; } .ds-input:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Workspace Navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Dark rail with a translucent selected item and native current-page semantics.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Workspace preview\"><button class=\"ds-nav-button\" type=\"button\" aria-current=\"page\">Flows</button><button class=\"ds-nav-button\" type=\"button\">Comments</button></nav>",
+      "css": ".ds-nav { display: grid; gap: 4px; width: 216px; padding: 12px; background: #0c142e; color: #FFFFFF; } .ds-nav-button { text-align: left; border: 1px solid transparent; border-radius: 4px; height: 40px; padding: 0 16px; background: transparent; color: #FFFFFF; font: 400 14px/20px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; transition: background-color 200ms; } .ds-nav-button[aria-current=page] { background: rgba(255, 255, 255, 0.08); font-weight: 600; } .ds-nav-button:hover { background: rgba(255, 255, 255, 0.16); } .ds-nav-button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }"
+    },
+    {
+      "name": "Persona Badge",
+      "kind": "chip",
+      "refersTo": "badge-persona",
+      "description": "Noninteractive blue persona label with the default small badge recipe.",
+      "html": "<span class=\"ds-persona\">First-time customer</span>",
+      "css": ".ds-persona { display: inline-flex; align-items: center; min-height: 20px; padding: 0 6px; background: #dbeafe; color: #173da6; border-radius: 4px; white-space: nowrap; font: 500 12px/16px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Access Card",
+      "kind": "card",
+      "refersTo": "access-card",
+      "description": "Flat white form surface; padding rises from 20px to 28px at the medium breakpoint.",
+      "html": "<section class=\"ds-card\"><h2 class=\"ds-card-heading\">Check your email</h2><p class=\"ds-card-copy\">Enter the six-digit code sent to you.</p></section>",
+      "css": ".ds-card { border: 1px solid #e4e4e7; border-radius: 12px; background: #FFFFFF; color: #18181b; padding: 20px; font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; } .ds-card-heading { margin: 0; font-size: 16px; line-height: 24px; font-weight: 600; } .ds-card-copy { margin: 8px 0 0; font-size: 14px; line-height: 1.6; color: #52525b; } @media (min-width: 768px) { .ds-card { padding: 28px; } }"
+    },
+    {
+      "name": "Selected Flow",
+      "kind": "custom",
+      "refersTo": "flow-selected",
+      "description": "Multiline selected flow row with its persona and latest version; text-only preview.",
+      "html": "<button class=\"ds-flow\" type=\"button\" aria-pressed=\"true\"><span class=\"ds-flow-title\">Submit an application</span><span class=\"ds-flow-persona\">First-time customer</span><span class=\"ds-flow-meta\"><span class=\"ds-flow-version\">v2</span>3 screens</span></button>",
+      "css": ".ds-flow { display: grid; width: 240px; text-align: left; white-space: normal; padding: 16px 12px; border: 1px solid transparent; border-radius: 4px; background: #eff6ff; color: #18181b; font: 500 14px/20px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; transition: background-color 200ms; } .ds-flow:hover { background: #dbeafe; } .ds-flow:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; } .ds-flow-title { font-weight: 600; overflow-wrap: anywhere; } .ds-flow-persona { margin-top: 4px; color: #52525b; font-size: 12px; } .ds-flow-meta { display: flex; align-items: center; gap: 8px; margin-top: 8px; color: #52525b; font-size: 12px; } .ds-flow-version { border-radius: 4px; min-height: 20px; padding: 0 6px; background: #f4f4f5; color: #27272a; font-size: 12px; line-height: 20px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "White paper, navy tools",
+    "overview": "RevisionLab places captured prototype screens on quiet paper surfaces, framed by dark tools and restrained blue interactions. The inherited visual world is practical and compact: readable context, clear selection, and feedback kept close to its screen. Red belongs to the small identity mark and explicit error states.\n\nThe embedded review UI has one light appearance, independent of the host application's color mode. Its Chakra reset and tokens are scoped to `data-revisionlab-ui`, including portalled overlays, so installing the review tools does not restyle the prototype.",
+    "keyCharacteristics": [
+      "White panels and a pale canvas separated by thin boundaries.",
+      "Navy navigation, blue actions and selections, restrained red identity.",
+      "Compact system typography with explicit persona, version, and status labels.",
+      "Captured screens provide the imagery; interface decoration stays secondary."
+    ],
+    "rules": [
+      { "name": "The Host Boundary Rule", "body": "Keep review colors and resets inside the embedded UI; the host prototype owns its own visual system.", "section": "colors" }
+    ],
+    "dos": [
+      "Do compose UI with Chakra v3 primitives, recipes, semantic elements, and inline token-aware style props.",
+      "Do preserve the light scoped provider, including the scope on portalled overlays.",
+      "Do keep screen, persona, version, and feedback context readable through responsive wrapping and clear labels.",
+      "Do retain visible focus, field associations, named controls, and explicit loading, empty, success, and error states."
+    ],
+    "donts": [
+      "Don't apply the review system's reset, colors, or typography to host prototype content.",
+      "Don't replace captured screens with decorative imagery or imply that roadmap controls are implemented.",
+      "Don't introduce component CSS classes, custom properties, raw color literals, or an additional styling library into application components.",
+      "Don't treat the sidecar's static HTML/CSS previews as production component implementations."
+    ]
+  }
+}
