@@ -51,22 +51,32 @@ async function readInstallation(root: string): Promise<Installation | null> {
 }
 
 async function assertNoReservedRoutes(root: string, app: string) {
-  for (const directory of ["revisionlab", "api/revisionlab"]) {
-    const filename = path.join(root, app, directory);
-    if ((await exists(filename)) && (await readdir(filename)).length) {
-      throw new Error(
-        `${path.join(app, directory)} already exists. Move the conflicting route before running init.`,
-      );
-    }
+  const routeChecks = await Promise.all(
+    ["revisionlab", "api/revisionlab"].map(async (directory) => {
+      const filename = path.join(root, app, directory);
+      return {
+        directory,
+        populated: (await exists(filename)) && (await readdir(filename)).length,
+      };
+    }),
+  );
+  const conflict = routeChecks.find((check) => check.populated);
+  if (conflict) {
+    throw new Error(
+      `${path.join(app, conflict.directory)} already exists. Move the conflicting route before running init.`,
+    );
   }
   // Route groups do not contribute URL segments, so inspect their reserved paths too.
-  for (const entry of await readdir(path.join(root, app), {
+  const entries = await readdir(path.join(root, app), {
     withFileTypes: true,
-  })) {
-    if (entry.isDirectory() && /^\(.*\)$/.test(entry.name)) {
-      await assertNoReservedRoutes(root, path.join(app, entry.name));
-    }
-  }
+  });
+  await Promise.all(
+    entries
+      .filter((entry) => entry.isDirectory() && /^\(.*\)$/.test(entry.name))
+      .map((entry) =>
+        assertNoReservedRoutes(root, path.join(app, entry.name)),
+      ),
+  );
 }
 
 async function commit(root: string, changes: Change[]) {
@@ -113,6 +123,7 @@ export async function initialize(options: InitOptions) {
     );
   }
   const protect = options.protect || previous?.protected || false;
+  const previousFiles = new Set(previous?.files ?? []);
   if (
     protect &&
     project.nextMajor === 15 &&
@@ -125,24 +136,31 @@ export async function initialize(options: InitOptions) {
   if (!previous) await assertNoReservedRoutes(project.root, project.app);
   if (protect) {
     const expected = `${project.app === "src/app" ? "src/" : ""}${project.nextMajor >= 16 ? "proxy" : "middleware"}.${project.typescript ? "ts" : "js"}`;
-    for (const prefix of ["", "src/"]) {
-      for (const stem of ["proxy", "middleware"]) {
-        for (const extension of ["ts", "js", "mjs"]) {
-          const filename = `${prefix}${stem}.${extension}`;
-          if (
-            (await exists(path.join(project.root, filename))) &&
-            !(
-              previous?.protected &&
-              previous.files.includes(filename) &&
-              filename === expected
-            )
-          ) {
-            throw new Error(
-              `${filename} already exists. Integrate protectRevisionLab into it manually; init will not replace your access rules.`,
-            );
-          }
-        }
-      }
+    const candidates = ["", "src/"].flatMap((prefix) =>
+      ["proxy", "middleware"].flatMap((stem) =>
+        ["ts", "js", "mjs"].map(
+          (extension) => `${prefix}${stem}.${extension}`,
+        ),
+      ),
+    );
+    const existing = await Promise.all(
+      candidates.map(async (filename) =>
+        (await exists(path.join(project.root, filename))) ? filename : null,
+      ),
+    );
+    const conflict = existing.find(
+      (filename) =>
+        filename !== null &&
+        !(
+          previous?.protected &&
+          previousFiles.has(filename) &&
+          filename === expected
+        ),
+    );
+    if (conflict) {
+      throw new Error(
+        `${conflict} already exists. Integrate protectRevisionLab into it manually; init will not replace your access rules.`,
+      );
     }
   }
   const projectId = previous?.projectId ?? randomUUID();
@@ -169,15 +187,20 @@ export async function initialize(options: InitOptions) {
       previous: originalPackage,
     });
   }
-  for (const [filename, content] of Object.entries(files)) {
-    const absolute = path.join(project.root, filename);
-    await assertSafePath(project.root, absolute);
-    const current = (await exists(absolute))
-      ? await readFile(absolute, "utf8")
-      : null;
+  const fileChecks = await Promise.all(
+    Object.entries(files).map(async ([filename, content]) => {
+      const absolute = path.join(project.root, filename);
+      await assertSafePath(project.root, absolute);
+      const current = (await exists(absolute))
+        ? await readFile(absolute, "utf8")
+        : null;
+      return { filename, content, current };
+    }),
+  );
+  for (const { filename, content, current } of fileChecks) {
     if (current === content) continue;
     if (current !== null) {
-      if (previous?.files.includes(filename)) {
+      if (previousFiles.has(filename)) {
         retained.push(filename);
         continue;
       }

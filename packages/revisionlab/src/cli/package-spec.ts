@@ -1,10 +1,10 @@
-import { readFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 
-export async function resolvePackageSpec(
+export function resolvePackageSpec(
   override?: string,
   manifestUrl = new URL("../../package.json", import.meta.url),
-): Promise<string> {
+): string {
   if (override) {
     return /^(?:\.|\/|file:)/.test(override)
       ? path.resolve(override.replace(/^file:/, ""))
@@ -12,7 +12,7 @@ export async function resolvePackageSpec(
   }
 
   // Resolve from this installed CLI, never the host project's package.json.
-  const manifest: unknown = JSON.parse(await readFile(manifestUrl, "utf8"));
+  const manifest: unknown = JSON.parse(readFileSync(manifestUrl, "utf8"));
   if (
     !manifest ||
     typeof manifest !== "object" ||

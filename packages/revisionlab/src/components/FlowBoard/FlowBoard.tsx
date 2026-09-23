@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button, Flex, Grid, Stack, Text } from "@chakra-ui/react";
 import { boardBounds } from "./geometry.js";
 import { useBoardDraft } from "./hooks/useBoardDraft.js";
@@ -42,9 +42,11 @@ export function FlowBoard(props: FlowBoardProps) {
   );
   const disabled =
     leaving || navigationPending || draft.conflict || draft.reloading;
-  const hiddenScreens = flow.steps.filter((step) =>
-    draft.board.hiddenStepIds?.includes(step.id),
+  const hiddenStepIds = useMemo(
+    () => new Set(draft.board.hiddenStepIds ?? []),
+    [draft.board.hiddenStepIds],
   );
+  const hiddenScreens = flow.steps.filter((step) => hiddenStepIds.has(step.id));
 
   useEffect(() => {
     onBeforeLeaveChange?.(draft.flush);

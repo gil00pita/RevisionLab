@@ -116,13 +116,16 @@ export async function inspectProject(directory: string): Promise<Project> {
     throw new Error(
       `Expected one root layout in ${app}/layout.tsx, layout.jsx, or layout.js.`,
     );
-  for (const config of [
-    "next.config.ts",
-    "next.config.mjs",
-    "next.config.js",
-  ]) {
-    if (!(await exists(path.join(root, config)))) continue;
-    const text = await readFile(path.join(root, config), "utf8");
+  const configs = await Promise.all(
+    ["next.config.ts", "next.config.mjs", "next.config.js"].map(
+      async (config) => {
+        const filename = path.join(root, config);
+        return (await exists(filename)) ? readFile(filename, "utf8") : null;
+      },
+    ),
+  );
+  for (const text of configs) {
+    if (text === null) continue;
     if (
       /\bpageExtensions\s*:|\bbasePath\s*:|\boutput\s*:\s*["']export["']/.test(
         text,

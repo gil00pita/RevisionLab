@@ -54,7 +54,7 @@ async function main() {
   const [major, minor] = process.versions.node.split(".").map(Number);
   if (major < 20 || (major === 20 && minor < 9))
     throw new Error("RevisionLab requires Node.js 20.9 or newer.");
-  const packageSpec = await resolvePackageSpec(packageOverride);
+  const packageSpec = resolvePackageSpec(packageOverride);
   const result = await initialize({ cwd, protect, dryRun });
   console.log(
     `${dryRun ? "Planned" : "Initialized"} RevisionLab in ${result.project.root}`,

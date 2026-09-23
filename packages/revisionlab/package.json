@@ -40,7 +40,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "prepack": "npm run build",
-    "test": "node --test dist/server/*.test.js dist/cli/*.test.js dist/client/*.test.js dist/components/FlowBoard/*.test.js dist/components/PinnedScreen/*.test.js"
+    "test": "node --test dist/server/*.test.js dist/cli/*.test.js dist/client/*.test.js dist/components/FlowBoard/*.test.js dist/components/PinnedScreen/*.test.js",
+    "doctor": "npx react-doctor@latest"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.37.0",

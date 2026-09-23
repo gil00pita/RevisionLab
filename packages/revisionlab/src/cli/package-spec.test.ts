@@ -60,8 +60,8 @@ test("local tarball overrides retain absolute-path resolution", async () => {
 
 test("invalid package metadata fails instead of falling back to latest", async (t) => {
   const manifest = await manifestFixture(t, { name: "revisionlab" });
-  await assert.rejects(
-    resolvePackageSpec(undefined, manifest),
+  assert.throws(
+    () => resolvePackageSpec(undefined, manifest),
     /missing its name or version/,
   );
 });

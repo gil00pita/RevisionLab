@@ -85,7 +85,8 @@ export function readBoard(
   ]);
   const actual = new Set(stepIds);
   const hiddenStepIds = parsed.hiddenStepIds.filter((id) => actual.has(id));
-  const visible = new Set(stepIds.filter((id) => !hiddenStepIds.includes(id)));
+  const hidden = new Set(hiddenStepIds);
+  const visible = new Set(stepIds.filter((id) => !hidden.has(id)));
   const nodes = [
     ...parsed.nodes.filter((node) => visible.has(node.stepId)),
     ...generated.nodes.filter((node) => !known.has(node.stepId)),
