@@ -48,3 +48,5 @@ next-env.d.ts
 /output/
 /.playwright-cli/
 .DS_Store
+.DS_Store
+/.DS_Store

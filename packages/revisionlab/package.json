@@ -38,7 +38,7 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node scripts/prepare-cli.mjs",
     "prepack": "npm run build",
     "test": "node --test dist/server/*.test.js dist/cli/*.test.js dist/client/*.test.js dist/components/FlowBoard/*.test.js dist/components/PinnedScreen/*.test.js",
     "doctor": "npx react-doctor@latest"

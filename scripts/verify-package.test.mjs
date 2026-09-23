@@ -1,9 +1,69 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  stat,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import {
   validateArchiveListing,
   validateArchivePath,
 } from "./verify-package.mjs";
+
+test("a clean package build produces an executable CLI before packing", async (t) => {
+  const temporary = await mkdtemp(
+    path.join(os.tmpdir(), "revisionlab-build-check-"),
+  );
+  t.after(() => rm(temporary, { recursive: true, force: true }));
+  const packageRoot = new URL("../packages/revisionlab/", import.meta.url);
+  const manifest = JSON.parse(
+    await readFile(new URL("package.json", packageRoot), "utf8"),
+  );
+  await mkdir(path.join(temporary, "src/cli"), { recursive: true });
+  await writeFile(
+    path.join(temporary, "package.json"),
+    JSON.stringify({
+      name: "revisionlab-build-check",
+      private: true,
+      type: "module",
+      scripts: { build: manifest.scripts.build },
+    }),
+  );
+  await writeFile(
+    path.join(temporary, "tsconfig.json"),
+    await readFile(new URL("tsconfig.json", packageRoot)),
+  );
+  await writeFile(
+    path.join(temporary, "src/cli/index.ts"),
+    "#!/usr/bin/env node\nconsole.log('clean CLI fixture');\n",
+  );
+  await symlink(
+    fileURLToPath(new URL("../node_modules", import.meta.url)),
+    path.join(temporary, "node_modules"),
+    "dir",
+  );
+  await symlink(
+    fileURLToPath(new URL("scripts", packageRoot)),
+    path.join(temporary, "scripts"),
+    "dir",
+  );
+  execFileSync("npm", ["run", "build"], {
+    cwd: temporary,
+    encoding: "utf8",
+    timeout: 30_000,
+  });
+  const cli = path.join(temporary, "dist/cli/index.js");
+  assert.ok((await stat(cli)).mode & 0o111, "Clean build CLI must be executable");
+  assert.match(await readFile(cli, "utf8"), /^#!\/usr\/bin\/env node\r?\n/);
+});
 
 test("accepts standard BSD/GNU tar listings and package directories", () => {
   const entries = validateArchiveListing(

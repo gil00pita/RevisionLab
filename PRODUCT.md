@@ -20,6 +20,8 @@ The direct-editing request is **partially implemented**: **Paths** enters whiteb
 
 The implementation approach for this increment is to generate connections from recorded step order, permit owner/editor layout changes and labelled connections, and store screenshot-relative comment pins. Pan, zoom, fit-to-content, automatic arrangement, replies, resolution, and accessible non-pointer controls support that experience. These are implementation choices for the requested workflow, not a promise of Miro/Figma feature parity. Automatic discovery of unrecorded paths, executable branch conditions, action replay, DOM-element anchors, and visual comparison remain later work.
 
+Distribution reliability requirement: a fresh package build must produce an executable CLI before packing, including when CI uses `npm pack --ignore-scripts`. Verify this with a clean-output regression test and retain the exact-tarball executable check; an existing local CLI's permissions must not mask a release failure.
+
 ## Working Name
 
 RevisionLab — embedded prototype review for individual Next.js projects.

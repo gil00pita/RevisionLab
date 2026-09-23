@@ -77,6 +77,7 @@ The installer adds the exact version executing the command, including prerelease
 - Release metadata, matching `v<version>` tag and lockfile, allowed registry/repository, and stable/prerelease channel.
 - Release-tool tests, ESLint, the package plus example production build, and all package tests.
 - An actual packed tarball: package entrypoints, types, logo, license, executable CLI, and exclusion of private runtime/configuration files.
+- Clean-build CLI permissions: the package build marks `dist/cli/index.js` executable before CI packs with `--ignore-scripts`. The release tests exercise a fresh output directory so a previously installed local CLI cannot hide missing permissions.
 - The extracted CLI's help, protected initialization and repeat initialization against an isolated Next.js fixture. This smoke check reuses installed dependencies; it is not a fresh external dependency installation or browser test.
 
 The publishing job downloads that same tested artifact rather than rebuilding it. It uses commit-pinned GitHub actions, read-only checkout permissions, disabled package-manager caches, serialized publication, and no install/lifecycle scripts while publishing. Automated tests cannot verify npm account ownership, trusted-publisher settings, GitHub environment rules, or a live OIDC publication locally.
