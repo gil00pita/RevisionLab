@@ -1,6 +1,6 @@
 {
   "name": "revisionlab",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Embedded prototype review, flow recording, and feedback for Next.js applications.",
   "type": "module",
   "license": "MIT",
