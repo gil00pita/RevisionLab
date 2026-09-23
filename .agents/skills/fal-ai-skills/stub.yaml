@@ -1,0 +1,8 @@
+type: package
+tier: official
+category: creative-3d
+rank: 3
+upstream: https://github.com/fal-ai-community/skills
+version: latest
+install_default: "npx skills add fal-ai-community/<skill>"
+installed_as: fal-generate

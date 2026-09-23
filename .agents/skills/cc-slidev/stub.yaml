@@ -1,0 +1,7 @@
+type: package
+tier: community
+category: presentations
+rank: 3
+upstream: https://github.com/rhuss/cc-slidev
+version: latest
+install_default: "/plugin marketplace add rhuss/cc-slidev"

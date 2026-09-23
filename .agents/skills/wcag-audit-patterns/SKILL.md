@@ -1,49 +1,53 @@
 ---
 name: wcag-audit-patterns
-description: "Comprehensive guide to auditing web content against WCAG 2.2 guidelines with actionable remediation strategies."
-risk: safe
-source: community
-date_added: "2026-02-27"
+description: |
+  Runs WCAG 2.2 audits combining automated testing, manual verification steps,
+  and prioritised remediation guidance. Covers perceivability, operability,
+  understandability, and robustness criteria across web interfaces.
+triggers:
+  - "WCAG audit"
+  - "accessibility audit"
+  - "WCAG 2.2"
+das:
+  category: accessibility-quality
+  upstream: "https://github.com/wshobson/agents"
+  upstream_path: "plugins/accessibility-compliance/skills/wcag-audit-patterns/SKILL.md"
+  version: latest
+  install: true
 ---
 
-# WCAG Audit Patterns
+# wcag-audit-patterns
 
-Comprehensive guide to auditing web content against WCAG 2.2 guidelines with actionable remediation strategies.
+> Catalogue stub — full skill: [wshobson/agents](https://github.com/wshobson/agents)
 
-## Use this skill when
+## Decision tree
 
-- Conducting accessibility audits
-- Fixing WCAG violations
-- Implementing accessible components
-- Preparing for accessibility lawsuits
-- Meeting ADA/Section 508 requirements
-- Achieving VPAT compliance
+Run this before any WCAG compliance audit:
 
-## Do not use this skill when
+1. **Is the full skill already installed?**
+   Check: `~/.design-agent-skills/skills/wcag-audit-patterns/SKILL.md` exists AND does NOT contain a `das:` block.
+   - Yes → invoke `wcag-audit-patterns` and proceed
+   - No → go to step 2
 
-- You need legal advice or formal certification
-- You only want a quick automated scan without manual verification
-- You cannot access the UI or source for remediation work
+2. **Do you have shell access?**
+   - Yes → run the install command below, then invoke the skill
+   - No → show the install command; in Claude Code, send it as a chat message starting with `!` — add `-g` for global install or omit for project-only
 
-## Instructions
+## Install command
 
-1. Run automated scans (axe, Lighthouse, WAVE) to collect initial findings.
-2. Perform manual checks (keyboard navigation, focus order, screen reader flows).
-3. Map each issue to a WCAG criterion, severity, and remediation guidance.
-4. Re-test after fixes and document residual risk and compliance status.
+```bash
+npx skills add wshobson/agents --skill wcag-audit-patterns
+```
 
-Refer to `resources/implementation-playbook.md` for detailed patterns, checklists, and templates.
+Or per-agent:
+- Claude Code: `claude skills add wshobson/agents`
+- Cursor/OpenCode: `npx skills add wshobson/agents --skill wcag-audit-patterns`
 
-## Safety
+## Invoke after install
 
-- Avoid claiming legal compliance without expert review.
-- Keep evidence of test steps and results for audit trails.
+- Skill name: `wcag-audit-patterns`
+- Trigger phrases: "WCAG audit", "accessibility audit", "WCAG 2.2", "accessibility remediation"
 
-## Resources
+## What it does
 
-- `resources/implementation-playbook.md` for detailed patterns, checklists, and templates.
-
-## Limitations
-- Use this skill only when the task clearly matches the scope described above.
-- Do not treat the output as a substitute for environment-specific validation, testing, or expert review.
-- Stop and ask for clarification if required inputs, permissions, safety boundaries, or success criteria are missing.
+Provides structured WCAG 2.2 audit patterns that combine automated testing tools with manual verification checklists. Surfaces failures by success criterion and generates prioritised remediation guidance so teams can address the highest-impact issues first.

@@ -1,0 +1,7 @@
+type: skill
+tier: experimental
+category: diagrams
+rank: 2
+upstream: https://github.com/agilek/wireframer-skill
+upstream_path: SKILL.md
+version: latest

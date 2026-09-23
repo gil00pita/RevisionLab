@@ -1,0 +1,7 @@
+type: package
+tier: official
+category: creative-3d
+rank: 3
+upstream: https://github.com/OpenAEC-Foundation/Three.js-Claude-Skill-Package
+version: latest
+install_default: "npx skills add OpenAEC-Foundation/Three.js-Claude-Skill-Package"

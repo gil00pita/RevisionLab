@@ -1,0 +1,7 @@
+type: skill
+tier: community
+category: diagrams
+rank: 2
+upstream: https://github.com/yhassy/wireframe-skill
+upstream_path: SKILL.md
+version: latest

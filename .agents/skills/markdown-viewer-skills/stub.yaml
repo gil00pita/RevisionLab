@@ -1,0 +1,8 @@
+type: package
+tier: experimental
+category: data-visualization
+rank: 2
+upstream: https://github.com/markdown-viewer/skills
+version: latest
+install_default: "npx skills add markdown-viewer/skills"
+installed_as: vega

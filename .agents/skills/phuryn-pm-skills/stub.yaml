@@ -1,0 +1,7 @@
+type: package
+tier: community
+category: product-pm
+rank: 2
+upstream: https://github.com/phuryn/pm-skills
+version: latest
+install_default: "claude plugin marketplace add phuryn/pm-skills"

@@ -1,0 +1,7 @@
+type: package
+tier: community
+category: product-pm
+rank: 2
+upstream: https://github.com/product-on-purpose/pm-skills
+version: latest
+install_default: "/plugin marketplace add product-on-purpose/pm-skills"

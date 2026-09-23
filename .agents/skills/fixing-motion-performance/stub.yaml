@@ -1,0 +1,8 @@
+type: package
+tier: community
+category: motion-animation
+rank: 3
+upstream: https://github.com/ibelick/ui-skills
+upstream_path: skills/fixing-motion-performance/SKILL.md
+version: latest
+install_default: "npx skills add ibelick/ui-skills --skill fixing-motion-performance"
