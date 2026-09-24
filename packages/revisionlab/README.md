@@ -4,14 +4,16 @@ Embed prototype recording and review in an existing Next.js project. Mount the w
 
 ## Install in another project
 
-Once this package is published:
+From the root of an existing Next.js App Router project (no global installation required):
 
 ```bash
 npx revisionlab@latest init
 npm run dev
 ```
 
-To try the package from this repository before publishing, build and pack it:
+To preview changes first, run `npx revisionlab@latest init --dry-run`. Use `npx revisionlab@latest --help` for available options. Add `--protect` to initialization to generate the optional prototype invitation gate (Next.js 15.5+).
+
+To try an unpublished development build from this repository, build and pack it:
 
 ```bash
 npm run build:package

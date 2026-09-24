@@ -1,12 +1,12 @@
 # Publishing RevisionLab to npm
 
-Package: **`revisionlab`**, with **`gil00pita`** as the intended npm owner selected by the maintainer. Source: [gil00pita/RevisionLab](https://github.com/gil00pita/RevisionLab). Registry ownership is not established until first publication succeeds. The example application remains private and is never published.
+Package: **`revisionlab`**, with **`gil00pita`** as the intended npm owner selected by the maintainer. Source: [gil00pita/RevisionLab](https://github.com/gil00pita/RevisionLab). The maintainer reports completing setup and publication; the registry confirms `revisionlab@0.1.1` under `latest` as of 24 September 2026. The example application remains private and is never published.
 
 The repository contains `.github/workflows/publish.yml`. Pull requests, pushes to `main`, and manual workflow runs validate without publishing. Publishing a GitHub Release triggers the same checks, then publishes its verified tarball to npm. A Git tag by itself does not publish. The workflow must first be committed and pushed/merged into GitHub.
 
 ## One-time setup
 
-The public registry returned 404 for `revisionlab` on 22 September 2026. That is not a reservation. The local npm authentication check returned 401; **no package has been published and trusted publishing has not been activated** by this change.
+Initial publication is complete. The steps below are retained as setup reference; do not repeat publication of an existing version. GitHub trusted-publisher and environment settings have not been independently checked in this workspace. For another release, use the subsequent-release steps below with a new version.
 
 1. Sign in to npm as `gil00pita`, with a verified email and two-factor authentication. Use Node.js 24 for the release tooling; GitHub runs Node 24 and npm 11.19.1. Do not paste tokens or recovery codes into Git or chat.
 2. From the repository root, validate and prepare the first package:
