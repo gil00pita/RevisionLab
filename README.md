@@ -31,7 +31,18 @@ Local development on localhost gives the developer owner access. Data persists i
 
 ## Install in another Next.js project
 
-The package is implemented but has **not been published to npm**. Build a local archive:
+The package is published on npm (`latest` is `0.1.1`, verified 24 September 2026). From your existing Next.js project directory:
+
+```bash
+npx revisionlab@latest --help
+npx revisionlab@latest init --dry-run
+npx revisionlab@latest init
+npm run dev
+```
+
+Add `--protect` to `init` to generate the optional prototype invitation gate (Next.js 15.5+). No global package installation is needed.
+
+For an unpublished local development build, create an archive:
 
 ```bash
 npm run build:package
@@ -45,7 +56,7 @@ npx --package /absolute/path/revisionlab-0.1.0.tgz revisionlab init \
   --package /absolute/path/revisionlab-0.1.0.tgz --protect
 ```
 
-Once published, the command becomes `npx revisionlab@latest init --protect`. The installer installs the exact version invoked, including explicit versions and `@next` prereleases. The installer supports Next.js 15/16 App Router, React 19, TypeScript/JavaScript, and `app/` or `src/app/`. It generates the API, workspace/access routes, configuration, and widget layout integration. `--protect` also generates the prototype access gate (Next.js 15.5+). Existing files are checked before writes, modified host files are backed up, and repeat installation preserves customizations.
+The installer installs the exact version invoked, including explicit versions and `@next` prereleases. The installer supports Next.js 15/16 App Router, React 19, TypeScript/JavaScript, and `app/` or `src/app/`. It generates the API, workspace/access routes, configuration, and widget layout integration. `--protect` also generates the prototype access gate (Next.js 15.5+). Existing files are checked before writes, modified host files are backed up, and repeat installation preserves customizations.
 
 See the [package guide](packages/revisionlab/README.md) for all options and manual integration. Standalone React/Vite and the Pages Router are not included in this release.
 
@@ -53,7 +64,7 @@ See the [package guide](packages/revisionlab/README.md) for all options and manu
 
 [The publishing workflow](.github/workflows/publish.yml) validates pull requests and `main` updates, then publishes the tested package when a matching **GitHub Release** is published. Stable versions use `latest`; prereleases use `next`. It uses npm trusted publishing without a stored npm token.
 
-The intended npm owner is `gil00pita`. The workflow is implemented, but first publication, npm trusted-publisher setup, and the GitHub `npm` environment are still required. Follow [RELEASING.md](RELEASING.md) for the one-time setup and subsequent version/release steps. Nothing has been published by these repository changes.
+The chosen npm owner is `gil00pita`, and the maintainer reports completing setup and publication. Public registry availability is verified; GitHub trusted-publisher and `npm` environment settings have not been independently checked. Follow [RELEASING.md](RELEASING.md) for subsequent version/release steps and setup reference.
 
 ## Shared review
 
