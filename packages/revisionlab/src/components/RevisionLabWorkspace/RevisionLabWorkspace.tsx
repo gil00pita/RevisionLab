@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useCallback, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box,
   Button,
@@ -19,12 +19,10 @@ import { useRevisionLab } from "../../client/useRevisionLab.js";
 import { downloadReport } from "./utils.js";
 import { InvitationManager } from "../InvitationManager/index.js";
 import { RevisionLabProvider } from "../RevisionLabProvider/index.js";
-import {
-  WorkspaceNavigation,
-  type WorkspaceView,
-} from "./components/WorkspaceNavigation.js";
+import type { WorkspaceView } from "./components/WorkspaceNavigation.js";
+import { WorkspaceSidebar } from "./components/WorkspaceSidebar.js";
+import { PersonaManager } from "./components/PersonaManager.js";
 import { AllComments } from "./components/AllComments.js";
-import { FlowList } from "./components/FlowList.js";
 import { FlowReview } from "./components/FlowReview.js";
 import { EmptyWorkspace } from "./components/EmptyWorkspace.js";
 
@@ -39,15 +37,29 @@ export function RevisionLabWorkspace({
 }: RevisionLabWorkspaceProps) {
   return (
     <RevisionLabProvider>
-      <Workspace apiPath={apiPath} basePath={basePath} />
+      <Suspense
+        fallback={
+          <Flex minH="100dvh" align="center" justify="center">
+            <Spinner />
+          </Flex>
+        }
+      >
+        <Workspace apiPath={apiPath} basePath={basePath} />
+      </Suspense>
     </RevisionLabProvider>
   );
 }
 
 function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const router = useRouter();
+  const requestedView = useSearchParams().get("view");
+  const view: WorkspaceView =
+    requestedView === "comments" ||
+    requestedView === "personas" ||
+    requestedView === "people"
+      ? requestedView
+      : "flows";
   const { data, error, loading, refresh } = useRevisionLab(apiPath);
-  const [view, setView] = useState<WorkspaceView>("flows");
   const [flowId, setFlowId] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const [startingRecording, setStartingRecording] = useState(false);
@@ -105,14 +117,11 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   }
 
   async function selectView(next: WorkspaceView) {
-    if (
-      signingOut ||
-      startingRecording ||
-      next === view ||
-      !(await canLeaveBoard())
-    )
-      return;
-    setView(next);
+    if (signingOut || startingRecording || !(await canLeaveBoard()))
+      return false;
+    if (next !== view)
+      router.replace(`${basePath}?view=${next}`, { scroll: false });
+    return true;
   }
 
   async function signOut() {
@@ -171,7 +180,13 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
 
   return (
     <Flex minH="100dvh" bg="white" direction={{ base: "column", lg: "row" }}>
-      <WorkspaceNavigation data={data} view={view} onViewChange={selectView} />
+      <WorkspaceSidebar
+        data={data}
+        view={view}
+        selectedFlow={flow}
+        onViewChange={selectView}
+        onFlowSelect={selectFlow}
+      />
       <Flex as="main" direction="column" flex="1" minW="0">
         <Flex
           as="header"
@@ -233,7 +248,14 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             Finishing board autosave…
           </Text>
         )}
-        {view === "people" && data.actor.role === "owner" ? (
+        {view === "personas" ? (
+          <PersonaManager
+            apiPath={apiPath}
+            personas={data.personas ?? []}
+            canEdit={data.actor.role !== "commenter"}
+            onRefresh={refresh}
+          />
+        ) : view === "people" && data.actor.role === "owner" ? (
           <Box p={{ base: "5", md: "8" }} maxW="5xl">
             <InvitationManager
               apiPath={apiPath}
@@ -245,11 +267,6 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           <AllComments data={data} apiPath={apiPath} onRefresh={refresh} />
         ) : (
           <Flex flex="1" minW="0" direction={{ base: "column", xl: "row" }}>
-            <FlowList
-              flows={data.flows}
-              selected={flow}
-              onSelect={selectFlow}
-            />
             {flow ? (
               <FlowReview
                 key={flow.id}

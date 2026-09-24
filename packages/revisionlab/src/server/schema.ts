@@ -1,4 +1,9 @@
 export const schema = [
+  `CREATE TABLE IF NOT EXISTS personas (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL, name_key TEXT NOT NULL UNIQUE,
+    description TEXT NOT NULL DEFAULT '', archived_at TEXT,
+    created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+  )`,
   `CREATE TABLE IF NOT EXISTS installation (id INTEGER PRIMARY KEY CHECK(id = 1), project_id TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS reviewers (
     id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, name TEXT NOT NULL, created_at TEXT NOT NULL
@@ -51,7 +56,7 @@ export const schema = [
     step_id TEXT REFERENCES steps(id) ON DELETE CASCADE, route TEXT NOT NULL, body TEXT NOT NULL,
     status TEXT NOT NULL CHECK(status IN ('open', 'resolved')), author_id TEXT NOT NULL REFERENCES reviewers(id),
     created_at TEXT NOT NULL, resolved_at TEXT, anchor_x REAL, anchor_y REAL,
-    parent_id TEXT REFERENCES comments(id) ON DELETE CASCADE, edge_id TEXT
+    parent_id TEXT REFERENCES comments(id) ON DELETE CASCADE, edge_id TEXT, element_anchor TEXT
   )`,
   "CREATE TABLE IF NOT EXISTS rate_limits (key TEXT PRIMARY KEY, count INTEGER NOT NULL, expires_at INTEGER NOT NULL)",
   "CREATE INDEX IF NOT EXISTS idx_steps_flow ON steps(flow_id, position)",

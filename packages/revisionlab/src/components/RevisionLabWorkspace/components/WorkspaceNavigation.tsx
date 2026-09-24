@@ -9,25 +9,34 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { ArrowLeft, GitBranch, MessageSquare, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  GitBranch,
+  MessageSquare,
+  Users,
+  ContactRound,
+} from "lucide-react";
+import type { RefObject } from "react";
 import type { RevisionLabState } from "../../../server/types.js";
 import { RevisionLabLogo } from "../../RevisionLabLogo/index.js";
 
-export type WorkspaceView = "flows" | "comments" | "people";
+export type WorkspaceView = "flows" | "comments" | "people" | "personas";
 
 export function WorkspaceNavigation({
   data,
   view,
   onViewChange,
+  flowsTriggerRef,
 }: {
   data: RevisionLabState;
   view: WorkspaceView;
   onViewChange: (view: WorkspaceView) => void;
+  flowsTriggerRef: RefObject<HTMLButtonElement | null>;
 }) {
   return (
     <Flex
-      as="aside"
-      w={{ base: "full", lg: "60" }}
+      w="full"
+      minH="full"
       flexShrink="0"
       bg="blue.950"
       color="white"
@@ -35,7 +44,7 @@ export function WorkspaceNavigation({
     >
       <Flex px="6" h="20" gap="3" align="center">
         <RevisionLabLogo decorative />
-        <Heading as="h1" size="lg" letterSpacing="tight">
+        <Heading as="h1" size="lg" letterSpacing="0">
           RevisionLab
         </Heading>
       </Flex>
@@ -57,6 +66,7 @@ export function WorkspaceNavigation({
         flexWrap="wrap"
       >
         <NavigationButton
+          buttonRef={flowsTriggerRef}
           active={view === "flows"}
           onClick={() => onViewChange("flows")}
         >
@@ -93,6 +103,15 @@ export function WorkspaceNavigation({
               ).length
             }
           </Badge>
+        </NavigationButton>
+        <NavigationButton
+          active={view === "personas"}
+          onClick={() => onViewChange("personas")}
+        >
+          <Icon>
+            <ContactRound />
+          </Icon>
+          Personas
         </NavigationButton>
         {data.actor.role === "owner" && (
           <NavigationButton
@@ -137,13 +156,16 @@ function NavigationButton({
   active,
   onClick,
   children,
+  buttonRef,
 }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
+  buttonRef?: RefObject<HTMLButtonElement | null>;
 }) {
   return (
     <Button
+      ref={buttonRef}
       variant="ghost"
       justifyContent="flex-start"
       bg={active ? "whiteAlpha.200" : "transparent"}

@@ -114,16 +114,20 @@ export function useRecording(apiPath: string, route: string, enabled: boolean) {
     return () => window.clearTimeout(timeout);
   }, [capture, enabled, recording, route]);
 
-  async function start(name: string, persona: string) {
+  async function start(name: string, personaId: string) {
     if (activeOperation.current || loadRecording()) return;
     updateOperation("start");
     setError("");
     setNotice("");
     try {
-      const { id } = await apiRequest<{ id: string }>(apiPath, "flows", {
-        method: "POST",
-        body: JSON.stringify({ name, persona, route }),
-      });
+      const { id, persona } = await apiRequest<{ id: string; persona: string }>(
+        apiPath,
+        "flows",
+        {
+          method: "POST",
+          body: JSON.stringify({ name, personaId, route }),
+        },
+      );
       generation.current += 1;
       saveRecording({ flowId: id, name, persona, count: 0, lastRoute: "" });
       setNotice(

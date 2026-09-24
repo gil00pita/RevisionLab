@@ -3,24 +3,22 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import {
-  Button,
   CloseButton,
   Dialog,
-  Flex,
   Icon,
   Link,
   Portal,
-  Separator,
-  Spinner,
   Stack,
-  Text,
 } from "@chakra-ui/react";
-import { ArrowUpRight, Camera, MessageSquare } from "lucide-react";
-import { ApiError } from "../../client/api.js";
+import { ArrowUpRight } from "lucide-react";
 import { useRevisionLab } from "../../client/useRevisionLab.js";
-import { FeedbackThread } from "../FeedbackThread/index.js";
+import { LiveFeedback } from "./components/LiveFeedback.js";
+import { LiveElementPins } from "./components/LiveElementPins.js";
+import { ElementPicker } from "./components/ElementPicker.js";
+import { useLiveFeedback } from "./hooks/useLiveFeedback.js";
 import { RevisionLabProvider } from "../RevisionLabProvider/index.js";
-import { RecorderPanel } from "./components/RecorderPanel.js";
+import { WidgetPanel } from "./components/WidgetPanel.js";
+import { WidgetLauncher } from "./components/WidgetLauncher.js";
 import { RecordingActions } from "./components/RecordingActions.js";
 import { RecordingControls } from "./components/RecordingControls.js";
 import { RecordingLeaveDialog } from "./components/RecordingLeaveDialog.js";
@@ -51,7 +49,14 @@ function Widget({
 }: Required<RevisionLabWidgetProps> & { route: string }) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"comment" | "record">("comment");
-  const { data, error, loading, refresh } = useRevisionLab(apiPath);
+  const workspace = useRevisionLab(apiPath);
+  const { data, refresh } = workspace;
+  const live = useLiveFeedback(route);
+  const pageComments =
+    data?.comments.filter(
+      (comment) =>
+        comment.route === route && !comment.stepId && !comment.edgeId,
+    ) ?? [];
   const reviewRoute = route === basePath || route.startsWith(`${basePath}/`);
   const recorder = useRecording(
     apiPath,
@@ -70,9 +75,9 @@ function Widget({
       !recorder.recording?.discardRequested &&
       !recorder.recording?.finishRequested,
   });
-  const unauthenticated = error instanceof ApiError && error.status === 401;
 
   async function stopRecording() {
+    live.setPicking(false);
     if (await recorder.finish()) {
       if (reviewRoute) await refresh();
       else {
@@ -124,35 +129,66 @@ function Widget({
 
   return (
     <>
+      {data && live.picking && (
+        <ElementPicker
+          onCancel={() => {
+            live.setPicking(false);
+            setOpen(true);
+          }}
+          onSelect={(anchor) => {
+            live.setAnchor(anchor);
+            live.setSelected(null);
+            live.setPicking(false);
+            setTab("comment");
+            setOpen(true);
+          }}
+        >
+          {recorder.recording && (
+            <RecordingActions
+              recorder={recorder}
+              onStop={() => void stopRecording()}
+              onDiscard={() => {
+                live.setPicking(false);
+                navigation.requestDiscard();
+              }}
+            />
+          )}
+        </ElementPicker>
+      )}
+      {data && !open && !live.picking && live.showPins && (
+        <LiveElementPins
+          comments={pageComments}
+          onSelect={(id) => {
+            live.setSelected(id);
+            live.setAnchor(null);
+            setTab("comment");
+            setOpen(true);
+          }}
+        />
+      )}
       <Dialog.Root
         open={open}
-        onOpenChange={(event) => setOpen(event.open)}
+        onOpenChange={(event) => {
+          setOpen(event.open);
+          if (event.open) live.setPicking(false);
+        }}
+        restoreFocus={!live.picking}
+        motionPreset={live.picking ? "none" : "scale"}
         placement="center"
         size="sm"
         scrollBehavior="inside"
       >
-        <Dialog.Trigger asChild>
-          <Button
-            position="fixed"
-            bottom="6"
-            right="6"
-            zIndex="docked"
-            colorPalette="blue"
-            size="lg"
-            borderRadius="full"
-            shadow="lg"
-            aria-label={
-              recorder.recording
-                ? "Open RevisionLab recording"
-                : "Open RevisionLab"
-            }
-          >
-            <Icon>{recorder.recording ? <Camera /> : <MessageSquare />}</Icon>
-            {recorder.recording
-              ? `Recording · ${recorder.recording.count}`
-              : "Review"}
-          </Button>
-        </Dialog.Trigger>
+        <WidgetLauncher
+          recording={Boolean(recorder.recording)}
+          count={recorder.recording?.count ?? 0}
+          canRecord={Boolean(data && data.actor.role !== "commenter")}
+          onRecord={() => {
+            live.setPicking(false);
+            setTab("record");
+            setOpen(true);
+            void refresh();
+          }}
+        />
         <Portal>
           <Dialog.Backdrop data-revisionlab-ui />
           <Dialog.Positioner data-revisionlab-ui colorPalette="blue">
@@ -169,81 +205,29 @@ function Widget({
                 </Dialog.Description>
               </Dialog.Header>
               <Dialog.Body>
-                {loading ? (
-                  <Flex py="10" gap="3" align="center">
-                    <Spinner />
-                    <Text>Connecting to the workspace…</Text>
-                  </Flex>
-                ) : data ? (
-                  <Stack gap="5">
-                    <Flex gap="2" role="group" aria-label="Review tools">
-                      <Button
-                        flex="1"
-                        size="sm"
-                        variant={tab === "comment" ? "solid" : "outline"}
-                        aria-pressed={tab === "comment"}
-                        onClick={() => setTab("comment")}
-                      >
-                        <Icon>
-                          <MessageSquare />
-                        </Icon>
-                        Comment
-                      </Button>
-                      {data.actor.role !== "commenter" && (
-                        <Button
-                          flex="1"
-                          size="sm"
-                          variant={tab === "record" ? "solid" : "outline"}
-                          aria-pressed={tab === "record"}
-                          onClick={() => setTab("record")}
-                        >
-                          <Icon>
-                            <Camera />
-                          </Icon>
-                          Record
-                        </Button>
-                      )}
-                    </Flex>
-                    {tab === "record" && data.actor.role !== "commenter" ? (
-                      <RecorderPanel recorder={recorder} />
-                    ) : (
-                      <FeedbackThread
-                        apiPath={apiPath}
-                        route={route}
-                        comments={data.comments.filter(
-                          (comment) =>
-                            comment.route === route &&
-                            !comment.stepId &&
-                            !comment.edgeId,
-                        )}
-                        canResolve={data.actor.role !== "commenter"}
-                        onRefresh={refresh}
-                      />
+                <WidgetPanel
+                  workspace={workspace}
+                  recorder={recorder}
+                  basePath={basePath}
+                  tab={tab}
+                  onTabChange={setTab}
+                >
+                  <LiveFeedback
+                    key={route}
+                    apiPath={apiPath}
+                    route={route}
+                    comments={pageComments}
+                    live={live}
+                    onPick={() => {
+                      live.setPicking(true);
+                      setOpen(false);
+                    }}
+                    canResolve={Boolean(
+                      data && data.actor.role !== "commenter",
                     )}
-                    <Separator />
-                    <Text color="gray.600" fontSize="xs">
-                      Reviewing as {data.actor.name} · {data.actor.role}
-                    </Text>
-                  </Stack>
-                ) : (
-                  <Stack gap="4" py="4">
-                    <Text
-                      role="alert"
-                      color={unauthenticated ? "gray.600" : "red.700"}
-                    >
-                      {error?.message ?? "Unable to connect."}
-                    </Text>
-                    {unauthenticated ? (
-                      <Link href={`${basePath}/access`} color="blue.700">
-                        Verify your email to review
-                      </Link>
-                    ) : (
-                      <Button onClick={() => void refresh()} variant="outline">
-                        Try again
-                      </Button>
-                    )}
-                  </Stack>
-                )}
+                    onRefresh={refresh}
+                  />
+                </WidgetPanel>
               </Dialog.Body>
               <Dialog.Footer borderTopWidth="1px" borderColor="gray.200">
                 <Stack gap="3" w="full">
@@ -269,7 +253,7 @@ function Widget({
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
-      {!open && recordingControls}
+      {!open && !live.picking && recordingControls}
       {leaveDialog}
     </>
   );

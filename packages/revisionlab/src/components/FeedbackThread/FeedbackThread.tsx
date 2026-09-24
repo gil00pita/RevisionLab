@@ -29,6 +29,7 @@ export function FeedbackThread({
   canResolve,
   onRefresh,
   anchor,
+  elementAnchor,
   selectedCommentId,
   onSelectComment,
   onCancelAnchor,
@@ -106,6 +107,7 @@ export function FeedbackThread({
       edgeId={edgeId}
       parentId={selected?.id}
       anchor={selected ? undefined : anchor}
+      elementAnchor={selected ? undefined : elementAnchor}
       onCancelAnchor={onCancelAnchor}
       onAnchorChange={onAnchorChange}
       onSaved={saved}
@@ -151,7 +153,11 @@ export function FeedbackThread({
               <Icon>
                 <ArrowLeft />
               </Icon>
-              {edgeId ? "All connection comments" : "All screen comments"}
+              {edgeId
+                ? "All connection comments"
+                : stepId
+                  ? "All screen comments"
+                  : "All page comments"}
             </Button>
           )}
           <CommentMessage

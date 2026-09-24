@@ -20,7 +20,7 @@ The recording-control refinement is **implemented and locally verified**: visibl
 
 The direct-editing request is **partially implemented and locally verified**: **Paths** enters edit mode without the legacy form; on-screen source/target actions create connections, and selection opens contextual label/removal/discussion controls. Screens can be removed from and restored to the board without deleting captures or feedback. Save/Discard and guarded Done editing preserve drafts. Package and root production builds, lint, all 98 package tests, and local desktop/mobile interaction checks pass; see the current increment below and `VALIDATION.md` for evidence and remaining limits. Decision elements and adding a screen by URL remain **not implemented**, pending the two unanswered choices in `PRODUCT.md`.
 
-The sections below remain the broader target product plan. Playwright action replay, automatic discovery of unrecorded paths, executable branch conditions, DOM-element anchors/re-anchoring, visual diffing, structured Codex task generation, and the broader export integrations are not part of this increment. Recorded versions preserve captured screens; they do not replay an action script. Remote artifacts default to private database BLOBs for simple setup, with an adapter boundary for object storage. `PRODUCT.md` is authoritative for the distinction between the current screenshot-based workflow and those later capabilities.
+The sections below remain the broader target product plan. Playwright action replay, automatic discovery of unrecorded paths, executable branch conditions, recorded semantic DOM anchors and replay-aware re-anchoring, visual diffing, structured Codex task generation, and the broader export integrations remain future work. The current live-widget increment adds DOM-element feedback independently of recordings. Recorded versions preserve captured screens; they do not replay an action script. Remote artifacts default to private database BLOBs for simple setup, with an adapter boundary for object storage. `PRODUCT.md` is authoritative for these delivery boundaries.
 
 ## Objective
 
@@ -1319,6 +1319,26 @@ docs/review-canvas.md
 
 # Build Strategy
 
+## Current increment - Single-sidebar drill-down
+
+Implemented and locally verified on 24 September 2026; evidence and remaining limits are in `VALIDATION.md`.
+
+Replace the two simultaneous navigation/flow columns with one fixed-width sidebar. The main menu and Your flows occupy the same area and slide horizontally between levels; Back restores the main menu without changing the selected flow or unmounting its board. Keep reduced-motion styles, focus transfer to Back/Flows, narrow-screen scrolling, and board autosave guards. Personas is a main workspace view, not a third panel. Do not implement the superseded icon-rail proposal.
+
+## Current increment - Quick recording and saved personas
+
+Implemented and locally verified. Persona persistence/access/history tests and the existing suite total 127 passing package tests; browser checks cover management, the direct record modal, recovery, and mobile use.
+
+Add a floating record icon that opens the existing recorder dialog directly, with a recording name and database-backed persona selector. Add a workspace Personas view with owner/editor name/description creation and editing, reversible archiving, and read-only commenter access. Persist personas separately from historical flow labels; resolve active persona IDs transactionally when starting new widget recordings and preserve the server-confirmed name as the recording snapshot. Keep legacy API label support for compatibility, with no new free-text persona field in the widget. Test permissions, duplicates, persistence, stale selections, historical preservation, and desktop/mobile recording and commenting together.
+
+## Current increment - Live website element feedback
+
+Implemented and locally verified, independently of future replay-aware anchor migration. Browser evidence and limitations are recorded in `VALIDATION.md`.
+
+Implement live page comments through the existing widget, independently of recording: explicit DOM selection with keyboard controls and cancellation; guarded host clicks; bounded locator/tag/label metadata; additive SQLite/libSQL migration; server validation that keeps live page targets separate from immutable screen/connection context; inherited thread targets; live pins; and unchanged reply/resolution permissions. Prefer stable host identifiers and fail closed when the selector is missing, ambiguous, hidden, or no longer matches its label. Exclude private content and field values. Keep current route-only page scoping and deployment/access gating.
+
+Verify persistence, migration, malformed/mixed target rejection, reply inheritance, authorization, normal host use after cancellation, dynamic layout tracking, route changes, unavailable targets, failed saves, and desktop/mobile/keyboard use. The current implementation covers live DOM selection only; recorded semantic anchors and replay-aware re-anchoring remain future phases.
+
 Re-initiate implementation from the invitation-first vertical slice below. Treat earlier dashboard-first and Vercel-login assumptions as superseded. Preserve useful repository setup, but judge new work against the embedded installation, passwordless access, local/shared storage adapters, widget, and review-workspace architecture in this plan.
 
 ## Current refinement — Stop, discard, and recording departure warnings
@@ -1416,7 +1436,7 @@ Build this on the existing screen-capture release before introducing action repl
 
 ## Phase 5 — Review System
 
-- screenshot-relative pinned annotations first; DOM-element anchors and replay-aware re-anchoring later
+- screenshot-relative pins and live-page element comments; recorded semantic DOM anchors and replay-aware re-anchoring later
 - comments
 - statuses
 - assignments

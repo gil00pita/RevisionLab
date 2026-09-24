@@ -12,6 +12,7 @@ import {
 import type { ResolvedConfig } from "./config.js";
 import { write } from "./database.js";
 import { discardRecording } from "./recording-discard.js";
+import { activePersonaName } from "./persona-routes.js";
 import { HttpError, json, readJson } from "./security.js";
 import type { RevisionLabActor } from "./types.js";
 
@@ -27,7 +28,8 @@ export const routeSchema = z
   );
 const flowSchema = z.object({
   name: z.string().trim().min(1).max(120),
-  persona: z.string().trim().min(1).max(120),
+  persona: z.string().trim().min(1).max(120).optional(),
+  personaId: z.string().uuid().optional(),
   route: routeSchema,
 });
 const stepSchema = z.object({
@@ -54,26 +56,26 @@ export async function handleFlows(
 ): Promise<Response> {
   requireRole(actor, "editor");
   if (request.method === "POST" && path.length === 1) {
-    const input = flowSchema.parse(await readJson(request));
+    const input = flowSchema
+      .refine(
+        (value) => Boolean(value.persona) !== Boolean(value.personaId),
+        "Choose one persona.",
+      )
+      .parse(await readJson(request));
     const id = randomUUID();
     const now = new Date().toISOString();
-    await write(client, async (transaction) => {
+    const persona = await write(client, async (transaction) => {
+      const persona = input.personaId
+        ? await activePersonaName(transaction, input.personaId)
+        : input.persona!;
       await transaction.execute({
         sql: `INSERT INTO flows (id, family_id, version, name, persona, route, status, created_by, created_at, updated_at)
           VALUES (?, ?, 1, ?, ?, ?, 'recording', ?, ?, ?)`,
-        args: [
-          id,
-          id,
-          input.name,
-          input.persona,
-          input.route,
-          actor.id,
-          now,
-          now,
-        ],
+        args: [id, id, input.name, persona, input.route, actor.id, now, now],
       });
+      return persona;
     });
-    return json({ id, familyId: id, version: 1 }, 201);
+    return json({ id, familyId: id, version: 1, persona }, 201);
   }
   if (path.length < 2 || !z.string().uuid().safeParse(path[1]).success)
     throw new HttpError(404, "Recording not found.");
@@ -91,11 +93,20 @@ export async function handleFlows(
     path.length === 3 &&
     path[2] === "versions"
   ) {
-    const input = flowSchema.partial().parse(await readJson(request));
+    const input = flowSchema
+      .partial()
+      .refine(
+        (value) => !(value.persona && value.personaId),
+        "Choose one persona.",
+      )
+      .parse(await readJson(request));
     const id = randomUUID();
     const now = new Date().toISOString();
     const version = await write(client, async (transaction) => {
       const previous = await requireFlow(transaction, path[1]);
+      const persona = input.personaId
+        ? await activePersonaName(transaction, input.personaId)
+        : (input.persona ?? previous.persona);
       const family = await transaction.execute({
         sql: "SELECT version, status FROM flows WHERE family_id = ?",
         args: [previous.family_id],
@@ -117,7 +128,7 @@ export async function handleFlows(
           number,
           path[1],
           input.name ?? previous.name,
-          input.persona ?? previous.persona,
+          persona,
           input.route ?? previous.route,
           actor.id,
           now,

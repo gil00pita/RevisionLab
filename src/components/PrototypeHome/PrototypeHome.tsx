@@ -129,10 +129,10 @@ export function PrototypeHome() {
             </Heading>
             <List.Root as="ol" gap="4" ps="5" color="gray.700">
               <List.Item>
-                Open the Review widget in the bottom corner and choose Record.
+                Choose the record icon beside Review in the bottom corner.
               </List.Item>
               <List.Item>
-                Name your flow and the role or persona you are using.
+                Name your recording and select a saved workspace persona.
               </List.Item>
               <List.Item>
                 Explore this site or your own prototype. Capture additional

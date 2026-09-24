@@ -27,9 +27,11 @@ export function downloadReport(data: RevisionLabState) {
         : "Page feedback";
       const location = comment.edgeId
         ? ` · connection ${comment.edgeId}: ${commentContextLabel(comment, data)}`
-        : comment.anchor
-          ? ` · pin ${Math.round(comment.anchor.x * 100)}%, ${Math.round(comment.anchor.y * 100)}%`
-          : "";
+        : comment.elementAnchor
+          ? ` · live element ${comment.elementAnchor.tag}: ${comment.elementAnchor.label} (${comment.elementAnchor.selector})`
+          : comment.anchor
+            ? ` · pin ${Math.round(comment.anchor.x * 100)}%, ${Math.round(comment.anchor.y * 100)}%`
+            : "";
       const thread = comment.parentId
         ? ` · reply to ${comment.parentId}`
         : ` · thread ${comment.id}`;

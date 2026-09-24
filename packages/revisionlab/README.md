@@ -1,5 +1,11 @@
 # RevisionLab
 
+## Comment on live elements
+
+Choose **Review → Comment on an element** on an integrated page, select the target, and submit. Recording is not required. The picker supports pointer/touch selection, Previous/Next element buttons, **Comment here**, and Escape to cancel. Selecting a host control does not activate it. Open discussions appear as live pins; **Hide pins** restores an unobstructed page. Replies and resolution retain existing reviewer permissions.
+
+Targets are saved against the current pathname using a locator, tag, and short label. A unique `data-revisionlab-anchor`, `id`, or `data-testid` improves stability; structural locators are a fallback. Query/hash variants share page comments. Input values, private regions, passwords, and RevisionLab UI are excluded. Shadow DOM, iframe contents, and canvas internals are not supported. Changed or missing targets retain their discussion in the widget and never fall back to an arbitrary location. This does not migrate screenshot pins between versions or enable production reviews automatically.
+
 Embed prototype recording and review in an existing Next.js project. Mount the widget once in your root layout; reviewers can capture screens, discuss a flow, and open its full workspace at `/revisionlab`.
 
 ## Install in another project
@@ -58,7 +64,9 @@ npx revisionlab --help
 
 ## Local recording and feedback
 
-Run your development server on localhost, open the widget, and start a flow with its name and persona. Capture each screen you want reviewers to see, then choose **Stop recording** to save the completed recording. Stop remains visible in the floating recording controls and in the widget footer on both tabs. It stops new captures, waits for any capture already in progress, and confirms success after the server completes the recording. A failed save stays stopped and can be retried.
+Run your development server on localhost and click the floating **Record prototype** icon. Enter a recording name, select a saved persona, and choose **Start recording**. **Manage personas** opens the workspace's Personas view: owners and editors can create names and optional descriptions, edit them, and archive or restore entries. Commenters have read-only access. The list starts empty; archived personas cannot start new widget recordings. Renaming or archiving does not rewrite existing recording labels. Capture each screen you want reviewers to see, then choose **Stop recording** to save the completed recording. Stop remains visible in the floating recording controls and in the widget footer on both tabs. It stops new captures, waits for any capture already in progress, and confirms success after the server completes the recording. A failed save stays stopped and can be retried.
+
+The workspace has one drill-down sidebar: choose **Flows** to replace the main menu with **Your flows**, then **Back** to restore the menu. The selected flow and canvas stay mounted during this transition; no second flow-list column consumes canvas width.
 
 Flow metadata and comments persist in `.revisionlab/revisionlab.db`, a local SQLite database initialized automatically; private screenshots are stored in `.revisionlab/artifacts/`. Open `/revisionlab` to review recorded steps and discussions. A loopback development session gets local owner access; this development shortcut is disabled in production. Set `REVISIONLAB_LOCAL_OWNER=false` to test invitation access during development.
 

@@ -72,6 +72,7 @@ test("legacy databases retain recordings, screenshots and unpinned comments duri
     assert.equal(comment.status, "resolved");
     assert.equal(comment.resolvedAt, now);
     assert.equal(comment.anchor, null);
+    assert.equal(comment.elementAnchor, null);
     assert.equal(comment.parentId, null);
     assert.equal(comment.edgeId, null);
     assert.equal(comment.edge, null);

@@ -13,16 +13,20 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { Camera, Circle } from "lucide-react";
+import { Camera } from "lucide-react";
+import type { RevisionLabPersona } from "../../../server/types.js";
+import { RecordingSetup } from "./RecordingSetup.js";
 import type { useRecording } from "../hooks/useRecording.js";
 
 export function RecorderPanel({
   recorder,
+  personas,
+  basePath,
 }: {
   recorder: ReturnType<typeof useRecording>;
+  personas: RevisionLabPersona[];
+  basePath: string;
 }) {
-  const [name, setName] = useState("");
-  const [persona, setPersona] = useState("");
   const [title, setTitle] = useState("");
 
   return (
@@ -33,9 +37,17 @@ export function RecorderPanel({
       {recorder.recording ? (
         <>
           <Box>
-            <Text fontWeight="semibold">{recorder.recording.name}</Text>
+            <Text fontWeight="semibold" overflowWrap="anywhere">
+              {recorder.recording.name}
+            </Text>
             <Flex gap="2" mt="2" flexWrap="wrap">
-              <Badge colorPalette="blue">{recorder.recording.persona}</Badge>
+              <Badge
+                colorPalette="blue"
+                whiteSpace="normal"
+                overflowWrap="anywhere"
+              >
+                {recorder.recording.persona}
+              </Badge>
               <Badge colorPalette="gray">
                 {recorder.recording.count}{" "}
                 {recorder.recording.count === 1 ? "screen" : "screens"} captured
@@ -78,66 +90,11 @@ export function RecorderPanel({
           </Button>
         </>
       ) : (
-        <Box
-          as="form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void recorder.start(name.trim(), persona.trim());
-          }}
-        >
-          <Stack gap="4">
-            <Text color="gray.600">
-              Capture a journey as the role or persona you are using in this
-              prototype.
-            </Text>
-            <Field.Root required>
-              <Field.Label>
-                Flow name
-                <Field.RequiredIndicator />
-              </Field.Label>
-              <Input
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder="e.g. Submit an application"
-                maxLength={120}
-                bg="white"
-              />
-            </Field.Root>
-            <Field.Root required>
-              <Field.Label>
-                Role or persona
-                <Field.RequiredIndicator />
-              </Field.Label>
-              <Input
-                value={persona}
-                onChange={(event) => setPersona(event.target.value)}
-                placeholder="e.g. First-time customer"
-                maxLength={120}
-                bg="white"
-              />
-              <Field.HelperText>
-                Use the prototype’s own login or role switcher first. This label
-                does not change your permissions.
-              </Field.HelperText>
-            </Field.Root>
-            <Text fontSize="xs" color="gray.600">
-              Screens may include visible personal data. Password fields and
-              areas marked private are excluded. Captures cover up to 4,000
-              pixels of page height.
-            </Text>
-            <Button
-              type="submit"
-              colorPalette="blue"
-              loading={recorder.busy}
-              disabled={!name.trim() || !persona.trim()}
-            >
-              <Icon>
-                <Circle />
-              </Icon>
-              Start recording
-            </Button>
-          </Stack>
-        </Box>
+        <RecordingSetup
+          recorder={recorder}
+          personas={personas}
+          basePath={basePath}
+        />
       )}
       {recorder.error && (
         <Text role="alert" color="red.700">

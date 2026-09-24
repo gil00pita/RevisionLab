@@ -1,6 +1,7 @@
 import type {
   RevisionLabComment,
   RevisionLabPoint,
+  RevisionLabElementAnchor,
 } from "../../server/types.js";
 
 export interface FeedbackThreadProps {
@@ -15,6 +16,7 @@ export interface FeedbackThreadProps {
   canResolve: boolean;
   onRefresh: () => Promise<void>;
   anchor?: RevisionLabPoint | null;
+  elementAnchor?: RevisionLabElementAnchor | null;
   selectedCommentId?: string | null;
   onSelectComment?: (id: string | null) => void;
   onCancelAnchor?: () => void;

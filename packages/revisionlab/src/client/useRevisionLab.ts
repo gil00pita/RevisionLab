@@ -30,7 +30,12 @@ export function useRevisionLab(apiPath: string) {
     const interval = window.setInterval(() => {
       if (document.visibilityState === "visible") void refresh();
     }, 10_000);
-    return () => window.clearInterval(interval);
+    const onFocus = () => void refresh();
+    window.addEventListener("focus", onFocus);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+    };
   }, [refresh]);
 
   return { data, error, loading, refresh };

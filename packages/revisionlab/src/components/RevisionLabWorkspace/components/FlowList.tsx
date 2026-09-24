@@ -38,11 +38,9 @@ export function FlowList({
     <Box
       as="section"
       aria-label="Recorded flows"
-      w={{ base: "full", xl: "64" }}
+      w="full"
       flexShrink="0"
       bg="white"
-      borderRightWidth={{ base: "0", xl: "1px" }}
-      borderBottomWidth={{ base: "1px", xl: "0" }}
       borderColor="gray.200"
     >
       <Stack gap="4" p="5">
@@ -59,7 +57,7 @@ export function FlowList({
           />
         </Field.Root>
       </Stack>
-      <Stack gap="1" p="2" maxH={{ base: "60", xl: "none" }} overflowY="auto">
+      <Stack gap="1" p="2">
         {filtered.map((flow) => (
           <Button
             key={flow.id}
@@ -91,7 +89,12 @@ export function FlowList({
               <Text fontWeight="semibold" overflowWrap="anywhere">
                 {flow.name}
               </Text>
-              <Text fontSize="xs" color="gray.600" mt="1">
+              <Text
+                fontSize="xs"
+                color="gray.600"
+                mt="1"
+                overflowWrap="anywhere"
+              >
                 {flow.persona}
               </Text>
               <Flex gap="2" mt="2">

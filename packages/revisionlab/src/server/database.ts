@@ -71,6 +71,7 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
         ["anchor_y", "REAL"],
         ["parent_id", "TEXT REFERENCES comments(id) ON DELETE CASCADE"],
         ["edge_id", "TEXT"],
+        ["element_anchor", "TEXT"],
       ],
     };
     for (const [table, columns] of Object.entries(additions)) {

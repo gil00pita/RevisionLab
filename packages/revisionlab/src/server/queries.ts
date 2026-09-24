@@ -65,6 +65,7 @@ export async function readComments(
   const result =
     await client.execute(`SELECT comments.*, reviewers.name AS author_name,
       COALESCE(parent.status, comments.status) AS thread_status,
+      COALESCE(parent.element_anchor, comments.element_anchor) AS thread_element_anchor,
       CASE WHEN comments.parent_id IS NULL THEN comments.resolved_at ELSE parent.resolved_at END AS thread_resolved_at,
       edge.source_step_id AS edge_source, edge.target_step_id AS edge_target,
       edge.label AS edge_label, edge.kind AS edge_kind, edge.archived_at AS edge_archived_at
@@ -98,6 +99,10 @@ export async function readComments(
         ? null
         : { x: Number(row.anchor_x), y: Number(row.anchor_y) },
     parentId: nullable(row, "parent_id"),
+    elementAnchor:
+      row.thread_element_anchor == null
+        ? null
+        : JSON.parse(String(row.thread_element_anchor)),
   }));
 }
 

@@ -2,7 +2,9 @@
 
 This is the living product specification. Update it as new product requests and decisions arise. Requirements describe intended behavior unless explicitly marked implemented; proposals and open questions are not accepted implementation decisions.
 
-## Current delivery boundary — 22 September 2026
+## Current delivery boundary — 24 September 2026
+
+The current increment combines live website feedback, a floating record icon with saved workspace personas, and a space-saving single sidebar. Reviewers can comment directly on actual page elements without recording a flow. Editors start recordings from a naming/persona dialog and manage reusable personas in the workspace. Selecting Flows slides the main menu away and replaces it with Your flows in the same sidebar; Back restores the menu without changing the canvas. Validation for this increment is tracked separately from the earlier checkpoints below. Replay-aware migration of anchors across recorded versions remains future work.
 
 Distribution refinement: GitHub-to-npm release automation is implemented in the repository for the public **`revisionlab`** package, with **`gil00pita`** as the maintainer's chosen intended npm owner. Publishing a versioned GitHub Release runs validation and publishes the same tested tarball; normal pushes, pull requests, and manual validation runs do not publish. Stable releases use `latest`, prereleases use `next`, and the tag and lockfile must match the workspace version. The default installer must install the exact package version invoked through `npx`, preserving the explicit `--package` override. The example application, credentials, and `.revisionlab` runtime data must never be published. Token-free npm trusted publishing is the configured approach. First npm publication, owner authentication, trusted-publisher/environment setup, and a successful live GitHub run remain external prerequisites; the package is not yet claimed available on npm. See `RELEASING.md`.
 
@@ -18,7 +20,7 @@ The recording-control refinement is **implemented and locally verified**: **Stop
 
 The direct-editing request is **partially implemented**: **Paths** enters whiteboard edit mode without opening the legacy form. On-screen **Connect** actions choose source and target; selecting a connection opens its label/removal controls and discussion. The latest confirmed refinement is implemented: **autosave and Undo** replace manual board saving, with recoverable save errors and guarded navigation. Captured images, historical versions, and archived connection discussions are preserved. All 113 package tests pass, including 15 new autosave tests; local browser and desktop/mobile checks are recorded in `VALIDATION.md`. Fresh hosted and separate-host installation checks were not repeated. Decision elements and URL-based screen additions are **not implemented**: their two product choices below remain unanswered.
 
-The implementation approach for this increment is to generate connections from recorded step order, permit owner/editor layout changes and labelled connections, and store screenshot-relative comment pins. Pan, zoom, fit-to-content, automatic arrangement, replies, resolution, and accessible non-pointer controls support that experience. These are implementation choices for the requested workflow, not a promise of Miro/Figma feature parity. Automatic discovery of unrecorded paths, executable branch conditions, action replay, DOM-element anchors, and visual comparison remain later work.
+The implementation approach for the whiteboard increment is to generate connections from recorded step order, permit owner/editor layout changes and labelled connections, and store screenshot-relative comment pins. Pan, zoom, fit-to-content, automatic arrangement, replies, resolution, and accessible non-pointer controls support that experience. These are implementation choices for the requested workflow, not a promise of Miro/Figma feature parity. Automatic discovery of unrecorded paths, executable branch conditions, action replay, replay-aware element re-anchoring, and visual comparison remain later work.
 
 Distribution reliability requirement: a fresh package build must produce an executable CLI before packing, including when CI uses `npm pack --ignore-scripts`. Verify this with a clean-output regression test and retain the exact-tarball executable check; an existing local CLI's permissions must not mask a release failure.
 
@@ -232,7 +234,50 @@ Acceptance criteria: an employee and a client with different email domains can u
 
 # Widget and Full-Page Workspace
 
+## Workspace density refinement
+
+Confirmed goal: reduce horizontal space with Jira-like navigation that replaces the contents of one sidebar. Clicking **Flows** slides the main menu aside and shows **Your flows** in the same sidebar, with a **Back** button to return to the main menu. The flow list must not occupy a second column beside navigation. Returning to the main menu retains the selected flow and canvas state. Comments, Personas, and Review access are main-menu views. Keep labels, accessible controls, keyboard focus, reduced-motion support, and mobile navigation without horizontal overflow. This supersedes the proposed compact icon rail and separately collapsible flow list; neither is the chosen design. Board coordinates and saved layouts remain unchanged.
+
+Implemented and locally verified: both levels occupy one 240px desktop sidebar, with inactive controls removed from keyboard and accessibility navigation. Mobile uses the same drill-down in a full-width region. Browser checks cover the shared width, focus transfer, Back, and reduced-motion navigation; see `VALIDATION.md`.
+
 ## Widget
+
+### Quick recording and saved personas
+
+Confirmed refinement: place a **Record prototype** icon directly on the floating widget, beside the review action. One click opens a modal containing the recording name and a selector of personas already saved in this installation's database. Opening the modal does not begin recording; **Start recording** submits the chosen name/persona. Replace the widget's free-text persona entry with this selector. Existing recording, Stop/Discard, and live element commenting remain available.
+
+Add a **Personas** section to the full workspace where users manage reusable persona types. Implementation decisions: owners and editors create/edit a name and optional description, archive unused personas, and restore them; commenters can read the list but cannot modify it. Names are trimmed and unique without regard to case. New installations begin with an empty list and a direct **Manage personas** link from the recording dialog; starting requires an active saved persona. Existing recording labels remain historical snapshots and are not rewritten when a persona is renamed or archived. A persona describes the reviewer journey; it does not log into the host application or change permissions.
+
+Acceptance criteria:
+
+1. An editor opens the naming/persona dialog directly from the floating record icon; cancelling creates no draft, and submitting creates one recording with the server-confirmed persona name.
+2. Persona names/descriptions and archive state survive reload and server restart. Creating a persona in the workspace makes it available in the widget's selector; archived personas are excluded.
+3. Empty, loading, duplicate-name, unauthorized, missing/archived selection, and failed-save states are explicit. Failed requests retain form input and cannot claim a recording has started.
+4. A renamed or archived persona never changes existing recordings or their comments. Existing versions retain their recorded persona snapshot.
+5. Keyboard and mobile users can reach the record icon, modal, selection, and persona management controls; live comment selection and visible Stop/Discard controls continue working.
+
+Status: implemented and locally verified. This section supersedes the earlier free-text persona naming workflow. The package suite has 127 passing tests; browser checks cover management, saved selection, failed starts, cancellation, and recording alongside live comments. Hosted and separate-installation checks were not repeated.
+
+### Live website element comments
+
+Status: implemented and locally verified, including desktop, narrow-screen, keyboard, and emulated-touch checks. See `VALIDATION.md` for evidence and limits.
+
+Confirmed scope: the existing embedded widget also supports feedback attached to elements on the running website. Recording is not required. Existing production enablement and verified-access rules still apply; this is not an extension for arbitrary unintegrated websites.
+
+Implementation decisions: **Comment on an element** temporarily closes the widget and enters selection mode. Pointer/touch selection highlights a target and opens its composer; Previous/Next element and Comment here provide a keyboard alternative, and Escape/Cancel exits. Host controls must not activate during selection. Normal interaction resumes after selection or cancellation. New comments require explicit submission, and failed submissions retain the draft.
+
+Targets store a bounded CSS locator, tag, and short visible label, scoped to the installation and pathname, separately from recorded versions and screenshot coordinates. Prefer stable host identifiers (`data-revisionlab-anchor`, unique `id`, or `data-testid`), with a structural fallback. Query/hash states share the page's feedback, consistent with existing page comments. Do not capture field values, passwords, private regions, or the widget itself. Shadow DOM, iframe contents, and canvas internals are outside this increment.
+
+Open threads show live pins with a hide/show control. Pins follow the resolved element as the page scrolls or resizes and open the existing discussion UI. Multiple threads on one target share a count marker; all remain available in the widget list. Resolved and unavailable targets remain in the page's comment list. A missing, ambiguous, hidden, or label-changed target must not acquire a guessed replacement; show **Annotation target changed or is unavailable** when opening its discussion. Stable locators cannot guarantee identity after arbitrary host DOM changes. Historical screenshot comments are unchanged and never moved onto the live page automatically.
+
+Observable acceptance criteria:
+
+1. An authorized commenter can select a live element and save feedback without any recording; reloading restores its target and discussion.
+2. Picking a link/button does not navigate, submit, or activate its host handler. Cancelling restores ordinary use and creates no comment.
+3. Pointer, touch, and keyboard selection are available; controls fit desktop and narrow viewports.
+4. Live pins stay attached during scrolling/resizing, can be hidden, and open the correct thread for replies and authorized resolution/reopening.
+5. Unmatched targets retain readable comments without misleading pins; navigation scopes feedback to the current pathname and clears the previous target selection.
+6. APIs validate element metadata, reject mixed live/screenshot/flow contexts and reply re-targeting, and preserve access controls. Existing databases migrate without changing prior comments.
 
 - A small, accessible floating button appears on enabled application pages.
 - Clicking it opens a compact launcher showing the current page, prototype version, and available review context.
@@ -653,7 +698,7 @@ Later capabilities, not required for these increments:
 
 - unlimited-canvas optimization, groups, and sticky notes
 - executable decision branches and recording from a selected branch
-- DOM-element annotation anchors and automatic re-anchoring
+- recorded DOM-element annotation anchors and replay-aware re-anchoring (live widget targets are separately implemented)
 - freehand drawing
 - presentation mode
 - multiplayer cursors
@@ -705,9 +750,9 @@ Anchored-balloon acceptance criteria: opening a screen shows a preview for every
 
 A comment is not shown as saved until the server commits it. On failure, preserve the draft for retry and explain the problem. Pins must remain readable and correctly placed on small screens and zoomed screenshots; loading or missing images must not accept misleading coordinate placement.
 
-## Element-aware anchors — later capability
+## Element-aware anchors — live pages and later replay
 
-The longer-term system may also attach feedback to an actual DOM element, for example `role=button` with name `Submit Application`, and attempt to resolve that locator after replay. This requires an explicit element/DOM capture mechanism; a screenshot click alone cannot supply a trustworthy locator. If a future replay cannot resolve a target, show **Annotation target changed** rather than silently moving the pin. Coordinate comments in historical versions remain anchored to their original screenshots and are not automatically copied into newer versions.
+The live widget now has an explicit DOM selection mechanism as specified above. This is separate from the longer-term system that may capture semantic locators during recording and resolve them after replay. A screenshot click alone cannot supply a trustworthy DOM locator. If a future replay cannot resolve a target, show **Annotation target changed** rather than silently moving the pin. Coordinate comments in historical versions remain anchored to their original screenshots and are not automatically copied into newer versions.
 
 ---
 

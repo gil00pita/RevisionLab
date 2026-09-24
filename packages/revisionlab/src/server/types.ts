@@ -74,6 +74,12 @@ export interface RevisionLabStep {
   createdAt: string;
 }
 
+export interface RevisionLabElementAnchor {
+  selector: string;
+  tag: string;
+  label: string;
+}
+
 export interface RevisionLabComment {
   id: string;
   flowId: string | null;
@@ -93,6 +99,7 @@ export interface RevisionLabComment {
   createdAt: string;
   resolvedAt: string | null;
   anchor: RevisionLabPoint | null;
+  elementAnchor?: RevisionLabElementAnchor | null;
   parentId: string | null;
 }
 
@@ -105,12 +112,22 @@ export interface RevisionLabInvitation {
   revokedAt: string | null;
 }
 
+export interface RevisionLabPersona {
+  id: string;
+  name: string;
+  description: string;
+  archivedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface RevisionLabState {
   project: { id: string; name: string };
   actor: RevisionLabActor;
   flows: RevisionLabFlow[];
   comments: RevisionLabComment[];
   invitations: RevisionLabInvitation[];
+  personas: RevisionLabPersona[];
 }
 
 export interface RevisionLabRouteContext {

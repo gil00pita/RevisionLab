@@ -6,12 +6,16 @@ RevisionLab is an installable Next.js App Router integration. The floating widge
 
 ## Run locally
 
+To comment directly on the running website, choose **Review → Comment on an element**, select a page element, and submit your feedback. No recording is required. Use the arrow controls and **Comment here** for keyboard selection; Escape cancels. Open comments appear as live pins, which can be hidden from the widget. Replies and resolution use the same discussions as page feedback. Targets persist across reloads; changed or unavailable elements retain their discussion in the widget without a guessed pin. Live comments are scoped to the pathname, not a recorded version. Existing deployment enablement and reviewer access still apply.
+
 ```bash
 npm install
 npm run dev
 ```
 
-Open the local URL printed by Next.js. Choose **Review → Record**, name a flow and persona, and explore the prototype. New paths capture automatically; **Capture screen** saves additional states on the same page. Choose **Stop recording** to save the completed recording, then open `/revisionlab` to review its screens, create another version, and add or resolve feedback. Stop is visible in the floating recording controls and in the widget footer on both tabs. It prevents new captures immediately and waits for any capture already underway before saving.
+Open the local URL printed by Next.js. Click the floating **Record prototype** icon, enter a recording name, choose a saved persona, then **Start recording**. Create persona types in **Workspace → Personas** (also linked from the dialog). Owners and editors can edit, archive, and restore personas; existing recording labels remain unchanged. New paths capture automatically; **Capture screen** saves additional states on the same page. Choose **Stop recording** to save the completed recording, then open `/revisionlab` to review its screens, create another version, and add or resolve feedback. Stop is visible in the floating recording controls and in the widget footer on both tabs. It prevents new captures immediately and waits for any capture already underway before saving.
+
+The workspace uses a single sidebar. **Flows** slides the main menu away and replaces it with **Your flows**; **Back** restores the menu without changing the selected flow or canvas. Comments, Personas, and Review access open from that main menu.
 
 **Discard recording** is different: after confirmation it prevents new captures, waits for any capture in progress, and removes the unfinished draft and its screenshots without saving a completed flow. Previously saved versions remain. While recording, normal same-tab page links show a warning: stay, discard and leave, or continue recording on another eligible same-origin prototype page. Continue is disabled until capture is idle; the review workspace and external destinations cannot continue the recording. Discard failures keep you on the page with capture stopped and a retry; navigation waits for successful cleanup.
 
@@ -67,7 +71,7 @@ Hosted Turso and Resend paths are implemented but require real deployment creden
 
 The functional release includes installation, SQLite/libSQL persistence, invitations and sessions, flow/persona recording, private screenshots, immutable completed screen versions, version switching, generated flow boards with saved layouts and manual branches, screen-area comment pins and threaded replies, page comments, and Markdown reports. The current partial editing increment adds on-board connection editing/discussions and reversible screen removal; its validation status is above. Board metadata remains editable without changing completed captures. Screens are DOM captures, not video recordings. A persona labels a recording; the prototype still controls its own user permissions.
 
-Automatic discovery of unrecorded paths, executable action graphs and replay, DOM-element anchors, visual diff generation, and PDF/Excalidraw/Confluence integrations remain roadmap items. Manual branches describe a path; they do not claim it was recorded or make it executable. The whiteboard uses geometric connectors rather than an obstacle-avoiding diagram engine.
+Automatic discovery of unrecorded paths, executable action graphs and replay, replay-aware DOM re-anchoring, visual diff generation, and PDF/Excalidraw/Confluence integrations remain roadmap items. The widget supports live DOM-element targets separately from screenshot pins. Manual branches describe a path; they do not claim it was recorded or make it executable. The whiteboard uses geometric connectors rather than an obstacle-avoiding diagram engine.
 
 ## Development checks
 

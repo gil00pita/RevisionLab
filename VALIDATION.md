@@ -1,5 +1,23 @@
 # Release validation
 
+## Live feedback, personas, and sidebar - 24 September 2026
+
+Local package/example builds and ESLint pass with Next.js 16.3.6, React 19.3.0, and Chakra UI 3.37. All 127 package tests pass, including six new tests for live-element comment persistence, inherited reply targets, malformed/mixed context rejection, authentication, saved persona persistence/permissions, duplicate races, and historical recording labels. Existing-database migration assertions include unanchored legacy comments. `git diff --check` passes.
+
+Playwright with local Chrome verified:
+
+- Live link selection without host navigation, durable comments and replies, reload, resolve/reopen, missing/changed targets, keyboard selection/cancellation, route isolation, and desktop/mobile layouts.
+- Stable/duplicate/invalid locators, private/password/value exclusion, hidden targets, injected failed-comment submission retaining text and succeeding on retry, scroll/resize tracking, hide/show pins, and emulated-touch selection.
+- The direct floating record icon, required name and accessible saved-persona selector, keyboard selection, exclusion of archived entries, injected failed-start recovery, and cancellation without creating a draft.
+- Starting with a saved persona, switching to live selection while recording, keyboard autofocus, visible Stop/Discard controls on mobile, and confirmed discard of the verification draft.
+- Persona creation/editing/archive/restore/reload; the one-column 240px sidebar, Flows/Back focus transfer, unchanged main-content width, and narrow-screen reduced-motion navigation without horizontal document overflow.
+
+Evidence and executable local checks are retained under `.context/`, including `workspace-flows-desktop.png`, `workspace-flows-mobile.png`, `workspace-personas-desktop.png`, `quick-record-mobile.png`, and the live-feedback/picker screenshots. Verification personas/comments are explicitly labelled local data. Only verification drafts were discarded; the user's existing Test recording and Too dark comment were preserved.
+
+This is local Chrome validation, not a hosted deployment, fresh separate-project installation, physical touch-device matrix, full screen-reader audit, or npm publication. Live anchors fail closed when identity cannot be matched; arbitrary DOM replacement, shadow roots, iframe contents, and canvas internals are not supported. Personas label journeys and do not impersonate application users. The earlier release checkpoints below are historical and were not rerun as publishing validation.
+
+## Earlier release checkpoint
+
 Validated on 22 September 2026 with Node.js 22, Next.js 16.3.5, React 19.2.8, and Chakra UI 3.37.
 
 ## Automated checks
