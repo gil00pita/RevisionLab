@@ -42,7 +42,11 @@ export function WorkspaceSidebar({
       top="0"
       alignSelf="start"
       w={{ base: "full", lg: "60" }}
-      h={{ base: showFlows ? "96" : "48", lg: "100dvh" }}
+      h={{
+        base: showFlows ? "96" : "60",
+        md: showFlows ? "96" : "48",
+        lg: "100dvh",
+      }}
       flexShrink="0"
       overflow="hidden"
       borderRightWidth="1px"

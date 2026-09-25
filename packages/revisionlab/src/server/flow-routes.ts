@@ -13,6 +13,8 @@ import type { ResolvedConfig } from "./config.js";
 import { write } from "./database.js";
 import { discardRecording } from "./recording-discard.js";
 import { activePersonaName } from "./persona-routes.js";
+import { captureMetadataSchema } from "./capture-metadata.js";
+import { createFlow } from "./flow-creation.js";
 import { HttpError, json, readJson } from "./security.js";
 import type { RevisionLabActor } from "./types.js";
 
@@ -36,6 +38,7 @@ const stepSchema = z.object({
   title: z.string().trim().min(1).max(160),
   route: routeSchema,
   screenshot: z.string().max(MAX_CAPTURE_BODY_BYTES).nullable().optional(),
+  capture: captureMetadataSchema.optional(),
 });
 
 async function requireFlow(transaction: Transaction, id: string) {
@@ -57,25 +60,13 @@ export async function handleFlows(
   requireRole(actor, "editor");
   if (request.method === "POST" && path.length === 1) {
     const input = flowSchema
+      .extend({ replaceFlowId: z.string().uuid().optional() })
       .refine(
         (value) => Boolean(value.persona) !== Boolean(value.personaId),
         "Choose one persona.",
       )
       .parse(await readJson(request));
-    const id = randomUUID();
-    const now = new Date().toISOString();
-    const persona = await write(client, async (transaction) => {
-      const persona = input.personaId
-        ? await activePersonaName(transaction, input.personaId)
-        : input.persona!;
-      await transaction.execute({
-        sql: `INSERT INTO flows (id, family_id, version, name, persona, route, status, created_by, created_at, updated_at)
-          VALUES (?, ?, 1, ?, ?, ?, 'recording', ?, ?, ?)`,
-        args: [id, id, input.name, persona, input.route, actor.id, now, now],
-      });
-      return persona;
-    });
-    return json({ id, familyId: id, version: 1, persona }, 201);
+    return createFlow(client, actor, input);
   }
   if (path.length < 2 || !z.string().uuid().safeParse(path[1]).success)
     throw new HttpError(404, "Recording not found.");
@@ -193,7 +184,7 @@ async function captureStep(
         );
       await insertArtifact(transaction, artifact);
       await transaction.execute({
-        sql: "INSERT INTO steps (id, flow_id, title, route, screenshot, position, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        sql: "INSERT INTO steps (id, flow_id, title, route, screenshot, position, created_at, capture_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         args: [
           id,
           flowId,
@@ -202,6 +193,7 @@ async function captureStep(
           artifact?.id ?? null,
           count,
           now,
+          input.capture ? JSON.stringify(input.capture) : null,
         ],
       });
       await transaction.execute({

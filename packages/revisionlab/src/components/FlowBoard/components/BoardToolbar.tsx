@@ -1,4 +1,4 @@
-import { Button, Flex, Icon, IconButton, Text } from "@chakra-ui/react";
+import { Button, Flex, Icon, IconButton, Switch, Text } from "@chakra-ui/react";
 import {
   GitBranch,
   Maximize,
@@ -22,6 +22,9 @@ export function BoardToolbar({
   onArrange,
   onUndo,
   onConnections,
+  showCursor,
+  hasCursor,
+  onCursorChange,
 }: {
   zoom: number;
   minZoom: number;
@@ -35,6 +38,9 @@ export function BoardToolbar({
   onArrange: () => void;
   onUndo: () => void;
   onConnections: () => void;
+  showCursor: boolean;
+  hasCursor: boolean;
+  onCursorChange: (checked: boolean) => void;
 }) {
   return (
     <Flex
@@ -105,6 +111,21 @@ export function BoardToolbar({
             </Icon>
             {editing ? "Done editing" : "Paths"}
           </Button>
+        )}
+        {hasCursor && (
+          <Switch.Root
+            size="sm"
+            colorPalette="pink"
+            ml="3"
+            checked={showCursor}
+            onCheckedChange={(event) => onCursorChange(event.checked)}
+          >
+            <Switch.HiddenInput />
+            <Switch.Control>
+              <Switch.Thumb />
+            </Switch.Control>
+            <Switch.Label>Cursor path</Switch.Label>
+          </Switch.Root>
         )}
       </Flex>
       {canEdit && editing && (

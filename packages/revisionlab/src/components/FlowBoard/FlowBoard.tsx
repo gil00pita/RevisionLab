@@ -31,6 +31,7 @@ export function FlowBoard(props: FlowBoardProps) {
   const bounds = boardBounds(draft.board.nodes);
   const camera = useBoardViewport(bounds.width, bounds.height);
   const [editing, setEditing] = useState(false);
+  const [showCursor, setShowCursor] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [connectionSource, setConnectionSource] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
@@ -108,6 +109,11 @@ export function FlowBoard(props: FlowBoardProps) {
       flex="1"
     >
       <BoardToolbar
+        showCursor={showCursor}
+        hasCursor={flow.steps.some((step) =>
+          Boolean(step.capture?.cursor.length),
+        )}
+        onCursorChange={setShowCursor}
         zoom={camera.zoom}
         minZoom={camera.minZoom}
         canEdit={canEdit}
@@ -175,6 +181,7 @@ export function FlowBoard(props: FlowBoardProps) {
         minW="0"
       >
         <BoardCanvas
+          showCursor={showCursor}
           flow={flow}
           board={draft.board}
           comments={comments}

@@ -25,6 +25,8 @@ import { PersonaManager } from "./components/PersonaManager.js";
 import { AllComments } from "./components/AllComments.js";
 import { FlowReview } from "./components/FlowReview.js";
 import { EmptyWorkspace } from "./components/EmptyWorkspace.js";
+import { WorkspaceSettings } from "./components/WorkspaceSettings.js";
+import { defaultSettings } from "../../comment-settings.js";
 
 export interface RevisionLabWorkspaceProps {
   apiPath?: string;
@@ -52,15 +54,20 @@ export function RevisionLabWorkspace({
 
 function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const router = useRouter();
-  const requestedView = useSearchParams().get("view");
+  const searchParams = useSearchParams();
+  const requestedView = searchParams.get("view");
+  const commentRoute = searchParams.get("route");
   const view: WorkspaceView =
     requestedView === "comments" ||
     requestedView === "personas" ||
+    requestedView === "settings" ||
     requestedView === "people"
       ? requestedView
       : "flows";
   const { data, error, loading, refresh } = useRevisionLab(apiPath);
-  const [flowId, setFlowId] = useState<string | null>(null);
+  const [flowId, setFlowId] = useState<string | null>(() =>
+    searchParams.get("flow"),
+  );
   const [signingOut, setSigningOut] = useState(false);
   const [startingRecording, setStartingRecording] = useState(false);
   const [actionError, setActionError] = useState("");
@@ -248,7 +255,14 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             Finishing board autosave…
           </Text>
         )}
-        {view === "personas" ? (
+        {view === "settings" ? (
+          <WorkspaceSettings
+            apiPath={apiPath}
+            settings={data.settings ?? defaultSettings}
+            canEdit={data.actor.role !== "commenter"}
+            onRefresh={refresh}
+          />
+        ) : view === "personas" ? (
           <PersonaManager
             apiPath={apiPath}
             personas={data.personas ?? []}
@@ -264,7 +278,14 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             />
           </Box>
         ) : view === "comments" ? (
-          <AllComments data={data} apiPath={apiPath} onRefresh={refresh} />
+          <AllComments
+            key={commentRoute}
+            data={data}
+            apiPath={apiPath}
+            onRefresh={refresh}
+            route={commentRoute}
+            basePath={basePath}
+          />
         ) : (
           <Flex flex="1" minW="0" direction={{ base: "column", xl: "row" }}>
             {flow ? (

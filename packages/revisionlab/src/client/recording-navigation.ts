@@ -11,6 +11,7 @@ export interface RecordingNavigationRequest {
 export interface RecordingNavigationTarget {
   href: string;
   changesPage: boolean;
+  leavesDomain: boolean;
   canContinue: boolean;
 }
 
@@ -34,6 +35,7 @@ export function classifyRecordingNavigation(
       destination.pathname.startsWith("/api/");
     return {
       href: destination.href,
+      leavesDomain: destination.hostname !== current.hostname,
       changesPage:
         !sameOrigin ||
         destination.pathname !== current.pathname ||
@@ -66,7 +68,7 @@ export function confirmRecordingNavigation(href: string): Promise<boolean> {
         detail,
       }),
     );
-    // An active draft without its mounted guard must not silently allow leaving.
-    if (!detail.handled) resolve(!loadRecording());
+    // An active draft without its guard must not silently leave the domain.
+    if (!detail.handled) resolve(!destination.leavesDomain || !loadRecording());
   });
 }

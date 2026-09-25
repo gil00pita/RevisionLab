@@ -1,16 +1,5 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Icon,
-  IconButton,
-  Portal,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
-import { ArrowLeft, ArrowRight, MessageSquare, X } from "lucide-react";
-import { useEffect, useRef, type ReactNode } from "react";
-import { createElementAnchor } from "../../../client/element-anchor.js";
+import { Box, Link, Portal, Stack, Switch, Text } from "@chakra-ui/react";
+import { useEffect, useRef } from "react";
 import type { RevisionLabElementAnchor } from "../../../server/types.js";
 import { useElementPicker } from "../hooks/useElementPicker.js";
 import { useElementBounds } from "../hooks/useElementBounds.js";
@@ -18,27 +7,38 @@ import { useElementBounds } from "../hooks/useElementBounds.js";
 export function ElementPicker({
   onSelect,
   onCancel,
-  children,
+  commentsHref,
+  showBalloons,
+  onShowBalloonsChange,
 }: {
   onSelect: (anchor: RevisionLabElementAnchor) => void;
   onCancel: () => void;
-  children?: ReactNode;
+  commentsHref: string;
+  showBalloons: boolean;
+  onShowBalloonsChange: (show: boolean) => void;
 }) {
   const picker = useElementPicker(onSelect, onCancel);
   const bounds = useElementBounds(picker.target);
-  const anchor = picker.target ? createElementAnchor(picker.target) : null;
-  const initialFocusRef = useRef<HTMLButtonElement>(null);
+  const surface = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    // Focus after the closing dialog releases its focus trap and the portal mounts.
-    let frame = requestAnimationFrame(() => {
-      frame = requestAnimationFrame(() =>
-        initialFocusRef.current?.focus({ preventScroll: true }),
-      );
-    });
+    const frame = requestAnimationFrame(() =>
+      surface.current?.focus({ preventScroll: true }),
+    );
     return () => cancelAnimationFrame(frame);
   }, []);
   return (
     <Portal>
+      <Box
+        ref={surface}
+        tabIndex={-1}
+        aria-label="Select an element to comment"
+        data-revisionlab-ui
+        data-revisionlab-picker-surface
+        position="fixed"
+        inset="0"
+        zIndex="overlay"
+        cursor="crosshair"
+      />
       {bounds && (
         <Box
           data-revisionlab-ui
@@ -60,71 +60,38 @@ export function ElementPicker({
         data-revisionlab-ui
         position="fixed"
         bottom="24"
-        right={{ base: "4", md: "6" }}
+        right={{ base: "3", md: "6" }}
         zIndex="popover"
-        width="sm"
-        maxW="calc(100vw - 2rem)"
-        p="4"
-        gap="3"
+        maxW="calc(100vw - 1.5rem)"
+        px="4"
+        py="3"
+        gap="1"
         bg="white"
         color="gray.900"
         borderWidth="1px"
-        borderColor="gray.300"
+        borderColor="gray.200"
         borderRadius="lg"
-        shadow="lg"
+        shadow="sm"
       >
-        <Flex justify="space-between" align="center" gap="2">
-          <Text fontWeight="semibold">Select an element</Text>
-          <IconButton
-            aria-label="Cancel element selection"
-            title="Cancel element selection"
-            variant="ghost"
-            size="sm"
-            onClick={onCancel}
-          >
-            <Icon>
-              <X />
-            </Icon>
-          </IconButton>
-        </Flex>
-        <Text fontSize="sm" role="status" overflowWrap="anywhere">
-          {anchor ? `${anchor.tag}: ${anchor.label}` : "No element selected"}
+        <Switch.Root
+          size="sm"
+          colorPalette="blue"
+          checked={showBalloons}
+          onCheckedChange={(event) => onShowBalloonsChange(event.checked)}
+          mb="2"
+        >
+          <Switch.HiddenInput />
+          <Switch.Control>
+            <Switch.Thumb />
+          </Switch.Control>
+          <Switch.Label>Show comments notes</Switch.Label>
+        </Switch.Root>
+        <Link href={commentsHref} color="blue.700" fontSize="sm">
+          Show all comments from this page
+        </Link>
+        <Text fontSize="xs" color="gray.600">
+          Press Esc to close the comments.
         </Text>
-        <Flex gap="2">
-          <IconButton
-            ref={initialFocusRef}
-            aria-label="Previous element"
-            title="Previous element"
-            variant="outline"
-            onClick={() => picker.move(-1)}
-          >
-            <Icon>
-              <ArrowLeft />
-            </Icon>
-          </IconButton>
-          <IconButton
-            aria-label="Next element"
-            title="Next element"
-            variant="outline"
-            onClick={() => picker.move(1)}
-          >
-            <Icon>
-              <ArrowRight />
-            </Icon>
-          </IconButton>
-          <Button
-            flex="1"
-            colorPalette="blue"
-            disabled={!anchor}
-            onClick={picker.confirm}
-          >
-            <Icon>
-              <MessageSquare />
-            </Icon>
-            Comment here
-          </Button>
-        </Flex>
-        {children}
       </Stack>
     </Portal>
   );

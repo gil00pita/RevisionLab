@@ -129,14 +129,14 @@ export function PrototypeHome() {
             </Heading>
             <List.Root as="ol" gap="4" ps="5" color="gray.700">
               <List.Item>
-                Choose the record icon beside Review in the bottom corner.
+                Choose the camera icon in the RevisionLab toolbar.
               </List.Item>
               <List.Item>
                 Name your recording and select a saved workspace persona.
               </List.Item>
               <List.Item>
-                Explore this site or your own prototype. Capture additional
-                states, then finish the recording.
+                Explore this site or your own prototype. Clicks and completed
+                field changes capture automatically; use Stop when finished.
               </List.Item>
             </List.Root>
             <Separator />

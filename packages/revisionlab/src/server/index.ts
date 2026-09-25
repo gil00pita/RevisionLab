@@ -18,5 +18,8 @@ export type {
   RevisionLabRouteContext,
   RevisionLabRouteHandler,
   RevisionLabState,
+  RevisionLabSettings,
+  CommentBubbleColor,
   RevisionLabStep,
+  RevisionLabCapture,
 } from "./types.js";

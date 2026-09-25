@@ -6,18 +6,28 @@ RevisionLab is an installable Next.js App Router integration. The floating widge
 
 ## Run locally
 
-To comment directly on the running website, choose **Review → Comment on an element**, select a page element, and submit your feedback. No recording is required. Use the arrow controls and **Comment here** for keyboard selection; Escape cancels. Open comments appear as live pins, which can be hidden from the widget. Replies and resolution use the same discussions as page feedback. Targets persist across reloads; changed or unavailable elements retain their discussion in the widget without a guessed pin. Live comments are scoped to the pathname, not a recorded version. Existing deployment enablement and reviewer access still apply.
+**Workspace > Settings > Live comments** controls default bubble visibility and color. Owners and editors can choose from gray, red, orange, yellow, green, teal, cyan, blue, purple, and pink; changes save to the workspace database. Commenters have read-only access. The live Show comments switch remains a temporary page-level override. New pages use the saved default; comment details always require activation.
+
+Recording setup opens just above the bottom-right widget, like the accessibility panel. After a successful Stop, **Recording ended and saved** appears with **View recording**, opening that exact flow in the workspace. The confirmation remains until dismissed or a new recording starts; failed saves remain retryable without a success message.
+
+The floating toolbar contains the supplied RevisionLab mark, accessibility status, camera/Stop, and comment/Stop commenting. Click the RevisionLab logotype to go straight to the workspace in the same tab, without a dialog. It supports normal browser new-tab actions. The accessibility icon runs local axe-core checks on each visited, authorized prototype page and updates after host DOM changes. A check means automated checks passed, not full accessibility compliance. Other states identify scanning, issues, manual review, stale results, or failure; click the icon for findings and **Run again**. Current findings show problem bubbles on visible affected elements. Click a title, individual target, or bubble to scroll to and highlight the component without activating it. **Read more** opens the rule documentation; **All issues** restores the list. Close or Escape clears this inspection layer. Private, hidden, removed, stale, and unavailable frame targets are not highlighted.
+
+Click the comment icon to select components directly on the live page. The crosshair and highlight show the target; clicking opens an anchored speech bubble with a comment field, **Post**, and **Cancel**, without activating the host control. Submission or cancellation returns to selection; **Stop commenting** or Escape ends the mode. Saved comment markers follow the workspace default (initially visible); click a marker (or activate it with the keyboard) to open its details and component highlight. Use **Show comments** in the selection controls to hide or show the markers. Closing details leaves markers visible; showing markers again never opens details automatically. Escape or Stop commenting preserves visibility. The layer temporarily hides while composing and restores markers afterward. Route changes/reload restore the workspace default with details closed. Replies and resolution remain in the workspace, reached through **All comments on this page**. The toolbar badge still counts open page threads, not replies. Keyboard selection uses Up/Down and Enter, without floating navigation buttons. No recording is required. Targets persist across reloads and comments are scoped to the pathname, not a recorded version. Opening comment mode preserves the last accessibility result; actual host changes still invalidate it. Existing deployment enablement and reviewer access still apply.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open the local URL printed by Next.js. Click the floating **Record prototype** icon, enter a recording name, choose a saved persona, then **Start recording**. Create persona types in **Workspace → Personas** (also linked from the dialog). Owners and editors can edit, archive, and restore personas; existing recording labels remain unchanged. New paths capture automatically; **Capture screen** saves additional states on the same page. Choose **Stop recording** to save the completed recording, then open `/revisionlab` to review its screens, create another version, and add or resolve feedback. Stop is visible in the floating recording controls and in the widget footer on both tabs. It prevents new captures immediately and waits for any capture already underway before saving.
+Opening a saved live comment bubble highlights its attached component with an outline and subtle tint matching the workspace bubble color. The highlight follows the open preview as the page moves, without blocking clicks. Closing the preview or hiding comments removes it; Escape preserves it when comments remain visible.
+
+Open the local URL printed by Next.js. Click the camera (**Record prototype**), enter a recording name, choose a saved persona, then **Start recording**. Create persona types in **Workspace → Personas** (also linked from the dialog). Owners and editors can edit, archive, and restore personas; existing recording labels remain unchanged. An existing name (ignoring case and surrounding spaces) requires confirmation: **Cancel** keeps the setup, while **Replace and record** creates a new version of that flow and preserves previous screenshots/comments. Unfinished recordings must be finished or discarded first. Setup closes and the camera becomes **Stop recording**. The first page, subsequent pages, and completed field changes capture automatically after the page settles. Changed clicks preserve the pre-interaction screen and settled result; unchanged clicks add no screens. Already-captured pre-states are not duplicated, and host clicks are not delayed or replayed. Rapid interactions coalesce; typing alone does not capture. **Capture screen** remains available in the review panel. Stop prevents new captures and waits for an ongoing capture before saving.
+
+New captures include bounded cursor samples and numbered clicks. Toggle **Cursor path** on the whiteboard or full-screen review to show the path on its exact capture; old recordings are unchanged. Readiness checks wait for document/fonts/images, host `aria-busy`, and 650ms of quiet DOM/resource activity, with a visible error after 10 seconds instead of silently recording a loading state. This is not network interception, video, or action replay; hosts should expose asynchronous loading with `aria-busy`. Widget/private/password regions are excluded.
 
 The workspace uses a single sidebar. **Flows** slides the main menu away and replaces it with **Your flows**; **Back** restores the menu without changing the selected flow or canvas. Comments, Personas, and Review access open from that main menu.
 
-**Discard recording** is different: after confirmation it prevents new captures, waits for any capture in progress, and removes the unfinished draft and its screenshots without saving a completed flow. Previously saved versions remain. While recording, normal same-tab page links show a warning: stay, discard and leave, or continue recording on another eligible same-origin prototype page. Continue is disabled until capture is idle; the review workspace and external destinations cannot continue the recording. Discard failures keep you on the page with capture stopped and a retry; navigation waits for successful cleanup.
+**Discard recording** is different: after confirmation it prevents new captures, waits for any capture in progress, and removes the unfinished draft and its screenshots without saving a completed flow. Previously saved versions remain. While recording, same-domain links proceed without a warning. Same-origin prototype navigation continues recording automatically; only same-tab links to another hostname show Stay or Discard and leave. Discard failures keep you on the page with capture stopped and a retry; navigation waits for successful cleanup.
 
 Recording controls have passed local Stop, Stay, Continue, and discard-retry browser checks, with warning visuals confirmed at desktop and narrow widths, alongside lint, the production build, and all 88 package tests; see [VALIDATION.md](VALIDATION.md) for evidence and remaining limits. Reload/close uses the browser's native warning, not automatic discard. New-tab/modified clicks, downloads, hash links, and switching tabs do not discard the recording. Host `router.push`/`router.replace` calls need the [programmatic navigation helper](packages/revisionlab/README.md#programmatic-navigation); client-side browser Back/Forward is not globally blocked.
 
@@ -35,7 +45,14 @@ Local development on localhost gives the developer owner access. Data persists i
 
 ## Install in another Next.js project
 
-The package is implemented but has **not been published to npm**. Build a local archive:
+Install the published package from your existing Next.js App Router project:
+
+```bash
+npx revisionlab@latest init
+npm run dev
+```
+
+Registry verification on 25 September 2026 found `revisionlab@0.1.1` under `latest`, with no `next` tag. The newer widget, saved personas, interaction capture, and comment settings described above are local workspace changes, not included in that published archive. To try those changes, build a local archive:
 
 ```bash
 npm run build:package
@@ -45,11 +62,11 @@ npm pack --workspace revisionlab
 Run this from an existing Next.js project, substituting the archive's absolute path:
 
 ```bash
-npx --package /absolute/path/revisionlab-0.1.0.tgz revisionlab init \
-  --package /absolute/path/revisionlab-0.1.0.tgz --protect
+npx --package /absolute/path/revisionlab-0.1.1.tgz revisionlab init \
+  --package /absolute/path/revisionlab-0.1.1.tgz --protect
 ```
 
-Once published, the command becomes `npx revisionlab@latest init --protect`. The installer installs the exact version invoked, including explicit versions and `@next` prereleases. The installer supports Next.js 15/16 App Router, React 19, TypeScript/JavaScript, and `app/` or `src/app/`. It generates the API, workspace/access routes, configuration, and widget layout integration. `--protect` also generates the prototype access gate (Next.js 15.5+). Existing files are checked before writes, modified host files are backed up, and repeat installation preserves customizations.
+Use `npx revisionlab@latest init --protect` to also gate prototype pages. The installer installs the exact version invoked, including explicit versions and `@next` prereleases when that tag is available. Re-running `init` updates the dependency while preserving customized integration files and review data; restart the development server afterward. The installer supports Next.js 15/16 App Router, React 19, TypeScript/JavaScript, and `app/` or `src/app/`. It generates the API, workspace/access routes, configuration, and widget layout integration. `--protect` also generates the prototype access gate (Next.js 15.5+). Existing files are checked before writes, modified host files are backed up, and repeat installation preserves customizations.
 
 See the [package guide](packages/revisionlab/README.md) for all options and manual integration. Standalone React/Vite and the Pages Router are not included in this release.
 
@@ -57,7 +74,7 @@ See the [package guide](packages/revisionlab/README.md) for all options and manu
 
 [The publishing workflow](.github/workflows/publish.yml) validates pull requests and `main` updates, then publishes the tested package when a matching **GitHub Release** is published. Stable versions use `latest`; prereleases use `next`. It uses npm trusted publishing without a stored npm token.
 
-The intended npm owner is `gil00pita`. The workflow is implemented, but first publication, npm trusted-publisher setup, and the GitHub `npm` environment are still required. Follow [RELEASING.md](RELEASING.md) for the one-time setup and subsequent version/release steps. Nothing has been published by these repository changes.
+The intended npm owner is `gil00pita`. The package is now available from npm, but the registry check does not verify trusted-publisher setup or the GitHub `npm` environment. Follow [RELEASING.md](RELEASING.md) for setup and version/release steps. No publication or deployment was performed while updating this guide.
 
 ## Shared review
 

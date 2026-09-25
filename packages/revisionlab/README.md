@@ -2,7 +2,15 @@
 
 ## Comment on live elements
 
-Choose **Review → Comment on an element** on an integrated page, select the target, and submit. Recording is not required. The picker supports pointer/touch selection, Previous/Next element buttons, **Comment here**, and Escape to cancel. Selecting a host control does not activate it. Open discussions appear as live pins; **Hide pins** restores an unobstructed page. Replies and resolution retain existing reviewer permissions.
+**Workspace > Settings > Live comments** controls default bubble visibility and color. Owners and editors can choose from gray, red, orange, yellow, green, teal, cyan, blue, purple, and pink; changes save to the workspace database. Commenters have read-only access. Existing installations retain visible blue markers until changed. The live Show comments switch is a temporary page-level override; new pages use the saved default, with details closed until activation.
+
+Opening a saved live comment bubble highlights its attached component with an outline and subtle tint matching the workspace bubble color. The highlight follows the open preview during scrolling and resizing without blocking clicks. It disappears when the preview closes, comments are hidden, or the target is unavailable; Escape preserves it when comments remain visible.
+
+The segmented RevisionLab toolbar exposes accessibility status, camera/Stop recording, and comment/Stop commenting. The RevisionLab logotype links directly to the configured workspace in the same tab, without an intermediate dialog; browser modifier-click/new-tab actions are supported. Click the comment icon to enter persistent crosshair selection; select a target to open a speech bubble containing only the comment field, **Post**, and **Cancel**. Recording is not required. Submission or composer cancellation returns to selection until **Stop commenting** or Escape. The picker supports pointer/touch selection and Up/Down plus Enter, without Previous/Next/Comment buttons. Selecting a host control does not activate it. Saved comment markers follow the workspace default (initially visible); details and the component highlight appear only after pointer or keyboard activation. **Show comments** in the selection controls hides or shows markers. Closing details retains markers; showing them again does not automatically open details. Escape or Stop commenting preserves visibility. The preference survives composing/cancelling on the same page; the layer temporarily hides during composition and restores markers afterward. Route changes/reload restore the workspace default with details closed. Missing/private/offscreen targets are not shown. Replies/resolution remain in the workspace; **All comments on this page** opens its pathname-filtered Comments view. The badge continues to count open page threads, excluding replies. Opening review/comment UI preserves the last accessibility result; real host changes still mark it stale before the next scan.
+
+Accessibility checks use bundled, lazy-loaded axe-core locally on each visited authorized page, excluding review UI/private regions. DOM changes invalidate the current result and schedule a fresh check. A check indicates no violations or incomplete checks were returned by the configured WCAG A/AA rules; it is not certification or a substitute for manual testing. Scanning, stale, issues, manual-review-needed, and failure states are distinct. Click the status icon for findings and a rerun. No DOM or accessibility results are sent to an external service, and unvisited routes are not crawled.
+
+While current findings are open, problem bubbles identify visible affected components. Clicking an issue title selects its first available target; individual target entries and bubbles also select components. Selection scrolls the exact scanned element into view and highlights it without activating the host control. Compact details include **Read more**, opening that rule's axe documentation in a new tab, and **All issues**. Close or Escape removes the inspection layer. Markers track scrolling/resizing, are excluded from capture/scans, and never guess missing/private/hidden/stale or unavailable frame targets. These refinements belong to the local widget build, not the previously published archive.
 
 Targets are saved against the current pathname using a locator, tag, and short label. A unique `data-revisionlab-anchor`, `id`, or `data-testid` improves stability; structural locators are a fallback. Query/hash variants share page comments. Input values, private regions, passwords, and RevisionLab UI are excluded. Shadow DOM, iframe contents, and canvas internals are not supported. Changed or missing targets retain their discussion in the widget and never fall back to an arbitrary location. This does not migrate screenshot pins between versions or enable production reviews automatically.
 
@@ -10,14 +18,14 @@ Embed prototype recording and review in an existing Next.js project. Mount the w
 
 ## Install in another project
 
-Once this package is published:
+Install the published package from an existing Next.js App Router project:
 
 ```bash
 npx revisionlab@latest init
 npm run dev
 ```
 
-To try the package from this repository before publishing, build and pack it:
+Registry verification on 25 September 2026 found `revisionlab@0.1.1` under `latest`, with no `next` tag. This README also covers newer workspace code: the compact widget, saved personas, interaction capture, and comment settings are not in that published archive. To try those unreleased changes, build and pack this repository:
 
 ```bash
 npm run build:package
@@ -27,14 +35,14 @@ npm pack --workspace revisionlab
 Then run the resulting tarball against an existing project. Use an absolute tarball path for both arguments:
 
 ```bash
-npx --package /absolute/path/revisionlab-0.1.0.tgz revisionlab init \
+npx --package /absolute/path/revisionlab-0.1.1.tgz revisionlab init \
   --cwd /absolute/path/my-next-project \
-  --package /absolute/path/revisionlab-0.1.0.tgz
+  --package /absolute/path/revisionlab-0.1.1.tgz
 ```
 
 `--package` makes the generated project install that exact local build. Nothing is published by these commands.
 
-The default installer also installs the exact version you invoked: `npx revisionlab@0.1.1 init` uses that published version, while `npx revisionlab@next init` opts into an available prerelease. The repository's GitHub Release workflow publishes stable versions to `latest` and prereleases to `next`, after validation. See the [maintainer release guide](https://github.com/gil00pita/RevisionLab/blob/main/RELEASING.md) for initial publication and trusted-publisher setup.
+The default installer also installs the exact version you invoked: `npx revisionlab@0.1.1 init` uses that published version, while `npx revisionlab@next init` opts into a prerelease only when that tag is available. Re-run `npx revisionlab@latest init` to update the dependency while retaining customized integration files and review data, then restart the development server. The repository's GitHub Release workflow publishes stable versions to `latest` and prereleases to `next`, after validation. See the [maintainer release guide](https://github.com/gil00pita/RevisionLab/blob/main/RELEASING.md) for initial publication and trusted-publisher setup.
 
 The installer supports `app/` or `src/app/`, TypeScript or JavaScript, Next.js 15/16, React 19, and Node.js 20.9+. The package's own application code is TypeScript. Standalone React/Vite and the Pages Router are not currently supported because the storage and invitation APIs need a server.
 
@@ -64,7 +72,13 @@ npx revisionlab --help
 
 ## Local recording and feedback
 
-Run your development server on localhost and click the floating **Record prototype** icon. Enter a recording name, select a saved persona, and choose **Start recording**. **Manage personas** opens the workspace's Personas view: owners and editors can create names and optional descriptions, edit them, and archive or restore entries. Commenters have read-only access. The list starts empty; archived personas cannot start new widget recordings. Renaming or archiving does not rewrite existing recording labels. Capture each screen you want reviewers to see, then choose **Stop recording** to save the completed recording. Stop remains visible in the floating recording controls and in the widget footer on both tabs. It stops new captures, waits for any capture already in progress, and confirms success after the server completes the recording. A failed save stays stopped and can be retried.
+Camera setup opens in a popover immediately above the bottom-right widget, matching accessibility-panel placement. Successful Stop shows **Recording ended and saved** with a **View recording** link to that exact flow/version. The confirmation is dismissible and does not expire automatically. Failed saves show an error and remain retryable, never a success confirmation.
+
+Run your development server on localhost and click the camera (**Record prototype**). Enter a recording name, select a saved persona, and choose **Start recording**. An existing name (ignoring case and surrounding spaces) requires confirmation: **Cancel** keeps the setup, while **Replace and record** creates a new version of that flow and preserves previous screenshots/comments. Unfinished recordings must be finished or discarded first. Setup closes and the camera becomes **Stop recording**. **Manage personas** opens the workspace's Personas view: owners and editors can create names and optional descriptions, edit them, and archive or restore entries. Commenters have read-only access. The list starts empty; archived personas cannot start new widget recordings. Renaming or archiving does not rewrite existing recording labels. The starting page, route changes, and completed field changes capture automatically once settled. Clicks save pre-interaction and settled-result screens only when host content changes; unchanged clicks upload nothing, and an already-captured pre-state is not duplicated. Snapshotting does not delay clicks for rendering or replay host events. Rapid interactions coalesce and keystrokes alone do not capture. Manual **Capture screen** remains in the review panel. Stop waits for an in-progress capture and server completion. Failed saves remain stopped and retryable.
+
+Settling waits for document/fonts/images and no host `aria-busy="true"`, then 650ms without host DOM changes or completed resource activity. After 10 seconds a visible error asks you to wait for loading and retry; manual capture and another interaction remain available. It does not patch host networking or guarantee detection of an unannounced pending fetch; expose asynchronous loading with `aria-busy`. Review UI and private/password regions remain excluded. Capture is paused during review/comment selection, and route changes cancel stale pending work. An already committed upload still updates the recording count if its acknowledgement arrives while paused.
+
+New screen metadata contains at most 200 cursor samples, normalized to that screenshot, with numbered clicks and timestamps. It contains no keystrokes, input values, or executable actions. Toggle **Cursor path** on the whiteboard or full-screen review to show connecting movement paths and click markers. Board pan/zoom applies to the overlay, while full-screen review shows portions cropped from thumbnails. Existing recordings without metadata continue to work. Screenshots retain the existing 4000px height and 200-screen-per-flow limits.
 
 The workspace has one drill-down sidebar: choose **Flows** to replace the main menu with **Your flows**, then **Back** to restore the menu. The selected flow and canvas stay mounted during this transition; no second flow-list column consumes canvas width.
 
@@ -76,13 +90,13 @@ Screenshots capture the rendered DOM. Cross-origin images, embedded frames, vide
 
 **Discard recording** asks for confirmation, prevents new captures, waits for any in-flight capture to settle, and deletes the unfinished draft and its captured artifacts rather than saving a completed flow. Only the draft's creator or an owner can discard it; previously completed versions remain untouched. Capture stays stopped even if cleanup fails, with errors and retry controls retained. Local functional checks verified a failed discard retaining the warning and page, then a successful retry removing the draft and artifact before navigation. Warning-dialog visuals were confirmed at desktop and narrow viewport widths.
 
-Normal same-tab page links, including Next.js links, show a warning while recording. **Stay and keep recording** cancels the departure. **Discard recording and leave** waits for successful server cleanup before navigating; failure keeps the warning and current page. For another same-origin prototype page, **Continue recording on next page** lets the journey proceed without discarding. It is disabled while a capture is in progress and unavailable for the review workspace, external destinations, or a recording whose save/discard has begun.
+Same-domain links, including Next.js and full-document links, navigate without a recording warning. Recording continues on enabled same-origin prototype pages. Only ordinary same-tab links to a different hostname show **Stay and keep recording** or **Discard recording and leave**. Discard waits for successful server cleanup before navigating; failure keeps the warning and current page. Different subdomains count as external. Scheme/port changes on the same hostname do not prompt, but session storage does not carry recording state across origins.
 
-Modified clicks, links opening another tab/window, downloads, and hash-only changes retain normal behavior. Switching tabs does not stop or delete a recording. Reloading, closing the tab, or a full-document departure uses the browser's native `beforeunload` warning when supported; the browser controls its wording and whether it appears. RevisionLab does not delete on unload because the user may cancel or the network request may not complete. Client-side Back/Forward navigation is not globally blocked.
+Modified clicks, links opening another tab/window, downloads, and hash-only changes retain normal behavior. Switching tabs does not stop or delete a recording. Closing the tab uses the browser's native `beforeunload` warning when supported; the browser controls its wording/display and cannot distinguish closing from reload or other unapproved full-document exits, which may also warn. Known internal link departures are exempt; cancelled or SPA-handled links clear that exemption. RevisionLab does not delete on unload because the user may cancel or the network request may not complete. Client-side Back/Forward navigation is not globally blocked.
 
 ### Programmatic navigation
 
-Ordinary links are guarded automatically while the widget is mounted. For host actions using `router.push`, `router.replace`, or a location assignment, first await `confirmRecordingNavigation(href)` from `revisionlab`. Navigate only when it returns `true`; it does not perform navigation itself. Invoke it immediately before the intended navigation, not during rendering or prefetching.
+Ordinary links leaving the domain are guarded automatically while the widget is mounted. Internal destinations are allowed without a prompt. For host actions using `router.push`, `router.replace`, or a location assignment, first await `confirmRecordingNavigation(href)` from `revisionlab`. Navigate only when it returns `true`; it does not perform navigation itself. Invoke it immediately before the intended navigation, not during rendering or prefetching.
 
 For example, in a Client Component where `router` comes from `useRouter()` in `next/navigation`:
 

@@ -15,12 +15,14 @@ import {
   MessageSquare,
   Users,
   ContactRound,
+  Settings,
 } from "lucide-react";
 import type { RefObject } from "react";
 import type { RevisionLabState } from "../../../server/types.js";
 import { RevisionLabLogo } from "../../RevisionLabLogo/index.js";
 
-export type WorkspaceView = "flows" | "comments" | "people" | "personas";
+export type WorkspaceView =
+  "flows" | "comments" | "people" | "personas" | "settings";
 
 export function WorkspaceNavigation({
   data,
@@ -112,6 +114,15 @@ export function WorkspaceNavigation({
             <ContactRound />
           </Icon>
           Personas
+        </NavigationButton>
+        <NavigationButton
+          active={view === "settings"}
+          onClick={() => onViewChange("settings")}
+        >
+          <Icon>
+            <Settings />
+          </Icon>
+          Settings
         </NavigationButton>
         {data.actor.role === "owner" && (
           <NavigationButton

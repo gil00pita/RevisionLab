@@ -35,6 +35,7 @@ export function BoardCanvas({
   onConnection,
   onConnect,
   onRemove,
+  showCursor,
 }: {
   flow: RevisionLabFlow;
   board: FlowBoardData;
@@ -51,6 +52,7 @@ export function BoardCanvas({
   onConnection: (id: string) => void;
   onConnect: (id: string) => void;
   onRemove: (id: string) => void;
+  showCursor: boolean;
 }) {
   const bounds = boardBounds(board.nodes);
   const nodes = new Map(board.nodes.map((node) => [node.stepId, node]));
@@ -146,6 +148,7 @@ export function BoardCanvas({
               <Box key={step.id} pointerEvents="auto">
                 <BoardScreen
                   step={step}
+                  showCursor={showCursor}
                   node={node}
                   number={index + 1}
                   comments={screenCounts.get(step.id) ?? 0}

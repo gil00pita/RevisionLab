@@ -1,3 +1,9 @@
+import type { RevisionLabSettings } from "../comment-settings.js";
+export type {
+  RevisionLabSettings,
+  CommentBubbleColor,
+} from "../comment-settings.js";
+
 export type RevisionLabRole = "owner" | "editor" | "commenter";
 
 /** Server-only adapter. Keys are generated UUIDs, never user-provided paths. */
@@ -72,6 +78,14 @@ export interface RevisionLabStep {
   screenshot: string | null;
   position: number;
   createdAt: string;
+  capture?: RevisionLabCapture | null;
+}
+
+export interface RevisionLabCapture {
+  width: number;
+  height: number;
+  reason: "page" | "click" | "change" | "manual";
+  cursor: { x: number; y: number; t: number; click?: number }[];
 }
 
 export interface RevisionLabElementAnchor {
@@ -122,6 +136,7 @@ export interface RevisionLabPersona {
 }
 
 export interface RevisionLabState {
+  settings: RevisionLabSettings;
   project: { id: string; name: string };
   actor: RevisionLabActor;
   flows: RevisionLabFlow[];

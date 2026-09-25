@@ -1,28 +1,21 @@
 import { useEffect, useState } from "react";
-import { Button, Icon, Portal } from "@chakra-ui/react";
-import { MessageSquare } from "lucide-react";
 import { resolveElementAnchor } from "../../../client/element-anchor.js";
 import type { RevisionLabComment } from "../../../server/types.js";
 
-interface Pin {
+interface CommentTarget {
   id: string;
   label: string;
   x: number;
   y: number;
-  count: number;
+  ids: string[];
+  bounds: { x: number; y: number; width: number; height: number };
 }
 
-export function LiveElementPins({
-  comments,
-  onSelect,
-}: {
-  comments: RevisionLabComment[];
-  onSelect: (id: string) => void;
-}) {
-  const [pins, setPins] = useState<Pin[]>([]);
+export function useLiveCommentTargets(comments: RevisionLabComment[]) {
+  const [targets, setTargets] = useState<CommentTarget[]>([]);
   useEffect(() => {
     function update() {
-      const groups = new Map<Element, Pin>();
+      const grouped = new Map<Element, CommentTarget>();
       for (const comment of comments) {
         if (
           !comment.elementAnchor ||
@@ -32,9 +25,9 @@ export function LiveElementPins({
           continue;
         const element = resolveElementAnchor(comment.elementAnchor);
         if (!element) continue;
-        const existing = groups.get(element);
+        const existing = grouped.get(element);
         if (existing) {
-          existing.count++;
+          existing.ids.push(comment.id);
           continue;
         }
         const rect = element.getBoundingClientRect();
@@ -45,16 +38,22 @@ export function LiveElementPins({
           rect.left >= innerWidth
         )
           continue;
-        groups.set(element, {
+        grouped.set(element, {
           id: comment.id,
           label: comment.elementAnchor.label,
-          count: 1,
-          x: Math.max(4, Math.min(innerWidth - 64, rect.right - 16)),
-          y: Math.max(4, Math.min(innerHeight - 40, rect.top - 16)),
+          x: Math.max(8, Math.min(innerWidth - 48, rect.right - 16)),
+          y: Math.max(8, Math.min(innerHeight - 48, rect.top - 16)),
+          ids: [comment.id],
+          bounds: {
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+          },
         });
       }
-      const next = [...groups.values()];
-      setPins((previous) =>
+      const next = [...grouped.values()];
+      setTargets((previous) =>
         JSON.stringify(previous) === JSON.stringify(next) ? previous : next,
       );
     }
@@ -69,32 +68,5 @@ export function LiveElementPins({
       window.removeEventListener("resize", update);
     };
   }, [comments]);
-  return (
-    <Portal>
-      {pins.map((pin) => (
-        <Button
-          key={pin.id}
-          data-revisionlab-ui
-          position="fixed"
-          left={`${pin.x}px`}
-          top={`${pin.y}px`}
-          zIndex="docked"
-          size="xs"
-          minW="8"
-          h="8"
-          colorPalette="blue"
-          borderRadius="full"
-          shadow="sm"
-          aria-label={`Open element comments: ${pin.label}`}
-          title={`Comments: ${pin.label}`}
-          onClick={() => onSelect(pin.id)}
-        >
-          <Icon>
-            <MessageSquare />
-          </Icon>
-          {pin.count}
-        </Button>
-      ))}
-    </Portal>
-  );
+  return targets;
 }

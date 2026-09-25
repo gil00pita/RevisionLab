@@ -1,5 +1,9 @@
 import NextLink from "next/link";
 import { Box, Code, Heading, Link, List, Stack, Text } from "@chakra-ui/react";
+import packageManifest from "../../../packages/revisionlab/package.json";
+import { NpmInstallation } from "./_components/NpmInstallation";
+import { InstallerOptions } from "./_components/InstallerOptions";
+import { LocalInstallation } from "./_components/LocalInstallation";
 
 export default function SetupPage() {
   return (
@@ -18,51 +22,26 @@ export default function SetupPage() {
           Install in your prototype
         </Heading>
         <Text fontSize="lg" color="gray.600">
-          Start with an existing Next.js App Router project using React 19. The
-          installer adds the widget, workspace, API routes, and local storage
-          configuration.
+          Start with an existing Next.js 15 or 16 App Router project using React
+          19 and Node.js 20.9 or newer (or your Next.js version&apos;s higher
+          minimum). The installer adds the widget, workspace, API routes, and
+          local storage configuration. Pages Router, standalone React/Vite, and
+          static exports are not supported.
         </Text>
+        <NpmInstallation />
+        <InstallerOptions />
+        <LocalInstallation version={packageManifest.version} />
         <Heading as="h2" size="xl" mt="4">
-          Use the local package
-        </Heading>
-        <Text>Build and pack RevisionLab in this repository:</Text>
-        <Code
-          display="block"
-          whiteSpace="pre-wrap"
-          overflowWrap="anywhere"
-          p="4"
-          bg="gray.900"
-          color="gray.100"
-        >
-          {"npm run build:package\nnpm pack --workspace revisionlab"}
-        </Code>
-        <Text>
-          Then run the installer from your prototype project, replacing the
-          archive path with the file created above:
-        </Text>
-        <Code
-          display="block"
-          whiteSpace="pre-wrap"
-          overflowWrap="anywhere"
-          p="4"
-          bg="gray.900"
-          color="gray.100"
-        >
-          npx --package /absolute/path/revisionlab-0.1.0.tgz revisionlab init
-          --package /absolute/path/revisionlab-0.1.0.tgz
-        </Code>
-        <Text color="gray.600">
-          After the package is published, the installation command becomes{" "}
-          <Code>npx revisionlab init</Code>. Run your Next.js development server
-          and open any prototype page to see the Review widget.
-        </Text>
-        <Heading as="h2" size="xl" mt="4">
-          Share a private review
+          Share a private{" "}
+          <Text as="span" color="blue.300">
+            review
+          </Text>
         </Heading>
         <List.Root as="ol" ps="5" gap="3">
           <List.Item>
-            Use <Code>init --protect</Code> to generate the prototype access
-            gate. Existing middleware or proxy files require manual integration.
+            Use <Code>npx revisionlab@latest init --protect</Code> to generate
+            the prototype access gate. Existing middleware or proxy files
+            require manual integration.
           </List.Item>
           <List.Item>
             Configure a hosted libSQL database, the owner email, and Resend
@@ -89,9 +68,12 @@ export default function SetupPage() {
           prototype permissions.
         </Text>
         <Text>
-          New routes are captured automatically. Use Capture screen for a
-          dialog, validation error, or other state on the same page. Completed
-          recordings remain available when you create a new version.
+          The published release captures new routes automatically and provides
+          Capture screen for dialogs or validation states. The latest local
+          build also captures changed interactions before and after they settle,
+          uses saved workspace personas, and offers comment bubble defaults and
+          colors in Settings. Completed recordings remain available when you
+          create a new version.
         </Text>
         <Text>
           Passwords are excluded from screenshots. Mark any other sensitive

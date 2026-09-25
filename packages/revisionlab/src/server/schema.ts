@@ -1,4 +1,10 @@
 export const schema = [
+  `CREATE TABLE IF NOT EXISTS workspace_settings (
+    id INTEGER PRIMARY KEY CHECK(id = 1),
+    show_comment_bubbles INTEGER NOT NULL DEFAULT 1 CHECK(show_comment_bubbles IN (0, 1)),
+    comment_bubble_color TEXT NOT NULL DEFAULT 'blue'
+      CHECK(comment_bubble_color IN ('gray', 'red', 'orange', 'yellow', 'green', 'teal', 'cyan', 'blue', 'purple', 'pink'))
+  )`,
   `CREATE TABLE IF NOT EXISTS personas (
     id TEXT PRIMARY KEY, name TEXT NOT NULL, name_key TEXT NOT NULL UNIQUE,
     description TEXT NOT NULL DEFAULT '', archived_at TEXT,
@@ -42,7 +48,7 @@ export const schema = [
   `CREATE TABLE IF NOT EXISTS steps (
     id TEXT PRIMARY KEY, flow_id TEXT NOT NULL REFERENCES flows(id) ON DELETE CASCADE,
     title TEXT NOT NULL, route TEXT NOT NULL, screenshot TEXT, position INTEGER NOT NULL,
-    created_at TEXT NOT NULL, UNIQUE(flow_id, position)
+    created_at TEXT NOT NULL, capture_json TEXT, UNIQUE(flow_id, position)
   )`,
   `CREATE TABLE IF NOT EXISTS board_edges (
     flow_id TEXT NOT NULL REFERENCES flows(id) ON DELETE CASCADE, id TEXT NOT NULL,

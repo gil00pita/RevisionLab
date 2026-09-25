@@ -1,5 +1,129 @@
 # Release validation
 
+## Supplied accessibility passed icon - 25 September 2026
+
+The passed-check toolbar state now uses the supplied accessibility-person SVG with its green check badge, preserving the original artwork and existing 28px rendered icon size. The supplied warning SVG and all other states remain unchanged. The passed artwork is shown only after the existing successful current-page scan criteria are met; this remains automated evidence, not accessibility certification. PRODUCT.md and PLAN.md are aligned.
+
+Production/package builds, lint, SVG XML validation, and whitespace checks pass. The updated `.context/accessibility-icon-check.cjs` verifies both assets load, the pass-to-issue-to-pass transition, unchanged toolbar bounds, desktop/mobile rendering, and results-panel/Escape behavior. Screenshots were inspected at `.context/accessibility-passed-icon-desktop.png` and `.context/accessibility-passed-icon-mobile.png`. No mutation requests or browser errors occurred; no publication or deployment was performed.
+
+## Supplied accessibility warning icon - 25 September 2026
+
+The widget's issues-found state now renders the supplied SVG asset unchanged through Chakra Image. Other status icons, on-element problem bubbles, accessible status names, and toolbar dimensions are retained. The package includes the asset through its existing assets distribution pattern. PRODUCT.md and PLAN.md reflect the requested visual change.
+
+Production/package builds, lint, and whitespace checks pass. `.context/accessibility-icon-check.cjs` verifies a genuine browser-only axe issue displays the loaded 24px-source SVG at the existing 28px icon size without changing toolbar bounds, the results panel and Escape still work, and clearing the issue restores the pass icon. Desktop/mobile screenshots were inspected at `.context/accessibility-issues-icon-desktop.png` and `.context/accessibility-issues-icon-mobile.png`. No mutation requests or browser errors occurred. No publication or deployment was performed.
+
+## Accessibility issue inspection - 25 September 2026
+
+Current widget findings now show problem bubbles tied to axe's exact local element references. Rule titles, individual target entries, and bubbles select and scroll to the affected component without activating its host control. A non-interactive highlight tracks the visible component bounds, including clipping in scroll containers. Compact details avoid bottom-of-page targets and expose separate rule-specific Read more links. Close/Escape removes the inspection layer; stale scans and unavailable/private/removed targets clear their overlays. No persistence, service, dependency, or publication change is involved.
+
+Package and production builds, lint, all 140 existing package tests, and whitespace checks pass. Local Chrome checks in `.context/accessibility-inspection-check.cjs` cover genuine axe findings on browser-only fixtures, multiple affected nodes, title and individual target selection, pointer/keyboard bubble activation, nested scrolling, documentation URLs/new-tab attributes, focus return, close/Escape, stable scan status during inspection, rerun, private/removed-target cleanup, route cleanup, reduced motion, and non-overlapping desktop/390px/320px layouts. The existing `.context/comment-highlight-check.cjs` regression also passes. No host fixture clicks, mutation requests, or browser errors occurred; real workspace data was not changed.
+
+Screenshots were inspected: `.context/accessibility-inspection-desktop.png`, `.context/accessibility-inspection-mobile.png`, and `.context/accessibility-inspection-page.png`. The last uses a temporary invalid ARIA attribute on the sample heading solely to demonstrate a real reported issue; it does not change the application source. Cross-browser, cross-origin frame, and hosted checks were not repeated. Element references unavailable to the current document remain non-selectable rather than resolving guessed selectors. Automated checks remain partial accessibility evidence, not certification.
+
+## Updated installation guide - 25 September 2026
+
+The `/setup` page now leads with `npx revisionlab@latest init`, explains exact-version installation and safe re-initialization, lists the supported installer flags and runtime/framework boundaries, and uses the workspace manifest version for local archive examples. The published package is distinguished from newer local widget/persona/capture/comment settings. Existing private-review copy and its saved heading anchor were retained. PRODUCT.md, PLAN.md, and both READMEs are aligned with the observed publication status.
+
+Read-only npm registry inspection confirmed `revisionlab@0.1.1` under `latest`, with no `next` tag. Its archive was downloaded with scripts disabled into `.context/` and inspected: the published CLI resolves its own exact version, but the newer local widget/settings modules are absent. No publication, dependency installation, deployment, or external service configuration was performed. This check does not establish registry ownership or trusted-publisher configuration.
+
+Production build, lint, whitespace checks, and five package-spec tests pass. Local Chrome checks in `.context/setup-guide-check.cjs` cover latest/pinned commands, every documented flag, the manifest-version tarball path and shell continuation, release/local distinctions, preserved heading-anchor structure, desktop/390px/320px command fit, and return navigation. Desktop/mobile screenshots were inspected: `.context/setup-guide-desktop.png` and `.context/setup-guide-mobile.png`. No mutation requests or browser errors occurred. A fresh target-project installation and cross-browser checks were not repeated for this documentation change.
+
+## Workspace live-comment settings - 25 September 2026
+
+Settings now persists shared default marker visibility and one of ten named bubble colors. Owners/editors can edit; commenters can read. New/legacy databases default to visible blue markers, and partial transactional updates preserve the other preference. The widget uses saved defaults on page load/navigation while retaining explicit same-page visibility overrides. Color applies to saved live markers and their selected-component highlight; details remain click/keyboard-only.
+
+Production build, lint, whitespace checks, and all 140 package tests pass. Four new server tests cover fresh defaults, persistence across connections, every palette value, invalid input, role and origin enforcement, concurrent partial updates, and preserving recordings/comments. The legacy migration test also checks defaults without changing old review data.
+
+Local Chrome checks in `.context/workspace-settings-check.cjs` pass for Settings navigation, all ten swatches, keyboard focus after save, visibility/color reload, injected save failure and retry with selection rollback, commenter read-only controls, desktop/390px/320px fit, un-clipped mobile navigation, widget defaults/color/highlight, local overrides, Escape, and route reset. Swatch text/icon contrast in the current light interface ranges from 4.60:1 to 14.32:1. Light swatches have darker boundaries. The live comment highlight/visibility regression in `.context/comment-highlight-check.cjs` also passes. Browser settings writes were intercepted and server tests used temporary databases; user comments, recordings, and saved preference values were untouched. No browser errors occurred; the injected HTTP 503 is expected.
+
+Desktop/mobile screenshots were inspected: `.context/workspace-settings-desktop.png` and `.context/workspace-settings-mobile.png`. Cross-browser, physical-device, and hosted-database checks were not repeated. Earlier unconditional visible-default descriptions below are historical; the workspace preference now controls that default.
+
+## Visible comment markers with click-only details - 25 September 2026
+
+Saved live comment markers now appear by default without entering comment mode. Details and the component highlight remain closed until pointer/keyboard activation. Closing details keeps markers visible; toggling back on or dismissing the composer restores markers without opening a preview. Route changes/reload reset to visible markers with no selection. Existing same-page visibility and Escape behavior remain intact.
+
+Production build, lint, formatting, and whitespace checks pass. The updated `.context/comment-highlight-check.cjs` verifies initial markers without details/highlights, pointer/keyboard activation, grouped comments, close/reopen, toggle and Escape behavior, composer cancellation, responsive alignment, hidden/private/offscreen targets, host navigation, and route/reload reset. Intercepted read responses supply test comments; no mutation requests or browser errors occurred. Screenshots: `.context/comment-markers-default-desktop.png` and `.context/comment-markers-default-mobile.png`. Earlier hidden-default and auto-open-first-preview checks below are historical and superseded. Package unit tests and cross-browser checks were not repeated for this state-only change.
+
+## Selected live-comment highlight - 25 September 2026
+
+The existing `.context/comment-visibility-check.cjs` regression also passes, including composer dismissal, Escape with visibility on/off, repeated Escape, Stop commenting, and route reset, with zero writes or browser errors.
+
+The open live comment preview now highlights its resolved host component with a blue outline and subtle tint. It uses the marker's existing bounds tracking, does not alter host styles or intercept clicks, and is excluded from capture/accessibility inspection as RevisionLab UI. Closing or hiding the preview removes the highlight; Escape preserves it with visible comments.
+
+Production build and lint pass. Local Chrome checks in `.context/comment-highlight-check.cjs` verify pointer/keyboard selection, grouped comments, close/reopen, visibility/Escape behavior, scroll/resize/layout alignment, hidden/private/offscreen targets, unchanged accessibility while selecting, and navigation through the highlighted host link. Desktop/mobile screenshots were inspected: `.context/comment-highlight-desktop.png` and `.context/comment-highlight-mobile.png`. Test comments were supplied through intercepted read responses; no mutation requests or browser errors occurred. Package unit tests and cross-browser/device checks were not repeated for this UI-only change.
+
+## Widget logotype workspace link - 25 September 2026
+
+The widget logotype now links directly to the configured workspace in the same tab, without opening the review dialog. It is a semantic link with keyboard and native new-tab behavior; camera, accessibility, and comment controls retain their existing actions.
+
+Production build, package build, lint, and whitespace checks pass. Local Chrome checks in `.context/widget-workspace-link-check.cjs` cover pointer and Enter navigation, Meta-click opening a separate tab, no intermediate dialog, 320px viewport fit, camera setup, commenting, and recording continuity without a departure warning. No mutation requests or browser errors occurred; existing workspace data was untouched. Package unit tests and cross-browser checks were not repeated for this link-only change.
+
+## Domain-only recording departure warnings - 25 September 2026
+
+Internal links now pass through unchanged without the recording dialog. Exact hostname changes trigger the existing external-departure confirmation; subdomains are distinct. Known internal full-document links receive a one-use unload exemption, cleared after cancelled/SPA-handled clicks. The programmatic navigation helper follows the same rule. Explicit discard confirmation remains unchanged.
+
+All 136 package tests, production build, and lint pass. Navigation tests cover hostname boundaries (including lookalike/userinfo URLs), same-host protocol/port changes, internal workspace/API links, and the helper's external fail-closed behavior without a mounted guard. Local Chrome checks in `.context/domain-navigation-check.cjs` pass for prompt-free Next.js/native navigation, recording continuity, cancelled-link unload protection, external warning/Stay, mobile fit, and the real native reload warning. Recording writes were intercepted and user recordings were untouched. Screenshot: `.context/external-recording-warning.png`.
+
+Browser limits: close, reload, and unapproved full-document exits share `beforeunload`; display and wording are browser-controlled. The headless tab-close command did not display a native prompt, so validation confirms the active unload guard and real reload prompt rather than claiming physical close-tab UI coverage. Same-host scheme/port changes do not transfer origin-scoped session storage; arbitrary redirects and unguarded programmatic navigation are not universally intercepted. Hosted and cross-browser checks were not repeated. Earlier internal Continue-dialog checks below are historical and superseded.
+
+## Duplicate flow-name confirmation - 25 September 2026
+
+New recordings check the current name of each flow family inside the creation transaction, ignoring capitalization and surrounding whitespace. A conflict creates nothing until the reviewer confirms a specific version. Replacement creates the next version in that family, retaining all previous screenshots and comments. Active drafts block replacement; stale confirmations return the latest candidates for another review. Legacy duplicate families remain separate and can be selected explicitly.
+
+Five new server tests cover matching without writes, replacement and discard preserving screenshots/comments, persona selection, active/stale/mismatched targets, commenter restrictions, concurrent starts/replacements, and legacy duplicates. All 135 package tests, production build, lint, and diff whitespace checks pass. Local Chrome checks in `.context/flow-replacement-check.cjs` cover keyboard focus on Cancel, preserved setup values, blocked active drafts, legacy selection, injected failure/retry, stale reconfirmation, explicit replacement target, unique-name start, and mobile positioning above the widget. Browser writes were intercepted, so existing workspace recordings were untouched; no browser errors occurred. Screenshots: `.context/flow-replacement-desktop.png` and `.context/flow-replacement-mobile.png`. Hosted and cross-browser checks were not repeated.
+
+## Changed-interaction before/after capture - 25 September 2026
+
+Recording now freezes a privacy-filtered pre-interaction document using pinned html2canvas-pro 2.4.5, without preventing or replaying host events. Once the host settles, unchanged clicks produce no uploads; changed clicks save the missing pre-state followed by the result. A pre-state already represented by the last successful capture is omitted. Rapid input is coalesced with bounded pre-state rendering. Initial/route captures and completed field changes retain their behavior.
+
+Local Chrome checks in `.context/interaction-snapshot-check.cjs` pass with intercepted recording writes, leaving the real database untouched: quick open/close before the settling window ends, unchanged-action suppression, immediate dialog removal, pointer-down removal, keyboard/touch activation, exactly-once host execution, numbered clicks, typing without uploads and capture on completed field change, Stop waiting for the active pair, and snapshot-container cleanup. Pixel checks verify the dialog is present before and absent after, and the private green test region is absent. Saved-image evidence is `.context/interaction-before.png` and `.context/interaction-after.png`; visual inspection also confirmed the page logo renders. The comment visibility/Escape browser regression passes. No browser errors were observed. Production build, lint, and 130 package tests pass.
+
+Limits: change detection uses host DOM/content rather than a pixel diff; animation/video/canvas-only changes, arbitrary unguarded navigation/unload, long held gestures beyond the two-second preparation window, and a separate pair for every rapid action are not guaranteed. Before images use a different renderer from settled images, so minor font/rendering differences are possible. CSS/resource compatibility remains host-dependent. Hosted deployment, physical devices, and cross-browser validation were not repeated.
+
+## Escape preserves live comment visibility - 25 September 2026
+
+Saved-comment visibility no longer depends on whether element selection is active. Escape and Stop commenting preserve the Show comments preference; enabled previews remain visible after selection ends, while disabled previews remain hidden. The preview's close control still works. Composing and review/recording panels temporarily hide previews to avoid overlapping controls.
+
+The updated `.context/comment-visibility-check.cjs` passes in local Chrome: Escape with the switch on/off from both selection and the composer, repeated Escape, Stop commenting, restored host navigation, same-page preference, route reset, existing pointer/keyboard controls, mobile placement, and unchanged accessibility results. Zero mutation requests and no browser errors were observed. Evidence: `.context/comment-escape-visible-desktop.png` and `.context/comment-escape-visible-mobile.png`. Production build and lint pass. The earlier package test run below remains historical; server tests and cross-browser/device checks were not repeated for this UI-only change.
+
+## Live comment visibility toggle - 25 September 2026
+
+Comment selection now includes a visibility switch for read-only saved-comment markers and balloon previews. They start hidden, show one selected target at a time, group open root comments on the same element, and temporarily hide while composing. The same-page preference survives Cancel and re-entering comment mode; route changes reset it. Workspace replies and resolution are unchanged.
+
+Local Chrome checks in `.context/comment-visibility-check.cjs` pass: pointer/keyboard switching, hidden default, reading and closing/reopening a balloon, preserved composer preference, unchanged accessibility pass, desktop/mobile placement without covering the toggle, scroll tracking, Escape, and route reset. The test made zero mutation requests and reported no browser errors. Screenshots are `.context/comment-visibility-desktop.png` and `.context/comment-visibility-mobile.png`. Existing user copy edits and comment data were preserved. Build, lint, and all 130 package tests pass; hosted, physical-device, and cross-browser checks were not repeated. This supersedes the earlier workspace-only restriction for read-only live previews.
+
+## Recording popover and save confirmation - 25 September 2026
+
+Recording setup now opens immediately above the bottom-right toolbar, with name/persona selection, focus, Escape/close, and responsive sizing. The recording controls use that popover too. A server-confirmed Stop shows a persistent dismissible "Recording ended and saved" status with a link to its exact flow/version. The old status panel's invalid spacing offset was corrected so messages remain in the viewport.
+
+Local Chrome checks in `.context/recording-popover-check.cjs` cover 1440px and 390px positioning, input focus/return focus, cancellation, nested persona selection, automatic capture, injected save failure without false confirmation, retry success, dismissal, and exact-flow links including an older recording. Screenshots are `.context/recording-popover-desktop.png`, `.context/recording-popover-mobile.png`, and `.context/recording-saved-mobile.png`. Verification recordings are explicitly named; only the failed verification draft was discarded, without changing user recordings. Build, lint, and all 130 package tests pass. Hosted, physical-device, and cross-browser checks were not repeated.
+
+## Minimal live comment composer - 25 September 2026
+
+The follow-up removes live saved-thread previews and picker navigation buttons in favor of a new-comment speech bubble and a page-filtered workspace link. Opening comment UI preserves the last accessibility result; actual host changes still invalidate it while scanning is paused.
+
+Local Chrome checks in `.context/comment-bubble-check.cjs` pass: unchanged accessibility pass through selection and typing, invalidation for a real injected host issue and recovery, pointer/keyboard placement without navigation, textarea focus, exactly Post/Cancel actions, failed POST retaining the draft and successful retry, persistent selection after Post/Cancel, Escape exit, no live saved threads/pins, 390px bubble fit, and navigation to the correct page's workspace comments. Browser errors were absent. Desktop/mobile evidence is in `.context/comment-bubble-desktop.png` and `.context/comment-bubble-mobile.png`. One explicitly labelled verification comment was added; user data was not removed.
+
+Lint, production build, and all 130 package tests pass. No new server persistence contract was introduced. Hosted, physical-device, and cross-browser validation were not repeated. The earlier live-preview/picker-button checks below are historical and are superseded by this refinement.
+
+## Compact widget and automatic evidence - 25 September 2026
+
+Package and example production builds, ESLint, `git diff --check`, and all 130 package tests pass. Three new server tests cover bounded cursor metadata persistence/reopening, historical versions, malformed or value-bearing payload rejection, and capture permissions/discard. Existing-database migration checks preserve legacy screens with no cursor metadata.
+
+Local Chrome through Playwright verified:
+
+- Segmented toolbar, supplied white logo, camera/name/saved-persona setup, camera-to-Stop transition, and fitting layouts at 1440px, 390px, and 320px widths.
+- Real axe scans, detection of an injected unnamed button, visible failure for a permanently busy page, and recovery after loading settles. No successful result is fabricated on failure.
+- Automatic initial, click, completed-field-change, and subsequent-route captures; delayed content and `aria-busy` handling; no screenshots for typing alone; no review UI in captures; bounded cursor data and numbered clicks.
+- Guarded navigation to a second route, Stop waiting for pending capture, no post-Stop capture, and delayed committed-upload acknowledgements retained when the review panel pauses recording.
+- Injected screenshot-upload failure, successful manual retry, and discard of only the verification draft.
+- Persistent comment selection, blocking host activation, repeated placement/cancel, live previews, emulated-touch selection, keyboard focus and Escape, and mobile popover placement/dismissal.
+- Whiteboard and full-screen cursor overlays with pointer/keyboard toggle controls. No browser errors in the main workflow check.
+
+Executable checks and screenshots are retained under `.context/`: `compact-widget-check.cjs`, `automatic-route-check.cjs`, `capture-ack-check.cjs`, `widget-recovery-check.cjs`, `cursor-mobile-check.cjs`, `compact-toolbar.png`, `compact-widget-mobile.png`, `accessibility-mobile.png`, `compact-record-modal-mobile.png`, and `cursor-layer-desktop.png`. Test recordings/comments are explicitly labelled; the existing user recording and feedback were preserved.
+
+Limits: automated axe results are not a full accessibility certification. No hosted deployment, fresh separate-project install, physical-device or cross-browser matrix, full screen-reader audit, or npm publication was performed. Readiness observes document/fonts/images, DOM/resource quiet, and host `aria-busy`, not arbitrary pending network requests; hosts must expose otherwise unobservable loading. Cursor samples are capped at 200 per capture and exclude private/review regions. This is screenshot evidence, not video or executable action replay. Earlier checkpoints below remain historical.
+
 ## Live feedback, personas, and sidebar - 24 September 2026
 
 Local package/example builds and ESLint pass with Next.js 16.3.6, React 19.3.0, and Chakra UI 3.37. All 127 package tests pass, including six new tests for live-element comment persistence, inherited reply targets, malformed/mixed context rejection, authentication, saved persona persistence/permissions, duplicate races, and historical recording labels. Existing-database migration assertions include unanchored legacy comments. `git diff --check` passes.

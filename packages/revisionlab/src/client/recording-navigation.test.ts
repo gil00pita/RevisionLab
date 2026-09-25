@@ -14,6 +14,7 @@ test("different prototype pages and query states can continue recording", () => 
     const target = classifyRecordingNavigation(href, current, "/revisionlab");
     assert.ok(target?.changesPage);
     assert.equal(target.canContinue, true);
+    assert.equal(target.leavesDomain, false);
   }
 });
 
@@ -76,7 +77,7 @@ test("non-page protocols and malformed destinations are never replayed", () => {
   }
 });
 
-test("host navigation fails closed for active or stopped drafts without a mounted guard", async (t) => {
+test("only external host navigation fails closed without a mounted guard", async (t) => {
   const originalWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
   const originalStorage = Object.getOwnPropertyDescriptor(
     globalThis,
@@ -116,22 +117,60 @@ test("host navigation fails closed for active or stopped drafts without a mounte
     { ...recording, finishRequested: true },
   ]) {
     persisted = state;
-    assert.equal(await confirmRecordingNavigation("/confirmation"), false);
+    assert.equal(await confirmRecordingNavigation("/confirmation"), true);
+    assert.equal(
+      await confirmRecordingNavigation("https://elsewhere.example/"),
+      false,
+    );
   }
   assert.equal(await confirmRecordingNavigation("#details"), true);
   assert.equal(await confirmRecordingNavigation("javascript:alert(1)"), false);
 
   const guard = (event: Event) => {
     const detail = (event as CustomEvent<RecordingNavigationRequest>).detail;
-    assert.equal(detail.href, "https://prototype.example/confirmation");
+    assert.equal(detail.href, "https://elsewhere.example/");
     detail.handled = true;
     queueMicrotask(() => detail.resolve(true));
   };
   browser.addEventListener(recordingNavigationEvent, guard);
-  assert.equal(await confirmRecordingNavigation("/confirmation"), true);
+  assert.equal(
+    await confirmRecordingNavigation("https://elsewhere.example/"),
+    true,
+  );
   browser.removeEventListener(recordingNavigationEvent, guard);
 
   // Successful save/discard permits a host callback before React effect cleanup.
   persisted = null;
   assert.equal(await confirmRecordingNavigation("/confirmation"), true);
+  assert.equal(
+    await confirmRecordingNavigation("https://elsewhere.example/"),
+    true,
+  );
+});
+
+test("domain warnings use the exact hostname, including workspace and API links", () => {
+  for (const href of [
+    "/revisionlab",
+    "/api/export",
+    "https://prototype.example:8443/",
+    "http://prototype.example/",
+    "https://PROTOTYPE.example/page",
+  ]) {
+    assert.equal(
+      classifyRecordingNavigation(href, current, "/revisionlab")?.leavesDomain,
+      false,
+    );
+  }
+  for (const href of [
+    "https://other.example/",
+    "https://sub.prototype.example/",
+    "https://prototype.example.attacker.test/",
+    "https://prototype.example@attacker.test/",
+    "//elsewhere.example/",
+  ]) {
+    assert.equal(
+      classifyRecordingNavigation(href, current, "/revisionlab")?.leavesDomain,
+      true,
+    );
+  }
 });

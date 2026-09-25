@@ -7,6 +7,8 @@ import test from "node:test";
 import { createClient } from "@libsql/client";
 import { getDatabase } from "./database.js";
 import { readComments, readFlows } from "./queries.js";
+import { readSettings } from "./settings.js";
+import { defaultSettings } from "../comment-settings.js";
 
 test("legacy databases retain recordings, screenshots and unpinned comments during metadata migration", async () => {
   const directory = await mkdtemp(join(tmpdir(), "revisionlab-migration-"));
@@ -51,6 +53,7 @@ test("legacy databases retain recordings, screenshots and unpinned comments duri
   }
   const migrated = await getDatabase(config);
   try {
+    assert.deepEqual(await readSettings(migrated), defaultSettings);
     const [flow] = await readFlows(migrated, "/api/revisionlab");
     assert.equal(flow.id, flowId);
     assert.equal(flow.familyId, flowId);
@@ -73,6 +76,7 @@ test("legacy databases retain recordings, screenshots and unpinned comments duri
     assert.equal(comment.resolvedAt, now);
     assert.equal(comment.anchor, null);
     assert.equal(comment.elementAnchor, null);
+    assert.equal(flow.steps[0].capture, null);
     assert.equal(comment.parentId, null);
     assert.equal(comment.edgeId, null);
     assert.equal(comment.edge, null);

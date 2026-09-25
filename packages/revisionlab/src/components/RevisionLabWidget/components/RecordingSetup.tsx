@@ -15,18 +15,23 @@ import {
 import { Circle, UsersRound } from "lucide-react";
 import type { RevisionLabPersona } from "../../../server/types.js";
 import type { useRecording } from "../hooks/useRecording.js";
+import type { FlowNameConflict } from "../../../client/flow-name-conflicts.js";
+import { ReplaceFlowConfirmation } from "./ReplaceFlowConfirmation.js";
 
 export function RecordingSetup({
   recorder,
   personas,
   basePath,
+  onStarted,
 }: {
   recorder: ReturnType<typeof useRecording>;
   personas: RevisionLabPersona[];
   basePath: string;
+  onStarted?: () => void;
 }) {
   const [name, setName] = useState("");
   const [personaId, setPersonaId] = useState("");
+  const [conflicts, setConflicts] = useState<FlowNameConflict[] | null>(null);
   const portal = useRef<HTMLDivElement>(null);
   const active = personas.filter((persona) => !persona.archivedAt);
   const selected = active.find((persona) => persona.id === personaId);
@@ -36,12 +41,34 @@ export function RecordingSetup({
       label: persona.name,
     })),
   });
+  async function start(replaceFlowId?: string) {
+    if (!selected) return;
+    const result = await recorder.start(
+      name.trim(),
+      selected.id,
+      replaceFlowId,
+    );
+    if (result === true) onStarted?.();
+    else if (result && typeof result === "object")
+      setConflicts(result.conflicts);
+  }
+  if (conflicts)
+    return (
+      <ReplaceFlowConfirmation
+        key={JSON.stringify(conflicts)}
+        name={name.trim()}
+        conflicts={conflicts}
+        busy={recorder.busy}
+        onCancel={() => setConflicts(null)}
+        onConfirm={(id) => void start(id)}
+      />
+    );
   return (
     <Box
       as="form"
       onSubmit={(event) => {
         event.preventDefault();
-        if (selected) void recorder.start(name.trim(), selected.id);
+        void start();
       }}
     >
       <Stack gap="4" ref={portal}>
@@ -51,6 +78,7 @@ export function RecordingSetup({
             <Field.RequiredIndicator />
           </Field.Label>
           <Input
+            autoFocus
             value={name}
             onChange={(event) => setName(event.target.value)}
             maxLength={120}

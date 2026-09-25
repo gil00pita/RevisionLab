@@ -83,6 +83,18 @@ export function FlowReview({
         persona: flow.persona,
         count: flow.status === "recording" ? flow.steps.length : 0,
         lastRoute: "",
+        clickCount:
+          flow.status === "recording"
+            ? flow.steps.reduce(
+                (max, step) =>
+                  Math.max(
+                    max,
+                    ...(step.capture?.cursor.map((point) => point.click ?? 0) ??
+                      []),
+                  ),
+                0,
+              )
+            : 0,
       });
       window.location.assign(safePrototypeRoute(flow.route, basePath));
     } catch (cause) {

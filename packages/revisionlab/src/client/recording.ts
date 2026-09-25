@@ -6,6 +6,7 @@ export interface ActiveRecording {
   lastRoute: string;
   discardRequested?: boolean;
   finishRequested?: boolean;
+  clickCount?: number;
 }
 
 const storageKey = "revisionlab.recording";
@@ -54,24 +55,30 @@ export function safePrototypeRoute(route: string, basePath: string): string {
   return route;
 }
 
+export function captureDimensions() {
+  return {
+    width: document.documentElement.clientWidth,
+    height: Math.min(
+      Math.max(document.body.scrollHeight, window.innerHeight),
+      4000,
+    ),
+  };
+}
+
 export async function captureScreen(): Promise<string> {
   const { toPng } = await import("html-to-image");
   await document.fonts.ready;
   // Private controls never enter the cloned document. Hosts can redact whole regions.
   const screenshot = await toPng(document.body, {
     pixelRatio: 1,
-    width: document.documentElement.clientWidth,
-    height: Math.min(
-      Math.max(document.body.scrollHeight, window.innerHeight),
-      4000,
-    ),
+    ...captureDimensions(),
     filter: (node) =>
       !(
         node instanceof Element &&
         (node.hasAttribute("data-revisionlab-ui") ||
           node.hasAttribute("data-revisionlab-private") ||
           node.matches(
-            'nextjs-portal, input[type="password"], input[autocomplete="one-time-code"]',
+            'nextjs-portal, .html2canvas-container, input[type="password"], input[autocomplete="one-time-code"]',
           ))
       ),
   });

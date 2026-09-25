@@ -1,26 +1,27 @@
 import { useState } from "react";
 import type { RevisionLabElementAnchor } from "../../../server/types.js";
 
-export function useLiveFeedback(route: string) {
+export function useLiveFeedback(route: string, showByDefault: boolean) {
   const [context, setContext] = useState(route);
   const [picking, setPicking] = useState(false);
   const [anchor, setAnchor] = useState<RevisionLabElementAnchor | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [showPins, setShowPins] = useState(true);
+  const [commenting, setCommenting] = useState(false);
+  const [showBalloons, setShowBalloons] = useState<boolean | null>(null);
   if (context !== route) {
     setContext(route);
     setPicking(false);
+    setCommenting(false);
     setAnchor(null);
-    setSelected(null);
+    setShowBalloons(null);
   }
   return {
     picking,
     setPicking,
     anchor,
     setAnchor,
-    selected,
-    setSelected,
-    showPins,
-    setShowPins,
+    commenting,
+    setCommenting,
+    showBalloons: showBalloons ?? showByDefault,
+    setShowBalloons,
   };
 }

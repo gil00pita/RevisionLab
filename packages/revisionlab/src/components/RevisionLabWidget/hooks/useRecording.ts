@@ -2,23 +2,40 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiRequest } from "../../../client/api.js";
+import { flowNameConflicts } from "../../../client/flow-name-conflicts.js";
 import {
-  captureScreen,
   loadRecording,
   saveRecording,
   type ActiveRecording,
 } from "../../../client/recording.js";
+import {
+  captureRecordingScreens,
+  type AutomaticCaptureRequest,
+} from "../../../client/recording-capture.js";
+import { useAutomaticCapture } from "./useAutomaticCapture.js";
 
 type RecordingOperation = "capture" | "start" | "finish" | "discard" | null;
 
-export function useRecording(apiPath: string, route: string, enabled: boolean) {
+export function useRecording(
+  apiPath: string,
+  route: string,
+  enabled: boolean,
+  paused = false,
+) {
   const [recording, setRecording] = useState<ActiveRecording | null>(null);
   const [operation, setOperation] = useState<RecordingOperation>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [savedRecording, setSavedRecording] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const activeOperation = useRef<RecordingOperation>(null);
   const generation = useRef(0);
   const pendingCapture = useRef<Promise<boolean> | null>(null);
+  const lastContent = useRef<{ flowId: string; signature: string } | null>(
+    null,
+  );
 
   const updateOperation = useCallback((next: RecordingOperation) => {
     activeOperation.current = next;
@@ -33,7 +50,11 @@ export function useRecording(apiPath: string, route: string, enabled: boolean) {
   }, []);
 
   const capture = useCallback(
-    (active?: ActiveRecording, title?: string): Promise<boolean> => {
+    (
+      active?: ActiveRecording,
+      title?: string,
+      automatic?: AutomaticCaptureRequest,
+    ): Promise<boolean> => {
       const target = active ?? loadRecording();
       if (
         !target ||
@@ -52,35 +73,27 @@ export function useRecording(apiPath: string, route: string, enabled: boolean) {
       setError("");
       const task = (async () => {
         try {
-          const screenshot = await captureScreen();
-          if (!isCurrent()) return false;
-          await apiRequest(apiPath, `flows/${target.flowId}/steps`, {
-            method: "POST",
-            body: JSON.stringify({
-              title: (
-                title?.trim() ||
-                document.querySelector("main h1")?.textContent?.trim() ||
-                document.title ||
-                route
-              ).slice(0, 160),
-              route,
-              screenshot,
-            }),
+          return await captureRecordingScreens({
+            apiPath,
+            flowId: target.flowId,
+            route,
+            title,
+            automatic,
+            isCurrent,
+            lastSignature:
+              lastContent.current?.flowId === target.flowId
+                ? lastContent.current.signature
+                : undefined,
+            onSaved: (signature, count) => {
+              lastContent.current = { flowId: target.flowId, signature };
+              setNotice(`Screen ${count} captured. Stop recording to save.`);
+            },
           });
-          // A delayed capture must never restore a discarded browser session.
-          if (!isCurrent()) return false;
-          const current = loadRecording()!;
-          saveRecording({
-            ...current,
-            count: current.count + 1,
-            lastRoute: route,
-          });
-          setNotice(
-            `Screen ${target.count + 1} captured. Stop recording to save.`,
-          );
-          return true;
         } catch (cause) {
-          if (isCurrent())
+          if (
+            isCurrent() &&
+            !(cause instanceof Error && cause.name === "AbortError")
+          )
             setError(
               cause instanceof Error
                 ? cause.message
@@ -101,22 +114,23 @@ export function useRecording(apiPath: string, route: string, enabled: boolean) {
     [apiPath, enabled, route, updateOperation],
   );
 
-  useEffect(() => {
-    if (
-      !recording ||
-      recording.discardRequested ||
-      recording.finishRequested ||
-      !enabled ||
-      recording.lastRoute === route
-    )
-      return;
-    const timeout = window.setTimeout(() => void capture(), 900);
-    return () => window.clearTimeout(timeout);
-  }, [capture, enabled, recording, route]);
+  useAutomaticCapture({
+    flowId: recording?.flowId,
+    route,
+    enabled,
+    paused,
+    busy: () => Boolean(activeOperation.current),
+    capture: (request) => capture(undefined, undefined, request),
+  });
 
-  async function start(name: string, personaId: string) {
+  async function start(
+    name: string,
+    personaId: string,
+    replaceFlowId?: string,
+  ) {
     if (activeOperation.current || loadRecording()) return;
     updateOperation("start");
+    setSavedRecording(null);
     setError("");
     setNotice("");
     try {
@@ -125,7 +139,7 @@ export function useRecording(apiPath: string, route: string, enabled: boolean) {
         "flows",
         {
           method: "POST",
-          body: JSON.stringify({ name, personaId, route }),
+          body: JSON.stringify({ name, personaId, route, replaceFlowId }),
         },
       );
       generation.current += 1;
@@ -133,12 +147,16 @@ export function useRecording(apiPath: string, route: string, enabled: boolean) {
       setNotice(
         "Recording started. The first screen will be captured automatically.",
       );
+      return true;
     } catch (cause) {
+      const conflicts = flowNameConflicts(cause);
+      if (conflicts) return { conflicts };
       setError(
         cause instanceof Error
           ? cause.message
           : "Could not start this recording.",
       );
+      return false;
     } finally {
       updateOperation(null);
     }
@@ -169,9 +187,8 @@ export function useRecording(apiPath: string, route: string, enabled: boolean) {
       });
       generation.current += 1;
       saveRecording(null);
-      setNotice(
-        "Recording stopped and saved. Open the workspace to review your screens.",
-      );
+      setSavedRecording({ id: target.flowId, name: target.name });
+      setNotice("Recording ended and saved.");
       return true;
     } catch (cause) {
       setError(
@@ -231,6 +248,11 @@ export function useRecording(apiPath: string, route: string, enabled: boolean) {
       enabled && !recording?.discardRequested && !recording?.finishRequested,
     error,
     notice,
+    savedRecording,
+    dismissSaved: () => {
+      setSavedRecording(null);
+      setNotice("");
+    },
     start,
     capture,
     finish,

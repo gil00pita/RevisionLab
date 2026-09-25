@@ -22,20 +22,56 @@ export function useElementPicker(
     if (anchor) callbacks.current.onSelect(anchor);
   }, []);
 
+  const move = useCallback(
+    (direction: number) => {
+      const elements = [...document.querySelectorAll(elementCandidates)].filter(
+        eligibleElement,
+      );
+      if (!elements.length) return;
+      const index = target ? elements.indexOf(target) : -1;
+      const nextIndex =
+        index < 0
+          ? direction > 0
+            ? 0
+            : elements.length - 1
+          : (index + direction + elements.length) % elements.length;
+      const next = elements[nextIndex];
+      next.scrollIntoView({ block: "center", behavior: "instant" });
+      setTarget(next);
+    },
+    [target],
+  );
+
   useEffect(() => {
+    const eventElement = (event: Event) => {
+      if (
+        event.target instanceof Element &&
+        event.target.hasAttribute("data-revisionlab-picker-surface") &&
+        event instanceof MouseEvent
+      ) {
+        return (
+          document
+            .elementsFromPoint(event.clientX, event.clientY)
+            .map((element) => pickElement(element))
+            .find(Boolean) ?? null
+        );
+      }
+      return pickElement(event.target);
+    };
     const hover = (event: Event) => {
-      const element = pickElement(event.target);
+      const element = eventElement(event);
       if (element) setTarget(element);
     };
     const block = (event: Event) => {
       if (
         !(event.target instanceof Element) ||
-        event.target.closest("[data-revisionlab-ui]")
+        (event.target.closest("[data-revisionlab-ui]") &&
+          !event.target.hasAttribute("data-revisionlab-picker-surface"))
       )
         return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      if (event.type === "click") select(pickElement(event.target));
+      if (event.type === "click") select(eventElement(event));
     };
     const key = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -45,11 +81,25 @@ export function useElementPicker(
       } else if (
         (event.key === "Enter" || event.key === " ") &&
         event.target instanceof Element &&
-        !event.target.closest("[data-revisionlab-ui]")
+        (!event.target.closest("[data-revisionlab-ui]") ||
+          event.target.hasAttribute("data-revisionlab-picker-surface"))
       ) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        select(pickElement(event.target));
+        select(
+          event.target.hasAttribute("data-revisionlab-picker-surface")
+            ? target
+            : pickElement(event.target),
+        );
+      } else if (
+        (event.key === "ArrowDown" || event.key === "ArrowUp") &&
+        event.target instanceof Element &&
+        (!event.target.closest("[data-revisionlab-ui]") ||
+          event.target.hasAttribute("data-revisionlab-picker-surface"))
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        move(event.key === "ArrowDown" ? 1 : -1);
       }
     };
     window.addEventListener("pointermove", hover, true);
@@ -74,23 +124,6 @@ export function useElementPicker(
         window.removeEventListener(name, block, true),
       );
     };
-  }, [select]);
-
-  function move(direction: number) {
-    const elements = [...document.querySelectorAll(elementCandidates)].filter(
-      eligibleElement,
-    );
-    if (!elements.length) return;
-    const index = target ? elements.indexOf(target) : -1;
-    const nextIndex =
-      index < 0
-        ? direction > 0
-          ? 0
-          : elements.length - 1
-        : (index + direction + elements.length) % elements.length;
-    const next = elements[nextIndex];
-    next.scrollIntoView({ block: "center", behavior: "instant" });
-    setTarget(next);
-  }
-  return { target, move, confirm: () => select(target) };
+  }, [select, target, move]);
+  return { target };
 }
