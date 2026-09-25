@@ -18,12 +18,14 @@ Embed prototype recording and review in an existing Next.js project. Mount the w
 
 ## Install in another project
 
-Install the published package from an existing Next.js App Router project:
+From the root of an existing Next.js App Router project (no global installation required):
 
 ```bash
 npx revisionlab@latest init
 npm run dev
 ```
+
+To preview changes first, run `npx revisionlab@latest init --dry-run`. Use `npx revisionlab@latest --help` for available options. Add `--protect` to initialization to generate the optional prototype invitation gate (Next.js 15.5+).
 
 Registry verification on 25 September 2026 found `revisionlab@0.1.1` under `latest`, with no `next` tag. This README also covers newer workspace code: the compact widget, saved personas, interaction capture, and comment settings are not in that published archive. To try those unreleased changes, build and pack this repository:
 

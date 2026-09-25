@@ -45,12 +45,16 @@ Local development on localhost gives the developer owner access. Data persists i
 
 ## Install in another Next.js project
 
-Install the published package from your existing Next.js App Router project:
+The package is published on npm (`latest` is `0.1.1`, verified 25 September 2026). From your existing Next.js project directory:
 
 ```bash
+npx revisionlab@latest --help
+npx revisionlab@latest init --dry-run
 npx revisionlab@latest init
 npm run dev
 ```
+
+Add `--protect` to `init` to generate the optional prototype invitation gate (Next.js 15.5+). No global package installation is needed.
 
 Registry verification on 25 September 2026 found `revisionlab@0.1.1` under `latest`, with no `next` tag. The newer widget, saved personas, interaction capture, and comment settings described above are local workspace changes, not included in that published archive. To try those changes, build a local archive:
 
@@ -66,7 +70,7 @@ npx --package /absolute/path/revisionlab-0.1.1.tgz revisionlab init \
   --package /absolute/path/revisionlab-0.1.1.tgz --protect
 ```
 
-Use `npx revisionlab@latest init --protect` to also gate prototype pages. The installer installs the exact version invoked, including explicit versions and `@next` prereleases when that tag is available. Re-running `init` updates the dependency while preserving customized integration files and review data; restart the development server afterward. The installer supports Next.js 15/16 App Router, React 19, TypeScript/JavaScript, and `app/` or `src/app/`. It generates the API, workspace/access routes, configuration, and widget layout integration. `--protect` also generates the prototype access gate (Next.js 15.5+). Existing files are checked before writes, modified host files are backed up, and repeat installation preserves customizations.
+The installer installs the exact version invoked, including explicit versions and `@next` prereleases when that tag is available. Re-running `init` updates the dependency while preserving customized integration files and review data; restart the development server afterward. The installer supports Next.js 15/16 App Router, React 19, TypeScript/JavaScript, and `app/` or `src/app/`. It generates the API, workspace/access routes, configuration, and widget layout integration. `--protect` also generates the prototype access gate (Next.js 15.5+). Existing files are checked before writes, modified host files are backed up, and repeat installation preserves customizations.
 
 See the [package guide](packages/revisionlab/README.md) for all options and manual integration. Standalone React/Vite and the Pages Router are not included in this release.
 
@@ -74,7 +78,7 @@ See the [package guide](packages/revisionlab/README.md) for all options and manu
 
 [The publishing workflow](.github/workflows/publish.yml) validates pull requests and `main` updates, then publishes the tested package when a matching **GitHub Release** is published. Stable versions use `latest`; prereleases use `next`. It uses npm trusted publishing without a stored npm token.
 
-The intended npm owner is `gil00pita`. The package is now available from npm, but the registry check does not verify trusted-publisher setup or the GitHub `npm` environment. Follow [RELEASING.md](RELEASING.md) for setup and version/release steps. No publication or deployment was performed while updating this guide.
+The chosen npm owner is `gil00pita`, and the maintainer reports completing setup and publication. Public registry availability is verified; GitHub trusted-publisher and `npm` environment settings have not been independently checked. Follow [RELEASING.md](RELEASING.md) for subsequent version/release steps and setup reference. No publication or deployment was performed while updating this guide.
 
 ## Shared review
 
