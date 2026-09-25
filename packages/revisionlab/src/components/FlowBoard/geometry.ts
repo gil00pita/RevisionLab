@@ -1,4 +1,4 @@
-import type { BoardNode } from "./types.js";
+import type { BoardEdge, BoardNode } from "./types.js";
 
 export const CARD_WIDTH = 280;
 export const CARD_HEIGHT = 260;
@@ -16,7 +16,19 @@ export function arrangeNodes(stepIds: string[]): BoardNode[] {
   }));
 }
 
-export function boardBounds(nodes: BoardNode[]) {
+export function connectionLanes(nodes: BoardNode[], edges: BoardEdge[]) {
+  const lanes = new Map<string, number>();
+  const bottom = Math.max(0, ...nodes.map((node) => node.y + CARD_HEIGHT));
+  for (const edge of edges) {
+    const source = nodes.findIndex((node) => node.stepId === edge.sourceStepId);
+    const target = nodes.findIndex((node) => node.stepId === edge.targetStepId);
+    if (edge.kind === "manual" || target !== source + 1)
+      lanes.set(edge.id, bottom + 40 + lanes.size * 44);
+  }
+  return lanes;
+}
+
+export function boardBounds(nodes: BoardNode[], edges: BoardEdge[] = []) {
   return {
     width: Math.max(
       640,
@@ -25,6 +37,9 @@ export function boardBounds(nodes: BoardNode[]) {
     height: Math.max(
       440,
       ...nodes.map((node) => node.y + CARD_HEIGHT + BOARD_PADDING),
+      ...[...connectionLanes(nodes, edges).values()].map(
+        (lane) => lane + BOARD_PADDING,
+      ),
     ),
   };
 }
@@ -57,8 +72,11 @@ export function connectionGeometry(source: BoardNode, target: BoardNode) {
   };
 }
 
-export function manualConnectionPoints(source: BoardNode, target: BoardNode) {
-  const lane = Math.max(source.y, target.y) + CARD_HEIGHT + 32;
+export function manualConnectionPoints(
+  source: BoardNode,
+  target: BoardNode,
+  lane = Math.max(source.y, target.y) + CARD_HEIGHT + 32,
+) {
   const start = { x: source.x + CARD_WIDTH * 0.65, y: source.y + CARD_HEIGHT };
   const end = { x: target.x + CARD_WIDTH * 0.35, y: target.y + CARD_HEIGHT };
   return [start, { x: start.x, y: lane }, { x: end.x, y: lane }, end];

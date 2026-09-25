@@ -1,3 +1,5 @@
+import type { RevisionLabClick } from "../server/types.js";
+
 export interface ActiveRecording {
   flowId: string;
   name: string;
@@ -7,6 +9,15 @@ export interface ActiveRecording {
   discardRequested?: boolean;
   finishRequested?: boolean;
   clickCount?: number;
+  lastStepId?: string;
+  lastSignature?: string;
+  pendingClick?: {
+    id: string;
+    sourceStepId: string;
+    sourceRoute: string;
+    signature: string;
+    interaction: RevisionLabClick;
+  };
 }
 
 const storageKey = "revisionlab.recording";

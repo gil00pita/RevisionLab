@@ -59,6 +59,12 @@ test("legacy databases retain recordings, screenshots and unpinned comments duri
     assert.equal(flow.familyId, flowId);
     assert.equal(flow.version, 1);
     assert.equal(flow.previousVersionId, null);
+    assert.deepEqual(flow.transitions, []);
+    assert.equal(
+      (await migrated.execute("SELECT capture_key FROM steps")).rows[0]
+        .capture_key,
+      null,
+    );
     assert.equal(
       flow.steps[0].screenshot,
       "data:image/png;base64,legacy-image",

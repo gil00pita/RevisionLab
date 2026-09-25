@@ -5,6 +5,7 @@ import {
   boardBounds,
   clampPosition,
   connectionGeometry,
+  connectionLanes,
   manualConnectionPoints,
 } from "./geometry.js";
 
@@ -56,4 +57,29 @@ test("manual branches route below screens and distinguish return paths", () => {
   assert.equal(points[3].y, 308);
   const reverse = manualConnectionPoints(nodes[2], nodes[0]);
   assert.notEqual(reverse[0].x, points[3].x);
+});
+
+test("recorded return and branch paths use separate lanes inside the fitted board", () => {
+  const nodes = arrangeNodes(["a", "b", "c", "e"]);
+  const edges = [
+    ["a", "b"],
+    ["b", "c"],
+    ["c", "a"],
+    ["a", "e"],
+  ].map(([sourceStepId, targetStepId]) => ({
+    id: `${sourceStepId}-${targetStepId}`,
+    sourceStepId,
+    targetStepId,
+    kind: "recorded" as const,
+    label: "",
+  }));
+  const lanes = connectionLanes(nodes, edges);
+  assert.equal(lanes.size, 2);
+  assert.equal(lanes.has("a-b"), false);
+  assert.notEqual(lanes.get("c-a"), lanes.get("a-e"));
+  const bounds = boardBounds(nodes, edges);
+  for (const lane of lanes.values()) {
+    assert.ok(lane > 308);
+    assert.ok(lane + 48 <= bounds.height);
+  }
 });

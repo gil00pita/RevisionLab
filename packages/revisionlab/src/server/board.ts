@@ -113,6 +113,7 @@ export function readBoard(
 export function validateBoardSteps(
   board: RevisionLabBoard,
   stepIds: string[],
+  recordedPairs?: Set<string>,
 ): void {
   const actual = new Set(stepIds);
   const nodes = new Set(board.nodes.map((node) => node.stepId));
@@ -149,12 +150,14 @@ export function validateBoardSteps(
     }
     if (
       edge.kind === "recorded" &&
-      stepIds.indexOf(edge.targetStepId) !==
-        stepIds.indexOf(edge.sourceStepId) + 1
+      !(recordedPairs
+        ? recordedPairs.has(pair)
+        : stepIds.indexOf(edge.targetStepId) ===
+          stepIds.indexOf(edge.sourceStepId) + 1)
     ) {
       throw new HttpError(
         400,
-        "Only consecutive captured screens can have a recorded connection.",
+        "Only observed screen transitions can have a recorded connection.",
       );
     }
     edgeIds.add(edge.id);

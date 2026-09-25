@@ -48,6 +48,7 @@ export function createElementAnchor(
 ): RevisionLabElementAnchor | null {
   if (!eligibleElement(element)) return null;
   const path: string[] = [];
+  let stableRoot = false;
   for (
     let current: Element | null = element;
     current && current !== document.body;
@@ -65,6 +66,7 @@ export function createElementAnchor(
     }
     if (stable) {
       path.unshift(stable);
+      stableRoot = true;
       break;
     }
     const siblings = current.parentElement
@@ -76,7 +78,9 @@ export function createElementAnchor(
       `${CSS.escape(current.localName)}:nth-of-type(${siblings.indexOf(current) + 1})`,
     );
   }
-  const selector = path.join(" > ");
+  // Positional paths are body-relative; without that root, nested siblings
+  // elsewhere in the document can match the same selector.
+  const selector = [...(stableRoot ? [] : ["body"]), ...path].join(" > ");
   if (!selector || selector.length > 2000) return null;
   const anchor = {
     selector,

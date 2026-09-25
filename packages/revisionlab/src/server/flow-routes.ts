@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type { Client, Transaction } from "@libsql/client";
 import { z } from "zod";
 import { requireRole } from "./authentication.js";
@@ -15,6 +15,7 @@ import { discardRecording } from "./recording-discard.js";
 import { activePersonaName } from "./persona-routes.js";
 import { captureMetadataSchema } from "./capture-metadata.js";
 import { createFlow } from "./flow-creation.js";
+import { interactionSchema, recordVisit } from "./recording-visits.js";
 import { HttpError, json, readJson } from "./security.js";
 import type { RevisionLabActor } from "./types.js";
 
@@ -39,6 +40,8 @@ const stepSchema = z.object({
   route: routeSchema,
   screenshot: z.string().max(MAX_CAPTURE_BODY_BYTES).nullable().optional(),
   capture: captureMetadataSchema.optional(),
+  reuse: z.boolean().optional(),
+  interaction: interactionSchema.optional(),
 });
 
 async function requireFlow(transaction: Transaction, id: string) {
@@ -162,10 +165,19 @@ async function captureStep(
     await readJson(request, MAX_CAPTURE_BODY_BYTES),
   );
   const artifact = await prepareArtifact(input.screenshot, config);
-  const id = randomUUID();
+  let id: string = randomUUID();
   const now = new Date().toISOString();
+  const key =
+    input.reuse && artifact
+      ? createHash("sha256")
+          .update(input.route)
+          .update("\0")
+          .update(artifact.bytes)
+          .digest("hex")
+      : null;
+  let reused = false;
   try {
-    const position = await write(client, async (transaction) => {
+    const saved = await write(client, async (transaction) => {
       const flow = await requireFlow(transaction, flowId);
       if (flow.status !== "recording")
         throw new HttpError(
@@ -173,36 +185,56 @@ async function captureStep(
           "Start a new version to add screens to a completed recording.",
         );
       const result = await transaction.execute({
-        sql: "SELECT COUNT(*) AS count FROM steps WHERE flow_id = ?",
+        sql: "SELECT id, position, capture_key FROM steps WHERE flow_id = ? ORDER BY position",
         args: [flowId],
       });
-      const count = Number(result.rows[0].count);
-      if (count >= 200)
+      const count = result.rows.length;
+      const existing = key
+        ? result.rows.find((row) => row.capture_key === key)
+        : undefined;
+      reused = Boolean(existing);
+      if (!existing && count >= 200)
         throw new HttpError(
           409,
           "A recording can contain up to 200 screens. Start a new flow to continue.",
         );
-      await insertArtifact(transaction, artifact);
-      await transaction.execute({
-        sql: "INSERT INTO steps (id, flow_id, title, route, screenshot, position, created_at, capture_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        args: [
-          id,
-          flowId,
-          input.title,
-          input.route,
-          artifact?.id ?? null,
-          count,
-          now,
-          input.capture ? JSON.stringify(input.capture) : null,
-        ],
+      if (existing) id = String(existing.id);
+      else {
+        await insertArtifact(transaction, artifact);
+        await transaction.execute({
+          sql: "INSERT INTO steps (id, flow_id, title, route, screenshot, position, created_at, capture_json, capture_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          args: [
+            id,
+            flowId,
+            input.title,
+            input.route,
+            artifact?.id ?? null,
+            count,
+            now,
+            input.capture ? JSON.stringify(input.capture) : null,
+            key,
+          ],
+        });
+      }
+      await recordVisit({
+        transaction,
+        flowId,
+        flow,
+        stepIds: result.rows.map((row) => String(row.id)),
+        stepId: id,
+        interaction: input.interaction,
       });
       await transaction.execute({
         sql: "UPDATE flows SET updated_at = ?, board_revision = board_revision + 1 WHERE id = ?",
         args: [now, flowId],
       });
-      return count;
+      return {
+        position: existing ? Number(existing.position) : count,
+        count: count + (existing ? 0 : 1),
+      };
     });
-    return json({ id, position }, 201);
+    if (reused) await discardArtifact(artifact, config);
+    return json({ id, ...saved, reused }, 201);
   } catch (error) {
     await discardArtifact(artifact, config).catch(() => undefined);
     throw error;

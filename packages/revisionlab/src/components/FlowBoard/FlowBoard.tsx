@@ -28,7 +28,7 @@ export function FlowBoard(props: FlowBoardProps) {
     onBeforeLeaveChange,
   } = props;
   const draft = useBoardDraft(props);
-  const bounds = boardBounds(draft.board.nodes);
+  const bounds = boardBounds(draft.board.nodes, draft.board.edges);
   const camera = useBoardViewport(bounds.width, bounds.height);
   const [editing, setEditing] = useState(false);
   const [showCursor, setShowCursor] = useState(false);

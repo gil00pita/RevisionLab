@@ -68,6 +68,21 @@ export interface RevisionLabFlow {
   updatedAt: string;
   steps: RevisionLabStep[];
   board: RevisionLabBoard;
+  transitions?: RevisionLabTransition[];
+}
+
+export interface RevisionLabClick {
+  target: RevisionLabElementAnchor;
+  point: RevisionLabPoint | null;
+  bounds: (RevisionLabPoint & { width: number; height: number }) | null;
+  activation: "pointer" | "keyboard";
+}
+
+export interface RevisionLabTransition {
+  id: string;
+  sourceStepId: string;
+  targetStepId: string;
+  interaction: RevisionLabClick | null;
 }
 
 export interface RevisionLabStep {

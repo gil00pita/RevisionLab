@@ -1,5 +1,6 @@
 import html2canvas from "html2canvas-pro";
 import { captureDimensions } from "./recording.js";
+import type { RevisionLabClick } from "../server/types.js";
 
 export const captureExcluded =
   '[data-revisionlab-ui], [data-revisionlab-private], nextjs-portal, .html2canvas-container, input[type="password"], input[autocomplete="one-time-code"]';
@@ -9,6 +10,7 @@ export interface InteractionSnapshot {
   width: number;
   height: number;
   title: string;
+  interaction?: RevisionLabClick | null;
   image: Promise<{ screenshot: string } | { error: Error }>;
 }
 

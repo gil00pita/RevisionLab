@@ -6,8 +6,12 @@ import {
 } from "../../../client/recording.js";
 import type { RevisionLabCapture } from "../../../server/types.js";
 import type { AutomaticCaptureRequest } from "../../../client/recording-capture.js";
-import { captureExcluded } from "../../../client/interaction-snapshot.js";
+import {
+  captureExcluded,
+  pageContentSignature,
+} from "../../../client/interaction-snapshot.js";
 import { prepareInteractionSnapshots } from "../../../client/prepare-interaction.js";
+import { recordedClick } from "../../../client/recording-click.js";
 
 export function useAutomaticCapture({
   flowId,
@@ -161,6 +165,23 @@ export function useAutomaticCapture({
               ...snapshot,
               cursor: evidence(snapshot.width, snapshot.height),
             };
+        }
+        const interaction =
+          event.type === "pointerup"
+            ? before?.interaction
+            : (recordedClick(event) ?? before?.interaction);
+        const latest = loadRecording()!;
+        if (interaction && latest.lastStepId && latest.lastRoute === route) {
+          saveRecording({
+            ...latest,
+            pendingClick: {
+              id: crypto.randomUUID(),
+              sourceStepId: latest.lastStepId,
+              sourceRoute: route,
+              signature: before?.signature ?? pageContentSignature(),
+              interaction,
+            },
+          });
         }
       }
       reason = event.type === "change" ? "change" : "click";

@@ -49,11 +49,22 @@ export async function captureRecordingScreens({
     cursor: [],
   };
   const signature = pageContentSignature();
+  const pending = loadRecording()?.pendingClick;
+  let clickSourceId = pending?.sourceStepId;
+  const clearPending = () => {
+    const current = loadRecording();
+    if (current?.flowId === flowId && current.pendingClick?.id === pending?.id)
+      saveRecording({ ...current, pendingClick: undefined });
+  };
   // A click that leaves host content unchanged needs no new screens.
-  if (evidence.reason === "click" && before?.signature === signature)
+  if (evidence.reason === "click" && before?.signature === signature) {
+    clearPending();
     return true;
-  if (!before && evidence.reason === "click" && lastSignature === signature)
+  }
+  if (!before && evidence.reason === "click" && lastSignature === signature) {
+    clearPending();
     return true;
+  }
   const screenTitle =
     title?.trim() ||
     document.querySelector("main h1")?.textContent?.trim() ||
@@ -66,22 +77,44 @@ export async function captureRecordingScreens({
     metadata: RevisionLabCapture,
     label: string,
     content: string,
+    includeClick = false,
   ) => {
-    await apiRequest(apiPath, `flows/${flowId}/steps`, {
-      method: "POST",
-      body: JSON.stringify({
-        title: label.slice(0, 160),
-        route,
-        screenshot: image,
-        capture: metadata,
-      }),
-    });
+    const sourceStepId = loadRecording()?.lastStepId;
+    const sourceMatches = loadRecording()?.lastSignature === pending?.signature;
+    const result = await apiRequest<{ id: string; count?: number }>(
+      apiPath,
+      `flows/${flowId}/steps`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          title: label.slice(0, 160),
+          route,
+          screenshot: image,
+          capture: metadata,
+          reuse: Boolean(automatic),
+          ...(includeClick &&
+          pending &&
+          sourceStepId &&
+          sourceMatches &&
+          sourceStepId === clickSourceId
+            ? { interaction: { ...pending.interaction, sourceStepId } }
+            : {}),
+        }),
+      },
+    );
     // Count committed uploads even if selection pauses capture or Stop is pressed
     // before the acknowledgement. Never restore a discarded session.
     if (!isCurrent()) return;
     const current = loadRecording()!;
-    saveRecording({ ...current, count: current.count + 1, lastRoute: route });
-    onSaved(content, current.count + 1);
+    const count = result.count ?? current.count + 1;
+    saveRecording({
+      ...current,
+      count,
+      lastRoute: route,
+      lastStepId: result.id,
+      lastSignature: content,
+    });
+    onSaved(content, count);
   };
   if (
     before &&
@@ -103,8 +136,10 @@ export async function captureRecordingScreens({
       `${(before.title || route).slice(0, 160 - suffix.length)}${suffix}`,
       before.signature,
     );
+    clickSourceId = loadRecording()?.lastStepId;
   }
   if (cancelled()) return false;
-  await persist(screenshot, evidence, screenTitle, signature);
+  await persist(screenshot, evidence, screenTitle, signature, true);
+  clearPending();
   return isCurrent();
 }

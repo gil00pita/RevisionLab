@@ -11,6 +11,7 @@ export function BoardConnectionTarget({
   comments,
   selected,
   onSelect,
+  lane,
 }: {
   edge: BoardEdge;
   source: BoardNode;
@@ -19,17 +20,17 @@ export function BoardConnectionTarget({
   comments: number;
   selected: boolean;
   onSelect: () => void;
+  lane?: number;
 }) {
   const direct = connectionGeometry(source, target);
-  if (edge.kind === "recorded" && !direct) return null;
-  const points =
-    edge.kind === "manual"
-      ? manualConnectionPoints(source, target)
-      : [direct!.start, direct!.end];
-  const middle =
-    edge.kind === "manual"
-      ? { x: (points[1].x + points[2].x) / 2, y: points[1].y }
-      : direct!.midpoint;
+  const routed = edge.kind === "manual" || lane !== undefined;
+  if (!routed && !direct) return null;
+  const points = routed
+    ? manualConnectionPoints(source, target, lane)
+    : [direct!.start, direct!.end];
+  const middle = routed
+    ? { x: (points[1].x + points[2].x) / 2, y: points[1].y }
+    : direct!.midpoint;
   return (
     <>
       {points.slice(0, -1).map((point, index) => {

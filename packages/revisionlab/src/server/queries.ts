@@ -16,10 +16,11 @@ export async function readFlows(
   client: Client,
   apiPath: string,
 ): Promise<RevisionLabFlow[]> {
-  const [flows, steps] = await client.batch(
+  const [flows, steps, visits] = await client.batch(
     [
       "SELECT * FROM flows ORDER BY updated_at DESC",
       "SELECT * FROM steps ORDER BY flow_id, position",
+      "SELECT * FROM recording_visits ORDER BY flow_id, position",
     ],
     "read",
   );
@@ -51,6 +52,21 @@ export async function readFlows(
       createdAt: text(row, "created_at"),
       updatedAt: text(row, "updated_at"),
       steps: flowSteps,
+      transitions: visits.rows
+        .filter(
+          (visit) =>
+            visit.flow_id === row.id &&
+            visit.source_step_id != null &&
+            visit.source_step_id !== visit.step_id,
+        )
+        .map((visit) => ({
+          id: text(visit, "id"),
+          sourceStepId: text(visit, "source_step_id"),
+          targetStepId: text(visit, "step_id"),
+          interaction: visit.interaction_json
+            ? JSON.parse(String(visit.interaction_json))
+            : null,
+        })),
       board: readBoard(
         row.board_json,
         Number(row.board_revision),

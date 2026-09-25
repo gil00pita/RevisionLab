@@ -48,7 +48,13 @@ export const schema = [
   `CREATE TABLE IF NOT EXISTS steps (
     id TEXT PRIMARY KEY, flow_id TEXT NOT NULL REFERENCES flows(id) ON DELETE CASCADE,
     title TEXT NOT NULL, route TEXT NOT NULL, screenshot TEXT, position INTEGER NOT NULL,
-    created_at TEXT NOT NULL, capture_json TEXT, UNIQUE(flow_id, position)
+    created_at TEXT NOT NULL, capture_json TEXT, capture_key TEXT, UNIQUE(flow_id, position)
+  )`,
+  `CREATE TABLE IF NOT EXISTS recording_visits (
+    id TEXT PRIMARY KEY, flow_id TEXT NOT NULL REFERENCES flows(id) ON DELETE CASCADE,
+    source_step_id TEXT REFERENCES steps(id) ON DELETE CASCADE,
+    step_id TEXT NOT NULL REFERENCES steps(id) ON DELETE CASCADE,
+    position INTEGER NOT NULL, interaction_json TEXT, UNIQUE(flow_id, position)
   )`,
   `CREATE TABLE IF NOT EXISTS board_edges (
     flow_id TEXT NOT NULL REFERENCES flows(id) ON DELETE CASCADE, id TEXT NOT NULL,

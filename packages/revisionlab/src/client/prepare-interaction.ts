@@ -3,6 +3,7 @@ import {
   takeInteractionSnapshot,
   type InteractionSnapshot,
 } from "./interaction-snapshot.js";
+import { recordedClick } from "./recording-click.js";
 
 /** Freeze pointer/keyboard state without cancelling or replaying host events. */
 export function prepareInteractionSnapshots(
@@ -58,6 +59,7 @@ export function prepareInteractionSnapshots(
       return;
     clear();
     prepared = freeze();
+    if (prepared) prepared.interaction = recordedClick(event);
     target = event.target;
     timer = setTimeout(clear, 2000);
   };

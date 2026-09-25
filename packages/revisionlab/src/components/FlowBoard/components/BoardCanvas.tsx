@@ -3,7 +3,7 @@ import type {
   RevisionLabComment,
   RevisionLabFlow,
 } from "../../../server/types.js";
-import { boardBounds } from "../geometry.js";
+import { boardBounds, connectionLanes } from "../geometry.js";
 import type { useBoardViewport } from "../hooks/useBoardViewport.js";
 import type { FlowBoardData } from "../types.js";
 import { BoardConnector } from "./BoardConnector.js";
@@ -54,7 +54,8 @@ export function BoardCanvas({
   onRemove: (id: string) => void;
   showCursor: boolean;
 }) {
-  const bounds = boardBounds(board.nodes);
+  const bounds = boardBounds(board.nodes, board.edges);
+  const lanes = connectionLanes(board.nodes, board.edges);
   const nodes = new Map(board.nodes.map((node) => [node.stepId, node]));
   const names = new Map(flow.steps.map((step) => [step.id, step.title]));
   const screenCounts = new Map<string, number>();
@@ -129,8 +130,14 @@ export function BoardCanvas({
             if (!source || !target) return null;
             return (
               <Box key={edge.id}>
-                <BoardConnector edge={edge} source={source} target={target} />
+                <BoardConnector
+                  edge={edge}
+                  source={source}
+                  target={target}
+                  lane={lanes.get(edge.id)}
+                />
                 <BoardConnectionTarget
+                  lane={lanes.get(edge.id)}
                   edge={edge}
                   source={source}
                   target={target}

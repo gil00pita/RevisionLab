@@ -59,7 +59,10 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
   // One write transaction prevents simultaneous instances from applying an ALTER twice.
   await write(client, async (transaction) => {
     const additions = {
-      steps: [["capture_json", "TEXT"]],
+      steps: [
+        ["capture_json", "TEXT"],
+        ["capture_key", "TEXT"],
+      ],
       flows: [
         ["family_id", "TEXT"],
         ["version", "INTEGER NOT NULL DEFAULT 1"],

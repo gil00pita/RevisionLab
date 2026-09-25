@@ -22,4 +22,6 @@ export type {
   CommentBubbleColor,
   RevisionLabStep,
   RevisionLabCapture,
+  RevisionLabClick,
+  RevisionLabTransition,
 } from "./types.js";

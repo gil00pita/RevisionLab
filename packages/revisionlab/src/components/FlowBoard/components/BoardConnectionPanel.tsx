@@ -16,6 +16,7 @@ import type {
 } from "../../../server/types.js";
 import { FeedbackThread } from "../../FeedbackThread/index.js";
 import type { BoardEdge, FlowBoardData } from "../types.js";
+import { RecordedClickPreview } from "./RecordedClickPreview.js";
 
 export function BoardConnectionPanel({
   edge,
@@ -85,6 +86,16 @@ export function BoardConnectionPanel({
           onClick={onClose}
         />
       </Flex>
+      {edge.kind === "recorded" && source && (
+        <RecordedClickPreview
+          source={source}
+          transitions={(flow.transitions ?? []).filter(
+            (visit) =>
+              visit.sourceStepId === edge.sourceStepId &&
+              visit.targetStepId === edge.targetStepId,
+          )}
+        />
+      )}
       {editing && (
         <Stack gap="3">
           <Field.Root>
