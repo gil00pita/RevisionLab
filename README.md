@@ -2,9 +2,17 @@
 
 Review prototype flows, comments, and versions from inside each Next.js project.
 
+The selected flow's title, recording action, and delete action live in the top workspace header. Use the **Whiteboard** and **Screen & comments** tabs to switch views, and the history icon beside them to choose a version. This compact layout is part of the local build.
+
+Whiteboard zoom, percentage/reset, and Fit controls float inside the board's bottom-right corner. Paths and other editing controls remain above the board.
+
 RevisionLab is an installable Next.js App Router integration. The floating widget records real prototype screens and opens a full review workspace. This repository runs the same package that the installer adds to other projects.
 
 ## Run locally
+
+Recordings now save an accessibility report with each screen. Whiteboard cards show status/counts; open a screen and choose **Accessibility** beside **Comments** to review rule severity, affected-element locations, and documentation links. Reports survive reloads and stay with their original screen/version. Existing captures show **Not checked**; failed, unstable, or unmatched pre-interaction checks show **Check unavailable**, never a pass. Automated checks are not compliance certification. This is part of the local build, not the published package.
+
+In **Flows > Your flows**, owners and editors can use the trash icon in the open flow's header or choose **Select** in the menu to reveal checkboxes and **Delete selected**. **Select all** applies to completed flows in the filtered results; **Select none** clears every selection. **Done** clears selection and hides the bulk controls. Confirmation permanently deletes each selected flow's entire version history, screenshots, boards, and attached comments; there is no Undo. Live-page comments and unrelated flows are kept. Finish or discard unfinished recordings first. This is part of the local build, not the published package.
 
 **Workspace > Settings > Live comments** controls default bubble visibility and color. Owners and editors can choose from gray, red, orange, yellow, green, teal, cyan, blue, purple, and pink; changes save to the workspace database. Commenters have read-only access. The live Show comments switch remains a temporary page-level override. New pages use the saved default; comment details always require activation.
 
@@ -25,7 +33,7 @@ Open the local URL printed by Next.js. Click the camera (**Record prototype**), 
 
 New captures include bounded cursor samples and numbered clicks. Toggle **Cursor path** on the whiteboard or full-screen review to show the path on its exact capture; old recordings are unchanged. Readiness checks wait for document/fonts/images, host `aria-busy`, and 650ms of quiet DOM/resource activity, with a visible error after 10 seconds instead of silently recording a loading state. This is not network interception, video, or action replay; hosts should expose asynchronous loading with `aria-busy`. Widget/private/password regions are excluded.
 
-The workspace uses a single sidebar. **Flows** slides the main menu away and replaces it with **Your flows**; **Back** restores the menu without changing the selected flow or canvas. Comments, Personas, and Review access open from that main menu.
+The workspace uses a single sidebar. **Flows** slides the main menu content away and replaces it with **Your flows**, while the logo and desktop footer stay in place; **Back** restores the menu without changing the selected flow or canvas. Comments, Personas, and Review access open from that main menu.
 
 **Discard recording** is different: after confirmation it prevents new captures, waits for any capture in progress, and removes the unfinished draft and its screenshots without saving a completed flow. Previously saved versions remain. While recording, same-domain links proceed without a warning. Same-origin prototype navigation continues recording automatically; only same-tab links to another hostname show Stay or Discard and leave. Discard failures keep you on the page with capture stopped and a retry; navigation waits for successful cleanup.
 

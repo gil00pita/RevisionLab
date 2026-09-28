@@ -8,6 +8,7 @@ import type {
   RevisionLabStep,
 } from "../../../server/types.js";
 import { ScreenCanvas } from "./ScreenCanvas.js";
+import { ScreenFeedbackTabs } from "./ScreenFeedbackTabs.js";
 
 export function ScreenReview({
   flow,
@@ -32,6 +33,7 @@ export function ScreenReview({
   const [selected, setSelected] = useState<string | null>(null);
   const [bubbleOpen, setBubbleOpen] = useState(false);
   const [imageReady, setImageReady] = useState(false);
+  const [feedbackTab, setFeedbackTab] = useState("comments");
   const feedback = useRef<HTMLDivElement>(null);
   const pinElements = useRef(new Map<string, HTMLButtonElement>());
   const selectedPin = comments.find(
@@ -39,6 +41,7 @@ export function ScreenReview({
   );
 
   function selectComment(id: string | null) {
+    setFeedbackTab("comments");
     setAnchor(null);
     setSelected(id);
     setBubbleOpen(
@@ -94,6 +97,7 @@ export function ScreenReview({
           )
         }
         onPlace={(point) => {
+          setFeedbackTab("comments");
           setSelected(null);
           setBubbleOpen(false);
           setAnchor(point);
@@ -113,49 +117,60 @@ export function ScreenReview({
         borderColor="gray.200"
         p="5"
       >
-        {selectedPin && imageReady ? (
-          <Stack gap="4">
-            <Heading as="h2" size="md">
-              Screen feedback
-            </Heading>
-            <Text color="gray.600">
-              This discussion opens beside its pin on the screen. Read and reply
-              there without losing the location.
-            </Text>
-            <Button variant="outline" onClick={() => revealComment(selected)}>
-              Open pinned discussion
-            </Button>
-            <Button variant="ghost" onClick={() => selectComment(null)}>
-              All screen comments
-            </Button>
-          </Stack>
-        ) : (
-          <FeedbackThread
-            apiPath={apiPath}
-            flowId={flow.id}
-            stepId={step?.id}
-            route={step?.route ?? flow.route}
-            comments={comments}
-            canResolve={canResolve}
-            onRefresh={onRefresh}
-            anchor={anchor}
-            onAnchorChange={setAnchor}
-            onCancelAnchor={() => setAnchor(null)}
-            selectedCommentId={selected}
-            onSelectComment={revealComment}
-            onCommentCreated={(id) => {
-              setSelected(id);
-              setBubbleOpen(Boolean(anchor));
-              setAnchor(null);
-              // The refreshed comment's pin mounts after this state update.
-              requestAnimationFrame(() =>
-                pinElements.current
-                  .get(id)
-                  ?.scrollIntoView({ block: "center", inline: "nearest" }),
-              );
-            }}
-          />
-        )}
+        <ScreenFeedbackTabs
+          value={feedbackTab}
+          onChange={setFeedbackTab}
+          report={step?.capture?.accessibility}
+          comments={
+            comments.filter(
+              (comment) => !comment.parentId && comment.status === "open",
+            ).length
+          }
+        >
+          {selectedPin && imageReady ? (
+            <Stack gap="4">
+              <Heading as="h2" size="md">
+                Screen feedback
+              </Heading>
+              <Text color="gray.600">
+                This discussion opens beside its pin on the screen. Read and
+                reply there without losing the location.
+              </Text>
+              <Button variant="outline" onClick={() => revealComment(selected)}>
+                Open pinned discussion
+              </Button>
+              <Button variant="ghost" onClick={() => selectComment(null)}>
+                All screen comments
+              </Button>
+            </Stack>
+          ) : (
+            <FeedbackThread
+              apiPath={apiPath}
+              flowId={flow.id}
+              stepId={step?.id}
+              route={step?.route ?? flow.route}
+              comments={comments}
+              canResolve={canResolve}
+              onRefresh={onRefresh}
+              anchor={anchor}
+              onAnchorChange={setAnchor}
+              onCancelAnchor={() => setAnchor(null)}
+              selectedCommentId={selected}
+              onSelectComment={revealComment}
+              onCommentCreated={(id) => {
+                setSelected(id);
+                setBubbleOpen(Boolean(anchor));
+                setAnchor(null);
+                // The refreshed comment's pin mounts after this state update.
+                requestAnimationFrame(() =>
+                  pinElements.current
+                    .get(id)
+                    ?.scrollIntoView({ block: "center", inline: "nearest" }),
+                );
+              }}
+            />
+          )}
+        </ScreenFeedbackTabs>
       </Box>
     </Flex>
   );

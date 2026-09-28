@@ -1,4 +1,5 @@
 import type { RevisionLabSettings } from "../comment-settings.js";
+import type { AccessibilityReport } from "../accessibility.js";
 export type {
   RevisionLabSettings,
   CommentBubbleColor,
@@ -97,6 +98,7 @@ export interface RevisionLabStep {
 }
 
 export interface RevisionLabCapture {
+  accessibility?: AccessibilityReport;
   width: number;
   height: number;
   reason: "page" | "click" | "change" | "manual";

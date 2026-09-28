@@ -1,7 +1,7 @@
 import {
-  Badge,
   Box,
   Button,
+  Checkbox,
   Field,
   Flex,
   Heading,
@@ -10,30 +10,50 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { GitBranch } from "lucide-react";
-import { useState } from "react";
+import { Check, ListChecks, Trash2 } from "lucide-react";
 import type { RevisionLabFlow } from "../../../server/types.js";
+import { FlowListItem } from "./FlowListItem.js";
+import { DeleteFlowsDialog } from "./DeleteFlowsDialog.js";
+import { useFlowList } from "../hooks/useFlowList.js";
 
 export function FlowList({
   flows,
   selected,
   onSelect,
+  canDelete,
+  disabled,
+  onDelete,
 }: {
   flows: RevisionLabFlow[];
   selected?: RevisionLabFlow;
   onSelect: (id: string) => void;
+  canDelete: boolean;
+  disabled: boolean;
+  onDelete: (familyIds: string[]) => Promise<void>;
 }) {
-  const [search, setSearch] = useState("");
-  const latest = new Map<string, RevisionLabFlow>();
-  for (const flow of flows) {
-    const existing = latest.get(flow.familyId);
-    if (!existing || existing.version < flow.version)
-      latest.set(flow.familyId, flow);
-  }
-  const filtered = [...latest.values()].filter((flow) =>
-    `${flow.name} ${flow.persona}`.toLowerCase().includes(search.toLowerCase()),
-  );
-
+  const {
+    search,
+    setSearch,
+    setChecked,
+    selecting,
+    toggleSelection,
+    targets,
+    setTargets,
+    busy,
+    error,
+    notice,
+    searchInput,
+    trigger,
+    latest,
+    active,
+    filtered,
+    eligible,
+    selection,
+    allChecked,
+    someChecked,
+    confirm,
+    remove,
+  } = useFlowList({ flows, disabled, onDelete });
   return (
     <Box
       as="section"
@@ -43,70 +63,132 @@ export function FlowList({
       bg="white"
       borderColor="gray.200"
     >
-      <Stack gap="4" p="5">
-        <Heading as="h2" size="md">
-          Your flows
-        </Heading>
+      <Stack gap="4" p="4">
+        <Flex align="center" justify="space-between" gap="2" flexWrap="wrap">
+          <Heading as="h2" size="md">
+            Your flows
+          </Heading>
+          {canDelete && latest.size > 0 && (
+            <Button
+              size="xs"
+              variant="ghost"
+              aria-pressed={selecting}
+              disabled={busy || disabled}
+              onClick={toggleSelection}
+            >
+              <Icon>{selecting ? <Check /> : <ListChecks />}</Icon>
+              {selecting ? "Done" : "Select"}
+            </Button>
+          )}
+        </Flex>
         <Field.Root>
           <Field.Label srOnly>Find a flow or persona</Field.Label>
           <Input
+            ref={searchInput}
             placeholder="Find a flow or persona…"
             size="sm"
             value={search}
+            disabled={busy || disabled}
             onChange={(event) => setSearch(event.target.value)}
           />
         </Field.Root>
+        {canDelete && selecting && latest.size > 0 && (
+          <Stack gap="2">
+            <Flex
+              align="center"
+              justify="space-between"
+              gap="2"
+              flexWrap="wrap"
+            >
+              <Checkbox.Root
+                size="sm"
+                colorPalette="blue"
+                checked={
+                  allChecked ? true : someChecked ? "indeterminate" : false
+                }
+                disabled={disabled || busy || !eligible.length}
+                onCheckedChange={(event) =>
+                  setChecked(
+                    event.checked === true
+                      ? [
+                          ...new Set([
+                            ...selection,
+                            ...eligible.map((flow) => flow.familyId),
+                          ]),
+                        ]
+                      : selection.filter(
+                          (id) =>
+                            !eligible.some((flow) => flow.familyId === id),
+                        ),
+                  )
+                }
+              >
+                <Checkbox.HiddenInput aria-label="Select all filtered flows" />
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                <Checkbox.Label>Select all</Checkbox.Label>
+              </Checkbox.Root>
+              <Button
+                size="xs"
+                variant="plain"
+                disabled={busy || disabled || !selection.length}
+                onClick={() => setChecked([])}
+              >
+                Select none
+              </Button>
+            </Flex>
+            {selection.length > 0 && (
+              <>
+                <Text fontSize="sm" role="status">
+                  {selection.length} selected
+                </Text>
+                <Button
+                  size="sm"
+                  colorPalette="red"
+                  variant="outline"
+                  disabled={disabled || busy || selection.length > 100}
+                  onClick={() => confirm(selection)}
+                >
+                  <Icon>
+                    <Trash2 />
+                  </Icon>
+                  Delete selected
+                </Button>
+                {selection.length > 100 && (
+                  <Text fontSize="sm" color="red.700" role="alert">
+                    Delete up to 100 flows at a time.
+                  </Text>
+                )}
+              </>
+            )}
+          </Stack>
+        )}
+        {notice && (
+          <Text role="status" fontSize="sm" color="green.700">
+            {notice}
+          </Text>
+        )}
       </Stack>
       <Stack gap="1" p="2">
         {filtered.map((flow) => (
-          <Button
-            key={flow.id}
-            variant="ghost"
-            h="auto"
-            py="4"
-            px="3"
-            alignItems="start"
-            textAlign="left"
-            whiteSpace="normal"
-            justifyContent="start"
-            bg={
-              selected?.familyId === flow.familyId ? "blue.50" : "transparent"
+          <FlowListItem
+            key={flow.familyId}
+            flow={flow}
+            current={selected?.familyId === flow.familyId}
+            checked={selection.includes(flow.familyId)}
+            selecting={canDelete && selecting}
+            active={active.has(flow.familyId)}
+            disabled={disabled || busy}
+            onCheck={(value) =>
+              setChecked(
+                value
+                  ? [...selection, flow.familyId]
+                  : selection.filter((id) => id !== flow.familyId),
+              )
             }
-            color="gray.900"
-            onClick={() => onSelect(flow.id)}
-            aria-pressed={selected?.familyId === flow.familyId}
-          >
-            <Icon
-              color={
-                selected?.familyId === flow.familyId ? "blue.700" : "gray.500"
-              }
-              mt="1"
-              flexShrink="0"
-            >
-              <GitBranch />
-            </Icon>
-            <Box minW="0">
-              <Text fontWeight="semibold" overflowWrap="anywhere">
-                {flow.name}
-              </Text>
-              <Text
-                fontSize="xs"
-                color="gray.600"
-                mt="1"
-                overflowWrap="anywhere"
-              >
-                {flow.persona}
-              </Text>
-              <Flex gap="2" mt="2">
-                <Badge colorPalette="gray">v{flow.version}</Badge>
-                <Text fontSize="xs" color="gray.600">
-                  {flow.steps.length}{" "}
-                  {flow.steps.length === 1 ? "screen" : "screens"}
-                  {flow.status === "recording" ? " · Recording" : ""}
-                </Text>
-              </Flex>
-            </Box>
-          </Button>
+            onSelect={() => onSelect(flow.id)}
+          />
         ))}
         {filtered.length === 0 && (
           <Text color="gray.600" p="3">
@@ -116,6 +198,18 @@ export function FlowList({
           </Text>
         )}
       </Stack>
+      {targets.length > 0 && (
+        <DeleteFlowsDialog
+          targets={targets}
+          busy={busy}
+          error={error}
+          onCancel={() => setTargets([])}
+          onConfirm={() => void remove()}
+          finalFocus={() =>
+            trigger.current?.isConnected ? trigger.current : searchInput.current
+          }
+        />
+      )}
     </Box>
   );
 }

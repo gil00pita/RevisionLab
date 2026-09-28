@@ -1,4 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
+import { pageContentSignature } from "../../../client/interaction-snapshot.js";
+import {
+  rememberAccessibility,
+  runAccessibilityScan,
+  summarizeAccessibility,
+} from "../../../client/accessibility-scan.js";
 import {
   isHostMutation,
   waitForPageSettled,
@@ -19,8 +25,6 @@ export interface PageAccessibility {
   checkedAt?: string;
   error?: string;
 }
-// axe has one document-wide runner. Serialize remounts and route changes.
-let scanQueue: Promise<unknown> = Promise.resolve();
 
 export function usePageAccessibility(
   route: string,
@@ -59,39 +63,18 @@ export function usePageAccessibility(
       publish({ status: "checking", issues: [], incomplete: 0 });
       try {
         await waitForPageSettled(controller.signal);
-        const task = scanQueue
-          .catch(() => undefined)
-          .then(async () => {
-            if (controller.signal.aborted) return null;
-            const axe = (await import("axe-core")).default;
-            return axe.run(
-              {
-                exclude: [
-                  "[data-revisionlab-ui]",
-                  "[data-revisionlab-private]",
-                  "nextjs-portal",
-                  ".html2canvas-container",
-                ],
-              },
-              {
-                elementRef: true,
-                runOnly: {
-                  type: "tag",
-                  values: [
-                    "wcag2a",
-                    "wcag2aa",
-                    "wcag21a",
-                    "wcag21aa",
-                    "wcag22aa",
-                  ],
-                },
-                resultTypes: ["violations", "incomplete"],
-              },
-            );
-          });
-        scanQueue = task;
-        const scanResult = await task;
+        dirty = false;
+        const signature = pageContentSignature();
+        const scanResult = await runAccessibilityScan(
+          () => controller.signal.aborted,
+        );
         if (!scanResult) return;
+        if (
+          !dirty &&
+          !controller.signal.aborted &&
+          signature === pageContentSignature()
+        )
+          rememberAccessibility(signature, summarizeAccessibility(scanResult));
         publish({
           status: dirty
             ? "stale"

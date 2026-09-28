@@ -1,4 +1,5 @@
 import type { RevisionLabCapture } from "../server/types.js";
+import { captureAccessibility } from "./recording-accessibility.js";
 import { apiRequest } from "./api.js";
 import {
   pageContentSignature,
@@ -72,6 +73,10 @@ export async function captureRecordingScreens({
     route;
   const screenshot = await captureScreen();
   if (cancelled()) return false;
+  evidence.accessibility = await captureAccessibility(signature, () =>
+    Boolean(cancelled()),
+  );
+  if (cancelled()) return false;
   const persist = async (
     image: string,
     metadata: RevisionLabCapture,
@@ -132,6 +137,7 @@ export async function captureRecordingScreens({
         height: before.height,
         reason: "click",
         cursor: before.cursor,
+        accessibility: before.accessibility,
       },
       `${(before.title || route).slice(0, 160 - suffix.length)}${suffix}`,
       before.signature,

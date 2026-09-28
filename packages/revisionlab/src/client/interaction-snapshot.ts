@@ -1,11 +1,17 @@
 import html2canvas from "html2canvas-pro";
 import { captureDimensions } from "./recording.js";
 import type { RevisionLabClick } from "../server/types.js";
+import {
+  unavailableAccessibility,
+  type AccessibilityReport,
+} from "../accessibility.js";
+import { cachedAccessibility } from "./accessibility-scan.js";
 
 export const captureExcluded =
   '[data-revisionlab-ui], [data-revisionlab-private], nextjs-portal, .html2canvas-container, input[type="password"], input[autocomplete="one-time-code"]';
 
 export interface InteractionSnapshot {
+  accessibility: AccessibilityReport;
   signature: string;
   width: number;
   height: number;
@@ -86,5 +92,12 @@ export function takeInteractionSnapshot(): InteractionSnapshot {
       // The renderer removes its iframe on success, but not every failure path.
       for (const container of ownedContainers) container.remove();
     });
-  return { ...dimensions, signature, title, image };
+  return {
+    ...dimensions,
+    signature,
+    title,
+    image,
+    accessibility:
+      cachedAccessibility(signature) ?? unavailableAccessibility("not-scanned"),
+  };
 }

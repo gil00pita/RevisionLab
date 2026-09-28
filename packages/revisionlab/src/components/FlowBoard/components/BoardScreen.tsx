@@ -15,6 +15,7 @@ import { CARD_HEIGHT, CARD_WIDTH } from "../geometry.js";
 import type { BoardNode } from "../types.js";
 import { useBoardNodeDrag } from "../hooks/useBoardNodeDrag.js";
 import { CursorTrail } from "../../CursorTrail/index.js";
+import { AccessibilityStatus } from "../../AccessibilityStatus/index.js";
 
 interface BoardScreenProps {
   step: RevisionLabStep;
@@ -194,7 +195,14 @@ export function BoardScreen({
             {step.title}
           </Text>
           <Flex gap="2" align="center" justify="space-between" mt="1">
-            <Text fontSize="xs" fontFamily="mono" color="gray.600" truncate>
+            <Text
+              fontSize="xs"
+              fontFamily="mono"
+              color="gray.600"
+              truncate
+              minW="0"
+              flex="1"
+            >
               {step.route}
             </Text>
             {comments > 0 && (
@@ -211,6 +219,7 @@ export function BoardScreen({
                 <Text fontSize="xs">{comments}</Text>
               </Flex>
             )}
+            <AccessibilityStatus report={step.capture?.accessibility} compact />
           </Flex>
         </Box>
       </Button>

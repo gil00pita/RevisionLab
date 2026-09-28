@@ -1,7 +1,9 @@
 import { z } from "zod";
+import { accessibilityReportSchema } from "./accessibility-report.js";
 
 export const captureMetadataSchema = z
   .object({
+    accessibility: accessibilityReportSchema.optional(),
     width: z.number().int().min(1).max(16384),
     height: z.number().int().min(1).max(4000),
     reason: z.enum(["page", "click", "change", "manual"]),

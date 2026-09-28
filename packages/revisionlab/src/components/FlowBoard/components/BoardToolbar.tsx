@@ -1,24 +1,12 @@
-import { Button, Flex, Icon, IconButton, Switch, Text } from "@chakra-ui/react";
-import {
-  GitBranch,
-  Maximize,
-  Minus,
-  Plus,
-  RotateCcw,
-  Undo2,
-} from "lucide-react";
-import { MAX_BOARD_ZOOM } from "../viewport.js";
+import { Button, Flex, Icon, Switch } from "@chakra-ui/react";
+import { GitBranch, RotateCcw, Undo2 } from "lucide-react";
 
 export function BoardToolbar({
-  zoom,
-  minZoom,
   canEdit,
   canUndo,
   leaving,
   conflict,
   editing,
-  onZoom,
-  onFit,
   onArrange,
   onUndo,
   onConnections,
@@ -26,15 +14,11 @@ export function BoardToolbar({
   hasCursor,
   onCursorChange,
 }: {
-  zoom: number;
-  minZoom: number;
   canEdit: boolean;
   canUndo: boolean;
   leaving: boolean;
   conflict: boolean;
   editing: boolean;
-  onZoom: (zoom: number) => void;
-  onFit: () => void;
   onArrange: () => void;
   onUndo: () => void;
   onConnections: () => void;
@@ -42,6 +26,7 @@ export function BoardToolbar({
   hasCursor: boolean;
   onCursorChange: (checked: boolean) => void;
 }) {
+  if (!canEdit && !hasCursor) return null;
   return (
     <Flex
       p="3"
@@ -57,45 +42,8 @@ export function BoardToolbar({
         gap="1"
         align="center"
         flexWrap="wrap"
-        aria-label="Board view controls"
+        aria-label="Board editing controls"
       >
-        <IconButton
-          aria-label="Zoom out"
-          size="sm"
-          variant="ghost"
-          onClick={() => onZoom(zoom - 0.1)}
-          disabled={zoom <= minZoom}
-        >
-          <Icon>
-            <Minus />
-          </Icon>
-        </IconButton>
-        <Button
-          aria-label="Reset zoom to 100 percent"
-          size="sm"
-          variant="ghost"
-          onClick={() => onZoom(1)}
-          minW="16"
-        >
-          {Math.round(zoom * 100)}%
-        </Button>
-        <IconButton
-          aria-label="Zoom in"
-          size="sm"
-          variant="ghost"
-          onClick={() => onZoom(zoom + 0.1)}
-          disabled={zoom >= MAX_BOARD_ZOOM}
-        >
-          <Icon>
-            <Plus />
-          </Icon>
-        </IconButton>
-        <Button size="sm" variant="ghost" onClick={onFit}>
-          <Icon>
-            <Maximize />
-          </Icon>
-          Fit
-        </Button>
         {canEdit && (
           <Button
             size="sm"
@@ -154,13 +102,6 @@ export function BoardToolbar({
           </Button>
         </Flex>
       )}
-      <Text w="full" fontSize="xs" color="gray.600">
-        Use the mouse wheel to zoom. Drag the empty board or Shift+wheel to pan.
-        Open a screen to place comments.
-        {editing
-          ? " Changes save automatically. Undo reverses your last board edit. Move screens by their grips, or select Connect on a source and then a target screen."
-          : " Select a connection to discuss that path."}
-      </Text>
     </Flex>
   );
 }

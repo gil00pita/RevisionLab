@@ -15,6 +15,7 @@ import { discardRecording } from "./recording-discard.js";
 import { activePersonaName } from "./persona-routes.js";
 import { captureMetadataSchema } from "./capture-metadata.js";
 import { createFlow } from "./flow-creation.js";
+import { deleteFlows } from "./flow-deletion.js";
 import { interactionSchema, recordVisit } from "./recording-visits.js";
 import { HttpError, json, readJson } from "./security.js";
 import type { RevisionLabActor } from "./types.js";
@@ -61,6 +62,8 @@ export async function handleFlows(
   actor: RevisionLabActor,
 ): Promise<Response> {
   requireRole(actor, "editor");
+  if (request.method === "POST" && path.length === 2 && path[1] === "delete")
+    return deleteFlows(request, client, config, actor);
   if (request.method === "POST" && path.length === 1) {
     const input = flowSchema
       .extend({ replaceFlowId: z.string().uuid().optional() })

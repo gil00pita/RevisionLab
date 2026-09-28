@@ -114,15 +114,11 @@ export function FlowBoard(props: FlowBoardProps) {
           Boolean(step.capture?.cursor.length),
         )}
         onCursorChange={setShowCursor}
-        zoom={camera.zoom}
-        minZoom={camera.minZoom}
         canEdit={canEdit}
         canUndo={draft.canUndo}
         leaving={leaving || navigationPending}
         conflict={draft.conflict || draft.reloading}
         editing={editing}
-        onZoom={camera.changeZoom}
-        onFit={camera.fit}
         onArrange={draft.arrange}
         onUndo={() => {
           draft.undo();
@@ -173,6 +169,7 @@ export function FlowBoard(props: FlowBoardProps) {
         </Text>
       )}
       <Grid
+        flex="1"
         templateColumns={{
           base: "minmax(0, 1fr)",
           xl: selectedEdge ? "minmax(0, 1fr) 360px" : "minmax(0, 1fr)",

@@ -13,10 +13,11 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { ArrowLeft, Download, LogOut, RefreshCw } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { apiRequest, ApiError } from "../../client/api.js";
 import { useRevisionLab } from "../../client/useRevisionLab.js";
-import { downloadReport } from "./utils.js";
+import { WorkspaceHeader } from "./components/WorkspaceHeader.js";
+import { FlowHeaderActions } from "./components/FlowHeaderActions.js";
 import { InvitationManager } from "../InvitationManager/index.js";
 import { RevisionLabProvider } from "../RevisionLabProvider/index.js";
 import type { WorkspaceView } from "./components/WorkspaceNavigation.js";
@@ -27,6 +28,7 @@ import { FlowReview } from "./components/FlowReview.js";
 import { EmptyWorkspace } from "./components/EmptyWorkspace.js";
 import { WorkspaceSettings } from "./components/WorkspaceSettings.js";
 import { defaultSettings } from "../../comment-settings.js";
+import { useFlowDeletion } from "./hooks/useFlowDeletion.js";
 
 export interface RevisionLabWorkspaceProps {
   apiPath?: string;
@@ -64,7 +66,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
     requestedView === "people"
       ? requestedView
       : "flows";
-  const { data, error, loading, refresh } = useRevisionLab(apiPath);
+  const { data: loadedData, error, loading, refresh } = useRevisionLab(apiPath);
   const [flowId, setFlowId] = useState<string | null>(() =>
     searchParams.get("flow"),
   );
@@ -84,9 +86,17 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const boardDirtyChanged = useCallback((dirty: boolean) => {
     if (!dirty) setBoardNavigationError("");
   }, []);
+  const deletion = useFlowDeletion({
+    data: loadedData,
+    apiPath,
+    blocked: signingOut || startingRecording,
+    beforeDelete: canLeaveBoard,
+    onRefresh: refresh,
+  });
+  const data = deletion.data;
   const flow = data?.flows.find((item) => item.id === flowId) ?? data?.flows[0];
   // Pin the initial choice: polling may reorder flows when another editor saves.
-  if (flow && flowId === null) setFlowId(flow.id);
+  if (flow && flowId !== flow.id) setFlowId(flow.id);
 
   async function canLeaveBoard(): Promise<boolean> {
     if (checkingBoard.current) return false;
@@ -115,6 +125,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   async function selectFlow(id: string) {
     if (
       signingOut ||
+      deletion.pending ||
       startingRecording ||
       id === flow?.id ||
       !(await canLeaveBoard())
@@ -124,7 +135,12 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   }
 
   async function selectView(next: WorkspaceView) {
-    if (signingOut || startingRecording || !(await canLeaveBoard()))
+    if (
+      signingOut ||
+      startingRecording ||
+      deletion.pending ||
+      !(await canLeaveBoard())
+    )
       return false;
     if (next !== view)
       router.replace(`${basePath}?view=${next}`, { scroll: false });
@@ -132,7 +148,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   }
 
   async function signOut() {
-    if (signingOut || startingRecording) return;
+    if (signingOut || startingRecording || deletion.pending) return;
     setSigningOut(true);
     if (!(await canLeaveBoard())) {
       setSigningOut(false);
@@ -193,58 +209,41 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
         selectedFlow={flow}
         onViewChange={selectView}
         onFlowSelect={selectFlow}
+        onDeleteFlows={deletion.remove}
+        disabled={
+          completingBoard || signingOut || startingRecording || deletion.pending
+        }
       />
       <Flex as="main" direction="column" flex="1" minW="0">
-        <Flex
-          as="header"
-          minH="20"
-          px={{ base: "4", md: "6" }}
-          py="4"
-          justify="space-between"
-          align="center"
-          gap="3"
-          flexWrap="wrap"
-          borderBottomWidth="1px"
-          borderColor="gray.200"
-        >
-          <Box>
-            <Text fontWeight="semibold">{data.project.name}</Text>
-            <Text fontSize="xs" color="gray.600">
-              Screens, versions, and feedback in one place
-            </Text>
-          </Box>
-          <Flex gap="2" flexWrap="wrap">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => downloadReport(data)}
-            >
-              <Icon>
-                <Download />
-              </Icon>
-              Export report
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => void refresh()}>
-              <Icon>
-                <RefreshCw />
-              </Icon>
-              Refresh
-            </Button>
-            {!data.actor.local && (
-              <Button
-                size="sm"
-                variant="ghost"
-                loading={signingOut}
-                onClick={() => void signOut()}
-              >
-                <Icon>
-                  <LogOut />
-                </Icon>
-                Sign out
-              </Button>
-            )}
-          </Flex>
-        </Flex>
+        <WorkspaceHeader
+          data={data}
+          flow={view === "flows" ? flow : undefined}
+          onRefresh={refresh}
+          onSignOut={signOut}
+          signingOut={signingOut}
+          actions={
+            view === "flows" && flow && data.actor.role !== "commenter" ? (
+              <FlowHeaderActions
+                key={flow.id}
+                flow={flow}
+                versions={data.flows.filter(
+                  (item) => item.familyId === flow.familyId,
+                )}
+                apiPath={apiPath}
+                basePath={basePath}
+                disabled={
+                  completingBoard ||
+                  signingOut ||
+                  startingRecording ||
+                  deletion.pending
+                }
+                beforeLeave={canLeaveBoard}
+                onRecordingTransitionChange={setStartingRecording}
+                onDeleteFlows={deletion.remove}
+              />
+            ) : undefined
+          }
+        />
         {(error || actionError || boardNavigationError) && (
           <Text role="alert" px="6" py="3" color="red.700" bg="red.50">
             {error?.message || actionError || boardNavigationError}
@@ -300,10 +299,11 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
                 onBeforeLeaveChange={registerBoardFlush}
                 onDirtyChange={boardDirtyChanged}
                 navigationPending={
-                  completingBoard || signingOut || startingRecording
+                  completingBoard ||
+                  signingOut ||
+                  startingRecording ||
+                  deletion.pending
                 }
-                onRecordingTransitionChange={setStartingRecording}
-                beforeLeave={canLeaveBoard}
               />
             ) : (
               <EmptyWorkspace canRecord={data.actor.role !== "commenter"} />
