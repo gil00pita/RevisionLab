@@ -84,9 +84,11 @@ See the [package guide](packages/revisionlab/README.md) for all options and manu
 
 ## Automatic npm releases
 
-[The publishing workflow](.github/workflows/publish.yml) validates pull requests and `main` updates, then publishes the tested package when a matching **GitHub Release** is published. Stable versions use `latest`; prereleases use `next`. It uses npm trusted publishing without a stored npm token.
+[The publishing workflow](.github/workflows/publish.yml) now publishes after each merge or direct push to `main`, once all checks pass. It selects the next patch above npm's highest stable version, updates the workspace version and lockfile inside CI, and publishes the exact tested archive to `latest`. No manual version bump or GitHub Release is needed. This change takes effect after it is merged into `main`.
 
-The chosen npm owner is `gil00pita`, and the maintainer reports completing setup and publication. Public registry availability is verified; GitHub trusted-publisher and `npm` environment settings have not been independently checked. Follow [RELEASING.md](RELEASING.md) for subsequent version/release steps and setup reference. No publication or deployment was performed while updating this guide.
+Release runs queue through version selection and publication. Already-published source commits are skipped on full reruns; registry errors and failed checks stop publication. Checked-in versions remain development baselines, with no bot commits. Pull requests and manual workflow runs validate only. Explicit GitHub Releases still support intentional releases (`latest` for stable versions, `next` for prereleases).
+
+npm trusted publishing uses no stored npm token. The GitHub `npm` environment is confirmed; npm's trusted-publisher settings and a live automated publication still need verification. Follow [RELEASING.md](RELEASING.md) for setup, retries, and release status. GitHub's **Packages** panel shows a separate registry; use [revisionlab on npm](https://www.npmjs.com/package/revisionlab) to check availability.
 
 ## Shared review
 
