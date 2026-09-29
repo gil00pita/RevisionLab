@@ -2,22 +2,44 @@
 
 Review prototype flows, comments, and versions from inside each Next.js project.
 
+The selected flow's title, recording action, and delete action live in the top workspace header. Use the **Whiteboard** and **Screen & comments** tabs to switch views, and the history icon beside them to choose a version. This compact layout is part of the local build.
+
+Whiteboard zoom, percentage/reset, and Fit controls float inside the board's bottom-right corner. Paths and other editing controls remain above the board.
+
 RevisionLab is an installable Next.js App Router integration. The floating widget records real prototype screens and opens a full review workspace. This repository runs the same package that the installer adds to other projects.
 
 ## Run locally
+
+Recordings now save an accessibility report with each screen. Whiteboard cards show status/counts; open a screen and choose **Accessibility** beside **Comments** to review rule severity, affected-element locations, and documentation links. Reports survive reloads and stay with their original screen/version. Existing captures show **Not checked**; failed, unstable, or unmatched pre-interaction checks show **Check unavailable**, never a pass. Automated checks are not compliance certification. This is part of the local build, not the published package.
+
+In **Flows > Your flows**, owners and editors can use the trash icon in the open flow's header or choose **Select** in the menu to reveal checkboxes and **Delete selected**. **Select all** applies to completed flows in the filtered results; **Select none** clears every selection. **Done** clears selection and hides the bulk controls. Confirmation permanently deletes each selected flow's entire version history, screenshots, boards, and attached comments; there is no Undo. Live-page comments and unrelated flows are kept. Finish or discard unfinished recordings first. This is part of the local build, not the published package.
+
+**Workspace > Settings > Live comments** controls default bubble visibility and color. Owners and editors can choose from gray, red, orange, yellow, green, teal, cyan, blue, purple, and pink; changes save to the workspace database. Commenters have read-only access. The live Show comments switch remains a temporary page-level override. New pages use the saved default; comment details always require activation.
+
+Recording setup opens just above the bottom-right widget, like the accessibility panel. After a successful Stop, **Recording ended and saved** appears with **View recording**, opening that exact flow in the workspace. The confirmation remains until dismissed or a new recording starts; failed saves remain retryable without a success message.
+
+The floating toolbar contains the supplied RevisionLab mark, accessibility status, camera/Stop, and comment/Stop commenting. Click the RevisionLab logotype to go straight to the workspace in the same tab, without a dialog. It supports normal browser new-tab actions. The accessibility icon runs local axe-core checks on each visited, authorized prototype page and updates after host DOM changes. A check means automated checks passed, not full accessibility compliance. Other states identify scanning, issues, manual review, stale results, or failure; click the icon for findings and **Run again**. Current findings show problem bubbles on visible affected elements. Click a title, individual target, or bubble to scroll to and highlight the component without activating it. **Read more** opens the rule documentation; **All issues** restores the list. Close or Escape clears this inspection layer. Private, hidden, removed, stale, and unavailable frame targets are not highlighted.
+
+Click the comment icon to select components directly on the live page. The crosshair and highlight show the target; clicking opens an anchored speech bubble with a comment field, **Post**, and **Cancel**, without activating the host control. Submission or cancellation returns to selection; **Stop commenting** or Escape ends the mode. Saved comment markers follow the workspace default (initially visible); click a marker (or activate it with the keyboard) to open its details and component highlight. Use **Show comments** in the selection controls to hide or show the markers. Closing details leaves markers visible; showing markers again never opens details automatically. Escape or Stop commenting preserves visibility. The layer temporarily hides while composing and restores markers afterward. Route changes/reload restore the workspace default with details closed. Replies and resolution remain in the workspace, reached through **All comments on this page**. The toolbar badge still counts open page threads, not replies. Keyboard selection uses Up/Down and Enter, without floating navigation buttons. No recording is required. Targets persist across reloads and comments are scoped to the pathname, not a recorded version. Opening comment mode preserves the last accessibility result; actual host changes still invalidate it. Existing deployment enablement and reviewer access still apply.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open the local URL printed by Next.js. Choose **Review → Record**, name a flow and persona, and explore the prototype. New paths capture automatically; **Capture screen** saves additional states on the same page. Choose **Stop recording** to save the completed recording, then open `/revisionlab` to review its screens, create another version, and add or resolve feedback. Stop is visible in the floating recording controls and in the widget footer on both tabs. It prevents new captures immediately and waits for any capture already underway before saving.
+Opening a saved live comment bubble highlights its attached component with an outline and subtle tint matching the workspace bubble color. The highlight follows the open preview as the page moves, without blocking clicks. Closing the preview or hiding comments removes it; Escape preserves it when comments remain visible.
 
-**Discard recording** is different: after confirmation it prevents new captures, waits for any capture in progress, and removes the unfinished draft and its screenshots without saving a completed flow. Previously saved versions remain. While recording, normal same-tab page links show a warning: stay, discard and leave, or continue recording on another eligible same-origin prototype page. Continue is disabled until capture is idle; the review workspace and external destinations cannot continue the recording. Discard failures keep you on the page with capture stopped and a retry; navigation waits for successful cleanup.
+Open the local URL printed by Next.js. Click the camera (**Record prototype**), enter a recording name, choose a saved persona, then **Start recording**. Create persona types in **Workspace → Personas** (also linked from the dialog). Owners and editors can edit, archive, and restore personas; existing recording labels remain unchanged. An existing name (ignoring case and surrounding spaces) requires confirmation: **Cancel** keeps the setup, while **Replace and record** creates a new version of that flow and preserves previous screenshots/comments. Unfinished recordings must be finished or discarded first. Setup closes and the camera becomes **Stop recording**. The first page, subsequent pages, and completed field changes capture automatically after the page settles. Changed clicks preserve the pre-interaction screen and settled result; unchanged clicks add no screens. Already-captured pre-states are not duplicated, and host clicks are not delayed or replayed. Rapid interactions coalesce; typing alone does not capture. **Capture screen** remains available in the review panel. Stop prevents new captures and waits for an ongoing capture before saving.
+
+New captures include bounded cursor samples and numbered clicks. Toggle **Cursor path** on the whiteboard or full-screen review to show the path on its exact capture; old recordings are unchanged. Readiness checks wait for document/fonts/images, host `aria-busy`, and 650ms of quiet DOM/resource activity, with a visible error after 10 seconds instead of silently recording a loading state. This is not network interception, video, or action replay; hosts should expose asynchronous loading with `aria-busy`. Widget/private/password regions are excluded.
+
+The workspace uses a single sidebar. **Flows** slides the main menu content away and replaces it with **Your flows**, while the logo and desktop footer stay in place; **Back** restores the menu without changing the selected flow or canvas. Comments, Personas, and Review access open from that main menu.
+
+**Discard recording** is different: after confirmation it prevents new captures, waits for any capture in progress, and removes the unfinished draft and its screenshots without saving a completed flow. Previously saved versions remain. While recording, same-domain links proceed without a warning. Same-origin prototype navigation continues recording automatically; only same-tab links to another hostname show Stay or Discard and leave. Discard failures keep you on the page with capture stopped and a retry; navigation waits for successful cleanup.
 
 Recording controls have passed local Stop, Stay, Continue, and discard-retry browser checks, with warning visuals confirmed at desktop and narrow widths, alongside lint, the production build, and all 88 package tests; see [VALIDATION.md](VALIDATION.md) for evidence and remaining limits. Reload/close uses the browser's native warning, not automatic discard. New-tab/modified clicks, downloads, hash links, and switching tabs do not discard the recording. Host `router.push`/`router.replace` calls need the [programmatic navigation helper](packages/revisionlab/README.md#programmatic-navigation); client-side browser Back/Forward is not globally blocked.
 
-Each recording opens as a **Whiteboard**: screenshots are connected in recorded order. Use the mouse wheel over the board or a screen to zoom the full flow around the cursor. Drag the background or use Shift+wheel to pan; zoom buttons, reset to 100%, and **Fit** remain available. Editors choose **Paths** to enter editing without opening a form, then use **Connect** on a source screen and **Connect here** on a target. Select a connection to edit its label, remove it, or discuss that path. Commenters can discuss saved connections without editing the graph.
+Each recording opens as a **Whiteboard**: unique screen states are connected by observed visits, including returns and branches. Historical recordings retain their captured sequence. Use the mouse wheel over the board or a screen to zoom the full flow around the cursor. Drag the background or use Shift+wheel to pan; zoom buttons, reset to 100%, and **Fit** remain available. Editors choose **Paths** to enter editing without opening a form, then use **Connect** on a source screen and **Connect here** on a target. Select a connection to inspect its recorded click, edit its label, remove it, or discuss that path. Commenters can inspect and discuss saved connections without editing the graph.
 
 Board changes **autosave** after a short pause or a completed drag. **Undo** reverses the last local edit, including a saved edit; a drag or continuous label edit is one operation. **Done editing** and internal navigation wait for pending saves. Failed saves keep your changes with a retry; conflicts never silently overwrite another editor. Undo history is limited to the current flow session, not comments or recordings.
 
@@ -31,7 +53,7 @@ Local development on localhost gives the developer owner access. Data persists i
 
 ## Install in another Next.js project
 
-The package is published on npm (`latest` is `0.1.1`, verified 24 September 2026). From your existing Next.js project directory:
+The package is published on npm (`latest` is `0.1.1`, verified 25 September 2026). From your existing Next.js project directory:
 
 ```bash
 npx revisionlab@latest --help
@@ -42,7 +64,7 @@ npm run dev
 
 Add `--protect` to `init` to generate the optional prototype invitation gate (Next.js 15.5+). No global package installation is needed.
 
-For an unpublished local development build, create an archive:
+Registry verification on 25 September 2026 found `revisionlab@0.1.1` under `latest`, with no `next` tag. The newer widget, saved personas, interaction capture, and comment settings described above are local workspace changes, not included in that published archive. To try those changes, build a local archive:
 
 ```bash
 npm run build:package
@@ -52,11 +74,11 @@ npm pack --workspace revisionlab
 Run this from an existing Next.js project, substituting the archive's absolute path:
 
 ```bash
-npx --package /absolute/path/revisionlab-0.1.0.tgz revisionlab init \
-  --package /absolute/path/revisionlab-0.1.0.tgz --protect
+npx --package /absolute/path/revisionlab-0.1.1.tgz revisionlab init \
+  --package /absolute/path/revisionlab-0.1.1.tgz --protect
 ```
 
-The installer installs the exact version invoked, including explicit versions and `@next` prereleases. The installer supports Next.js 15/16 App Router, React 19, TypeScript/JavaScript, and `app/` or `src/app/`. It generates the API, workspace/access routes, configuration, and widget layout integration. `--protect` also generates the prototype access gate (Next.js 15.5+). Existing files are checked before writes, modified host files are backed up, and repeat installation preserves customizations.
+The installer installs the exact version invoked, including explicit versions and `@next` prereleases when that tag is available. Re-running `init` updates the dependency while preserving customized integration files and review data; restart the development server afterward. The installer supports Next.js 15/16 App Router, React 19, TypeScript/JavaScript, and `app/` or `src/app/`. It generates the API, workspace/access routes, configuration, and widget layout integration. `--protect` also generates the prototype access gate (Next.js 15.5+). Existing files are checked before writes, modified host files are backed up, and repeat installation preserves customizations.
 
 See the [package guide](packages/revisionlab/README.md) for all options and manual integration. Standalone React/Vite and the Pages Router are not included in this release.
 
@@ -64,7 +86,7 @@ See the [package guide](packages/revisionlab/README.md) for all options and manu
 
 [The publishing workflow](.github/workflows/publish.yml) validates pull requests and `main` updates, then publishes the tested package when a matching **GitHub Release** is published. Stable versions use `latest`; prereleases use `next`. It uses npm trusted publishing without a stored npm token.
 
-The chosen npm owner is `gil00pita`, and the maintainer reports completing setup and publication. Public registry availability is verified; GitHub trusted-publisher and `npm` environment settings have not been independently checked. Follow [RELEASING.md](RELEASING.md) for subsequent version/release steps and setup reference.
+The chosen npm owner is `gil00pita`, and the maintainer reports completing setup and publication. Public registry availability is verified; GitHub trusted-publisher and `npm` environment settings have not been independently checked. Follow [RELEASING.md](RELEASING.md) for subsequent version/release steps and setup reference. No publication or deployment was performed while updating this guide.
 
 ## Shared review
 
@@ -76,9 +98,9 @@ Hosted Turso and Resend paths are implemented but require real deployment creden
 
 ## Implemented scope
 
-The functional release includes installation, SQLite/libSQL persistence, invitations and sessions, flow/persona recording, private screenshots, immutable completed screen versions, version switching, generated flow boards with saved layouts and manual branches, screen-area comment pins and threaded replies, page comments, and Markdown reports. The current partial editing increment adds on-board connection editing/discussions and reversible screen removal; its validation status is above. Board metadata remains editable without changing completed captures. Screens are DOM captures, not video recordings. A persona labels a recording; the prototype still controls its own user permissions.
+The functional release includes installation, SQLite/libSQL persistence, invitations and sessions, flow/persona recording, private screenshots, immutable completed screen versions, version switching, generated flow boards with saved layouts and manual branches, screen-area comment pins and threaded replies, page comments, and Markdown reports. The local recording increment also reuses matching automatic captures within a version: A -> B -> C -> A -> E has one A screen, a C -> A return path, and A -> B / A -> E branches. Changed screen states remain separate. Select a recorded connection to inspect its clicked item and location on the source screenshot when available; legacy or unavailable evidence is not invented. The current partial editing increment adds on-board connection editing/discussions and reversible screen removal; its validation status is above. Board metadata remains editable without changing completed captures. Screens are DOM captures, not video recordings. A persona labels a recording; the prototype still controls its own user permissions.
 
-Automatic discovery of unrecorded paths, executable action graphs and replay, DOM-element anchors, visual diff generation, and PDF/Excalidraw/Confluence integrations remain roadmap items. Manual branches describe a path; they do not claim it was recorded or make it executable. The whiteboard uses geometric connectors rather than an obstacle-avoiding diagram engine.
+Automatic discovery of unrecorded paths, executable action graphs and replay, replay-aware DOM re-anchoring, visual diff generation, and PDF/Excalidraw/Confluence integrations remain roadmap items. The widget supports live DOM-element targets separately from screenshot pins. Manual branches describe a path; they do not claim it was recorded or make it executable. The whiteboard uses geometric connectors rather than an obstacle-avoiding diagram engine.
 
 ## Development checks
 

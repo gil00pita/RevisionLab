@@ -16,10 +16,11 @@ export async function readFlows(
   client: Client,
   apiPath: string,
 ): Promise<RevisionLabFlow[]> {
-  const [flows, steps] = await client.batch(
+  const [flows, steps, visits] = await client.batch(
     [
       "SELECT * FROM flows ORDER BY updated_at DESC",
       "SELECT * FROM steps ORDER BY flow_id, position",
+      "SELECT * FROM recording_visits ORDER BY flow_id, position",
     ],
     "read",
   );
@@ -30,6 +31,7 @@ export async function readFlows(
     route: text(row, "route"),
     position: Number(row.position),
     createdAt: text(row, "created_at"),
+    capture: row.capture_json ? JSON.parse(String(row.capture_json)) : null,
     screenshot: row.screenshot
       ? String(row.screenshot).startsWith("data:image/")
         ? String(row.screenshot)
@@ -50,6 +52,21 @@ export async function readFlows(
       createdAt: text(row, "created_at"),
       updatedAt: text(row, "updated_at"),
       steps: flowSteps,
+      transitions: visits.rows
+        .filter(
+          (visit) =>
+            visit.flow_id === row.id &&
+            visit.source_step_id != null &&
+            visit.source_step_id !== visit.step_id,
+        )
+        .map((visit) => ({
+          id: text(visit, "id"),
+          sourceStepId: text(visit, "source_step_id"),
+          targetStepId: text(visit, "step_id"),
+          interaction: visit.interaction_json
+            ? JSON.parse(String(visit.interaction_json))
+            : null,
+        })),
       board: readBoard(
         row.board_json,
         Number(row.board_revision),
@@ -65,6 +82,7 @@ export async function readComments(
   const result =
     await client.execute(`SELECT comments.*, reviewers.name AS author_name,
       COALESCE(parent.status, comments.status) AS thread_status,
+      COALESCE(parent.element_anchor, comments.element_anchor) AS thread_element_anchor,
       CASE WHEN comments.parent_id IS NULL THEN comments.resolved_at ELSE parent.resolved_at END AS thread_resolved_at,
       edge.source_step_id AS edge_source, edge.target_step_id AS edge_target,
       edge.label AS edge_label, edge.kind AS edge_kind, edge.archived_at AS edge_archived_at
@@ -98,6 +116,10 @@ export async function readComments(
         ? null
         : { x: Number(row.anchor_x), y: Number(row.anchor_y) },
     parentId: nullable(row, "parent_id"),
+    elementAnchor:
+      row.thread_element_anchor == null
+        ? null
+        : JSON.parse(String(row.thread_element_anchor)),
   }));
 }
 

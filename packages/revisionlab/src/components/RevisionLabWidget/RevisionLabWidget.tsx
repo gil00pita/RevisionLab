@@ -2,25 +2,22 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import {
-  Button,
-  CloseButton,
-  Dialog,
-  Flex,
-  Icon,
-  Link,
-  Portal,
-  Separator,
-  Spinner,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
-import { ArrowUpRight, Camera, MessageSquare } from "lucide-react";
-import { ApiError } from "../../client/api.js";
+import { Button, Link, Stack, Text } from "@chakra-ui/react";
 import { useRevisionLab } from "../../client/useRevisionLab.js";
-import { FeedbackThread } from "../FeedbackThread/index.js";
+import { defaultSettings } from "../../comment-settings.js";
+import { LiveCommentComposer } from "./components/LiveCommentComposer.js";
+import { ElementPicker } from "./components/ElementPicker.js";
+import { LiveCommentBalloons } from "./components/LiveCommentBalloons.js";
+import { useLiveFeedback } from "./hooks/useLiveFeedback.js";
 import { RevisionLabProvider } from "../RevisionLabProvider/index.js";
+import { WidgetPanel } from "./components/WidgetPanel.js";
+import { WidgetLauncher } from "./components/WidgetLauncher.js";
+import { RecordingSetup } from "./components/RecordingSetup.js";
+import { RecordingPopover } from "./components/RecordingPopover.js";
 import { RecorderPanel } from "./components/RecorderPanel.js";
+import { WidgetStatus } from "./components/WidgetStatus.js";
+import { WidgetDialog } from "./components/WidgetDialog.js";
+import { usePageAccessibility } from "./hooks/usePageAccessibility.js";
 import { RecordingActions } from "./components/RecordingActions.js";
 import { RecordingControls } from "./components/RecordingControls.js";
 import { RecordingLeaveDialog } from "./components/RecordingLeaveDialog.js";
@@ -51,12 +48,27 @@ function Widget({
 }: Required<RevisionLabWidgetProps> & { route: string }) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"comment" | "record">("comment");
-  const { data, error, loading, refresh } = useRevisionLab(apiPath);
+  const workspace = useRevisionLab(apiPath);
+  const { data, refresh } = workspace;
+  const settings = data?.settings ?? defaultSettings;
+  const live = useLiveFeedback(route, settings.showCommentBubbles);
+  const commentsHref = `${basePath}?${new URLSearchParams({ view: "comments", route })}`;
+  const pageComments =
+    data?.comments.filter(
+      (comment) =>
+        comment.route === route && !comment.stepId && !comment.edgeId,
+    ) ?? [];
   const reviewRoute = route === basePath || route.startsWith(`${basePath}/`);
   const recorder = useRecording(
     apiPath,
     route,
     Boolean(data && data.actor.role !== "commenter" && !reviewRoute),
+    open || live.commenting,
+  );
+  const accessibility = usePageAccessibility(
+    route,
+    Boolean(data && !reviewRoute),
+    open || live.commenting,
   );
   const ending =
     recorder.operation === "finish" || recorder.operation === "discard";
@@ -70,15 +82,29 @@ function Widget({
       !recorder.recording?.discardRequested &&
       !recorder.recording?.finishRequested,
   });
-  const unauthenticated = error instanceof ApiError && error.status === 401;
 
   async function stopRecording() {
     if (await recorder.finish()) {
-      if (reviewRoute) await refresh();
-      else {
-        setTab("record");
-        setOpen(true);
-      }
+      setOpen(false);
+      await refresh();
+    }
+  }
+  function beginCommenting() {
+    live.setCommenting(true);
+    live.setPicking(true);
+    live.setAnchor(null);
+    setOpen(false);
+  }
+  function stopCommenting() {
+    live.setCommenting(false);
+    live.setPicking(false);
+    live.setAnchor(null);
+  }
+  function resumeCommenting() {
+    live.setAnchor(null);
+    if (live.commenting) {
+      setOpen(false);
+      live.setPicking(true);
     }
   }
 
@@ -124,152 +150,152 @@ function Widget({
 
   return (
     <>
-      <Dialog.Root
-        open={open}
-        onOpenChange={(event) => setOpen(event.open)}
-        placement="center"
-        size="sm"
-        scrollBehavior="inside"
+      {data && live.picking && (
+        <ElementPicker
+          commentsHref={commentsHref}
+          showBalloons={live.showBalloons}
+          onShowBalloonsChange={live.setShowBalloons}
+          onCancel={() => {
+            stopCommenting();
+          }}
+          onSelect={(anchor) => {
+            live.setAnchor(anchor);
+            live.setPicking(false);
+          }}
+        />
+      )}
+      {data && live.showBalloons && !live.anchor && !open && (
+        <LiveCommentBalloons
+          key={route}
+          comments={pageComments}
+          color={settings.commentBubbleColor}
+          commentsHref={commentsHref}
+        />
+      )}
+      {data && live.commenting && live.anchor && (
+        <LiveCommentComposer
+          key={route}
+          anchor={live.anchor}
+          route={route}
+          apiPath={apiPath}
+          onCancel={resumeCommenting}
+          onEscape={stopCommenting}
+          onSaved={() => {
+            resumeCommenting();
+            void refresh();
+          }}
+        />
+      )}
+      <WidgetLauncher
+        recording={Boolean(recorder.recording)}
+        canRecord={Boolean(data && data.actor.role !== "commenter")}
+        authorized={Boolean(data)}
+        commenting={live.commenting}
+        commentCount={
+          pageComments.filter(
+            (comment) => !comment.parentId && comment.status === "open",
+          ).length
+        }
+        busy={ending || recorder.operation === "start"}
+        accessibility={accessibility.result}
+        onRerun={accessibility.rerun}
+        workspaceHref={basePath}
+        onComment={live.commenting ? stopCommenting : beginCommenting}
+        onRecord={() => {
+          if (recorder.recording) {
+            void stopRecording();
+            return;
+          }
+          stopCommenting();
+          setTab("record");
+          setOpen(true);
+          void refresh();
+        }}
+      />
+      <RecordingPopover
+        open={open && tab === "record"}
+        busy={recorder.operation === "start"}
+        onClose={() => setOpen(false)}
       >
-        <Dialog.Trigger asChild>
-          <Button
-            position="fixed"
-            bottom="6"
-            right="6"
-            zIndex="docked"
-            colorPalette="blue"
-            size="lg"
-            borderRadius="full"
-            shadow="lg"
-            aria-label={
-              recorder.recording
-                ? "Open RevisionLab recording"
-                : "Open RevisionLab"
-            }
-          >
-            <Icon>{recorder.recording ? <Camera /> : <MessageSquare />}</Icon>
-            {recorder.recording
-              ? `Recording · ${recorder.recording.count}`
-              : "Review"}
-          </Button>
-        </Dialog.Trigger>
-        <Portal>
-          <Dialog.Backdrop data-revisionlab-ui />
-          <Dialog.Positioner data-revisionlab-ui colorPalette="blue">
-            <Dialog.Content
-              bg="white"
-              color="gray.900"
-              fontFamily="body"
-              borderRadius="xl"
-            >
-              <Dialog.Header pb="3">
-                <Dialog.Title>RevisionLab</Dialog.Title>
-                <Dialog.Description color="gray.600" overflowWrap="anywhere">
-                  {data?.project.name ?? "Prototype review"} · {route}
-                </Dialog.Description>
-              </Dialog.Header>
-              <Dialog.Body>
-                {loading ? (
-                  <Flex py="10" gap="3" align="center">
-                    <Spinner />
-                    <Text>Connecting to the workspace…</Text>
-                  </Flex>
-                ) : data ? (
-                  <Stack gap="5">
-                    <Flex gap="2" role="group" aria-label="Review tools">
-                      <Button
-                        flex="1"
-                        size="sm"
-                        variant={tab === "comment" ? "solid" : "outline"}
-                        aria-pressed={tab === "comment"}
-                        onClick={() => setTab("comment")}
-                      >
-                        <Icon>
-                          <MessageSquare />
-                        </Icon>
-                        Comment
-                      </Button>
-                      {data.actor.role !== "commenter" && (
-                        <Button
-                          flex="1"
-                          size="sm"
-                          variant={tab === "record" ? "solid" : "outline"}
-                          aria-pressed={tab === "record"}
-                          onClick={() => setTab("record")}
-                        >
-                          <Icon>
-                            <Camera />
-                          </Icon>
-                          Record
-                        </Button>
-                      )}
-                    </Flex>
-                    {tab === "record" && data.actor.role !== "commenter" ? (
-                      <RecorderPanel recorder={recorder} />
-                    ) : (
-                      <FeedbackThread
-                        apiPath={apiPath}
-                        route={route}
-                        comments={data.comments.filter(
-                          (comment) =>
-                            comment.route === route &&
-                            !comment.stepId &&
-                            !comment.edgeId,
-                        )}
-                        canResolve={data.actor.role !== "commenter"}
-                        onRefresh={refresh}
-                      />
-                    )}
-                    <Separator />
-                    <Text color="gray.600" fontSize="xs">
-                      Reviewing as {data.actor.name} · {data.actor.role}
-                    </Text>
-                  </Stack>
-                ) : (
-                  <Stack gap="4" py="4">
-                    <Text
-                      role="alert"
-                      color={unauthenticated ? "gray.600" : "red.700"}
-                    >
-                      {error?.message ?? "Unable to connect."}
-                    </Text>
-                    {unauthenticated ? (
-                      <Link href={`${basePath}/access`} color="blue.700">
-                        Verify your email to review
-                      </Link>
-                    ) : (
-                      <Button onClick={() => void refresh()} variant="outline">
-                        Try again
-                      </Button>
-                    )}
-                  </Stack>
+        {data && (
+          <Stack gap="3">
+            {recorder.recording ? (
+              <>
+                <RecorderPanel
+                  recorder={recorder}
+                  personas={data.personas ?? []}
+                  basePath={basePath}
+                />
+                <RecordingActions
+                  recorder={recorder}
+                  onStop={() => void stopRecording()}
+                  onDiscard={navigation.requestDiscard}
+                />
+              </>
+            ) : (
+              <>
+                <RecordingSetup
+                  recorder={recorder}
+                  personas={data.personas ?? []}
+                  basePath={basePath}
+                  onStarted={() => setOpen(false)}
+                />
+                {recorder.error && (
+                  <Text role="alert" color="red.700">
+                    {recorder.error}
+                  </Text>
                 )}
-              </Dialog.Body>
-              <Dialog.Footer borderTopWidth="1px" borderColor="gray.200">
-                <Stack gap="3" w="full">
-                  {recorder.recording && (
-                    <RecordingActions
-                      recorder={recorder}
-                      onStop={() => void stopRecording()}
-                      onDiscard={navigation.requestDiscard}
-                    />
-                  )}
-                  <Link href={basePath} fontWeight="semibold" color="blue.700">
-                    Open full workspace
-                    <Icon>
-                      <ArrowUpRight />
-                    </Icon>
-                  </Link>
-                </Stack>
-              </Dialog.Footer>
-              <Dialog.CloseTrigger asChild>
-                <CloseButton size="sm" aria-label="Close RevisionLab" />
-              </Dialog.CloseTrigger>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Portal>
-      </Dialog.Root>
-      {!open && recordingControls}
+              </>
+            )}
+          </Stack>
+        )}
+      </RecordingPopover>
+      <WidgetDialog
+        open={open && tab === "comment"}
+        picking={live.picking}
+        title="RevisionLab"
+        projectName={data?.project.name ?? "Prototype review"}
+        route={route}
+        basePath={basePath}
+        onOpenChange={(next) => {
+          setOpen(next);
+          if (next) live.setPicking(false);
+          else if (live.commenting) live.setPicking(true);
+        }}
+        onEscape={() => {
+          stopCommenting();
+          setOpen(false);
+        }}
+        actions={
+          recorder.recording && (
+            <RecordingActions
+              recorder={recorder}
+              onStop={() => void stopRecording()}
+              onDiscard={navigation.requestDiscard}
+            />
+          )
+        }
+      >
+        <WidgetPanel
+          workspace={workspace}
+          recorder={recorder}
+          basePath={basePath}
+          tab={tab}
+          onTabChange={setTab}
+        >
+          <Stack gap="3" align="start">
+            <Button onClick={beginCommenting} size="sm">
+              Comment on an element
+            </Button>
+            <Link href={commentsHref} color="blue.700" fontSize="sm">
+              All comments on this page
+            </Link>
+          </Stack>
+        </WidgetPanel>
+      </WidgetDialog>
+      {!open && !live.commenting && (
+        <WidgetStatus recorder={recorder} basePath={basePath} />
+      )}
       {leaveDialog}
     </>
   );

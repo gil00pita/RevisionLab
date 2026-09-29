@@ -68,6 +68,10 @@ export async function discardRecording(
         args: [flowId],
       });
       await transaction.execute({
+        sql: "DELETE FROM recording_visits WHERE flow_id = ?",
+        args: [flowId],
+      });
+      await transaction.execute({
         sql: "DELETE FROM steps WHERE flow_id = ?",
         args: [flowId],
       });

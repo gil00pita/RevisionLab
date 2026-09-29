@@ -7,7 +7,8 @@ import type { ResolvedConfig } from "./config.js";
 import { HttpError } from "./security.js";
 
 export const MAX_IMAGE_BYTES = 3_000_000;
-export const MAX_CAPTURE_BODY_BYTES = 4_020_000;
+// Reserve bounded report metadata in addition to the base64 image and cursor evidence.
+export const MAX_CAPTURE_BODY_BYTES = 4_100_000;
 
 interface PreparedArtifact {
   id: string;

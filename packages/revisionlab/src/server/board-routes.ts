@@ -34,7 +34,25 @@ export async function saveBoard(
       args: [flowId],
     });
     const stepIds = steps.rows.map((row) => String(row.id));
-    validateBoardSteps(input, stepIds);
+    const visits = await transaction.execute({
+      sql: "SELECT source_step_id, step_id FROM recording_visits WHERE flow_id = ? ORDER BY position",
+      args: [flowId],
+    });
+    let recordedPairs: Set<string> | undefined;
+    if (visits.rows.length) {
+      recordedPairs = new Set(
+        visits.rows
+          .filter((visit) => visit.source_step_id != null)
+          .map((visit) => `${visit.source_step_id}:${visit.step_id}`),
+      );
+      // Captures predating visit tracking retain their historical sequence.
+      const firstSource = visits.rows[0].source_step_id;
+      const legacyEnd =
+        firstSource == null ? -1 : stepIds.indexOf(String(firstSource));
+      for (let index = 1; index <= legacyEnd; index++)
+        recordedPairs.add(`${stepIds[index - 1]}:${stepIds[index]}`);
+    }
+    validateBoardSteps(input, stepIds, recordedPairs);
     // Seed generated/legacy identities before checking the replacement graph.
     const previous = readBoard(
       found.rows[0].board_json,

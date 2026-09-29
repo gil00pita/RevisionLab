@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type { Client, Transaction } from "@libsql/client";
 import { z } from "zod";
 import { requireRole } from "./authentication.js";
@@ -12,6 +12,11 @@ import {
 import type { ResolvedConfig } from "./config.js";
 import { write } from "./database.js";
 import { discardRecording } from "./recording-discard.js";
+import { activePersonaName } from "./persona-routes.js";
+import { captureMetadataSchema } from "./capture-metadata.js";
+import { createFlow } from "./flow-creation.js";
+import { deleteFlows } from "./flow-deletion.js";
+import { interactionSchema, recordVisit } from "./recording-visits.js";
 import { HttpError, json, readJson } from "./security.js";
 import type { RevisionLabActor } from "./types.js";
 
@@ -27,13 +32,17 @@ export const routeSchema = z
   );
 const flowSchema = z.object({
   name: z.string().trim().min(1).max(120),
-  persona: z.string().trim().min(1).max(120),
+  persona: z.string().trim().min(1).max(120).optional(),
+  personaId: z.string().uuid().optional(),
   route: routeSchema,
 });
 const stepSchema = z.object({
   title: z.string().trim().min(1).max(160),
   route: routeSchema,
   screenshot: z.string().max(MAX_CAPTURE_BODY_BYTES).nullable().optional(),
+  capture: captureMetadataSchema.optional(),
+  reuse: z.boolean().optional(),
+  interaction: interactionSchema.optional(),
 });
 
 async function requireFlow(transaction: Transaction, id: string) {
@@ -53,27 +62,17 @@ export async function handleFlows(
   actor: RevisionLabActor,
 ): Promise<Response> {
   requireRole(actor, "editor");
+  if (request.method === "POST" && path.length === 2 && path[1] === "delete")
+    return deleteFlows(request, client, config, actor);
   if (request.method === "POST" && path.length === 1) {
-    const input = flowSchema.parse(await readJson(request));
-    const id = randomUUID();
-    const now = new Date().toISOString();
-    await write(client, async (transaction) => {
-      await transaction.execute({
-        sql: `INSERT INTO flows (id, family_id, version, name, persona, route, status, created_by, created_at, updated_at)
-          VALUES (?, ?, 1, ?, ?, ?, 'recording', ?, ?, ?)`,
-        args: [
-          id,
-          id,
-          input.name,
-          input.persona,
-          input.route,
-          actor.id,
-          now,
-          now,
-        ],
-      });
-    });
-    return json({ id, familyId: id, version: 1 }, 201);
+    const input = flowSchema
+      .extend({ replaceFlowId: z.string().uuid().optional() })
+      .refine(
+        (value) => Boolean(value.persona) !== Boolean(value.personaId),
+        "Choose one persona.",
+      )
+      .parse(await readJson(request));
+    return createFlow(client, actor, input);
   }
   if (path.length < 2 || !z.string().uuid().safeParse(path[1]).success)
     throw new HttpError(404, "Recording not found.");
@@ -91,11 +90,20 @@ export async function handleFlows(
     path.length === 3 &&
     path[2] === "versions"
   ) {
-    const input = flowSchema.partial().parse(await readJson(request));
+    const input = flowSchema
+      .partial()
+      .refine(
+        (value) => !(value.persona && value.personaId),
+        "Choose one persona.",
+      )
+      .parse(await readJson(request));
     const id = randomUUID();
     const now = new Date().toISOString();
     const version = await write(client, async (transaction) => {
       const previous = await requireFlow(transaction, path[1]);
+      const persona = input.personaId
+        ? await activePersonaName(transaction, input.personaId)
+        : (input.persona ?? previous.persona);
       const family = await transaction.execute({
         sql: "SELECT version, status FROM flows WHERE family_id = ?",
         args: [previous.family_id],
@@ -117,7 +125,7 @@ export async function handleFlows(
           number,
           path[1],
           input.name ?? previous.name,
-          input.persona ?? previous.persona,
+          persona,
           input.route ?? previous.route,
           actor.id,
           now,
@@ -160,10 +168,19 @@ async function captureStep(
     await readJson(request, MAX_CAPTURE_BODY_BYTES),
   );
   const artifact = await prepareArtifact(input.screenshot, config);
-  const id = randomUUID();
+  let id: string = randomUUID();
   const now = new Date().toISOString();
+  const key =
+    input.reuse && artifact
+      ? createHash("sha256")
+          .update(input.route)
+          .update("\0")
+          .update(artifact.bytes)
+          .digest("hex")
+      : null;
+  let reused = false;
   try {
-    const position = await write(client, async (transaction) => {
+    const saved = await write(client, async (transaction) => {
       const flow = await requireFlow(transaction, flowId);
       if (flow.status !== "recording")
         throw new HttpError(
@@ -171,35 +188,56 @@ async function captureStep(
           "Start a new version to add screens to a completed recording.",
         );
       const result = await transaction.execute({
-        sql: "SELECT COUNT(*) AS count FROM steps WHERE flow_id = ?",
+        sql: "SELECT id, position, capture_key FROM steps WHERE flow_id = ? ORDER BY position",
         args: [flowId],
       });
-      const count = Number(result.rows[0].count);
-      if (count >= 200)
+      const count = result.rows.length;
+      const existing = key
+        ? result.rows.find((row) => row.capture_key === key)
+        : undefined;
+      reused = Boolean(existing);
+      if (!existing && count >= 200)
         throw new HttpError(
           409,
           "A recording can contain up to 200 screens. Start a new flow to continue.",
         );
-      await insertArtifact(transaction, artifact);
-      await transaction.execute({
-        sql: "INSERT INTO steps (id, flow_id, title, route, screenshot, position, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        args: [
-          id,
-          flowId,
-          input.title,
-          input.route,
-          artifact?.id ?? null,
-          count,
-          now,
-        ],
+      if (existing) id = String(existing.id);
+      else {
+        await insertArtifact(transaction, artifact);
+        await transaction.execute({
+          sql: "INSERT INTO steps (id, flow_id, title, route, screenshot, position, created_at, capture_json, capture_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          args: [
+            id,
+            flowId,
+            input.title,
+            input.route,
+            artifact?.id ?? null,
+            count,
+            now,
+            input.capture ? JSON.stringify(input.capture) : null,
+            key,
+          ],
+        });
+      }
+      await recordVisit({
+        transaction,
+        flowId,
+        flow,
+        stepIds: result.rows.map((row) => String(row.id)),
+        stepId: id,
+        interaction: input.interaction,
       });
       await transaction.execute({
         sql: "UPDATE flows SET updated_at = ?, board_revision = board_revision + 1 WHERE id = ?",
         args: [now, flowId],
       });
-      return count;
+      return {
+        position: existing ? Number(existing.position) : count,
+        count: count + (existing ? 0 : 1),
+      };
     });
-    return json({ id, position }, 201);
+    if (reused) await discardArtifact(artifact, config);
+    return json({ id, ...saved, reused }, 201);
   } catch (error) {
     await discardArtifact(artifact, config).catch(() => undefined);
     throw error;

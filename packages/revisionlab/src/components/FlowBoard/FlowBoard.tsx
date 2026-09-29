@@ -28,9 +28,10 @@ export function FlowBoard(props: FlowBoardProps) {
     onBeforeLeaveChange,
   } = props;
   const draft = useBoardDraft(props);
-  const bounds = boardBounds(draft.board.nodes);
+  const bounds = boardBounds(draft.board.nodes, draft.board.edges);
   const camera = useBoardViewport(bounds.width, bounds.height);
   const [editing, setEditing] = useState(false);
+  const [showCursor, setShowCursor] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [connectionSource, setConnectionSource] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
@@ -108,15 +109,16 @@ export function FlowBoard(props: FlowBoardProps) {
       flex="1"
     >
       <BoardToolbar
-        zoom={camera.zoom}
-        minZoom={camera.minZoom}
+        showCursor={showCursor}
+        hasCursor={flow.steps.some((step) =>
+          Boolean(step.capture?.cursor.length),
+        )}
+        onCursorChange={setShowCursor}
         canEdit={canEdit}
         canUndo={draft.canUndo}
         leaving={leaving || navigationPending}
         conflict={draft.conflict || draft.reloading}
         editing={editing}
-        onZoom={camera.changeZoom}
-        onFit={camera.fit}
         onArrange={draft.arrange}
         onUndo={() => {
           draft.undo();
@@ -167,6 +169,7 @@ export function FlowBoard(props: FlowBoardProps) {
         </Text>
       )}
       <Grid
+        flex="1"
         templateColumns={{
           base: "minmax(0, 1fr)",
           xl: selectedEdge ? "minmax(0, 1fr) 360px" : "minmax(0, 1fr)",
@@ -175,6 +178,7 @@ export function FlowBoard(props: FlowBoardProps) {
         minW="0"
       >
         <BoardCanvas
+          showCursor={showCursor}
           flow={flow}
           board={draft.board}
           comments={comments}

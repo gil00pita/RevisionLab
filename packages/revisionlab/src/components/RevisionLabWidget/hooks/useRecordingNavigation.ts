@@ -33,6 +33,7 @@ export function useRecordingNavigation(options: RecordingNavigationOptions) {
   const replaying = useRef<HTMLAnchorElement | null>(null);
   const discarding = useRef(false);
   const approvedUnload = useRef(false);
+  const approvalGeneration = useRef(0);
   const approvalTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -52,6 +53,7 @@ export function useRecordingNavigation(options: RecordingNavigationOptions) {
   }, [options.active, finishRequest]);
 
   const allowNextUnload = useCallback(() => {
+    const generation = ++approvalGeneration.current;
     approvedUnload.current = true;
     if (approvalTimer.current) clearTimeout(approvalTimer.current);
     // A host can cancel the replayed link. Approval must not survive indefinitely.
@@ -59,6 +61,7 @@ export function useRecordingNavigation(options: RecordingNavigationOptions) {
       approvedUnload.current = false;
       approvalTimer.current = null;
     }, 1000);
+    return generation;
   }, []);
 
   const beginRequest = useCallback((next: NavigationRequest) => {
@@ -102,6 +105,19 @@ export function useRecordingNavigation(options: RecordingNavigationOptions) {
         latest.current.basePath,
       );
       if (!destination?.changesPage) return;
+      if (!destination.leavesDomain) {
+        const generation = allowNextUnload();
+        // Next Link and cancelled host actions prevent the native navigation.
+        // Do not let that approval suppress a subsequent close-tab warning.
+        setTimeout(() => {
+          if (
+            event.defaultPrevented &&
+            approvalGeneration.current === generation
+          )
+            approvedUnload.current = false;
+        }, 0);
+        return;
+      }
       event.preventDefault();
       event.stopImmediatePropagation();
       beginRequest({
@@ -137,6 +153,9 @@ export function useRecordingNavigation(options: RecordingNavigationOptions) {
       if (!destination) {
         detail.resolve(false);
       } else if (!loadRecording() || !destination.changesPage) {
+        detail.resolve(true);
+      } else if (!destination.leavesDomain) {
+        allowNextUnload();
         detail.resolve(true);
       } else {
         beginRequest({

@@ -32,8 +32,8 @@ export async function handleComments(
     await write(client, async (transaction) => {
       const context = await commentContext(transaction, input);
       await transaction.execute({
-        sql: `INSERT INTO comments (id, flow_id, step_id, edge_id, route, body, status, author_id, created_at, anchor_x, anchor_y, parent_id)
-          VALUES (?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?)`,
+        sql: `INSERT INTO comments (id, flow_id, step_id, edge_id, route, body, status, author_id, created_at, anchor_x, anchor_y, parent_id, element_anchor)
+          VALUES (?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?)`,
         args: [
           id,
           context.flowId,
@@ -46,6 +46,7 @@ export async function handleComments(
           input.anchor?.x ?? null,
           input.anchor?.y ?? null,
           input.parentId ?? null,
+          input.elementAnchor ? JSON.stringify(input.elementAnchor) : null,
         ],
       });
     });

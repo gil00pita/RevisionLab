@@ -27,6 +27,18 @@ export const commentSchema = z
       .nullable()
       .optional(),
     parentId: z.string().uuid().nullable().optional(),
+    elementAnchor: z
+      .object({
+        selector: z.string().trim().min(1).max(2000),
+        tag: z
+          .string()
+          .regex(/^[a-z][a-z0-9-]*$/)
+          .max(80),
+        label: z.string().trim().min(1).max(160),
+      })
+      .strict()
+      .nullable()
+      .optional(),
   })
   .strict();
 
@@ -43,7 +55,7 @@ export async function commentContext(
     if (!parent) throw new HttpError(404, "Comment thread not found.");
     if (parent.parent_id != null)
       throw new HttpError(400, "Reply to the original comment in this thread.");
-    if (input.anchor != null)
+    if (input.anchor != null || input.elementAnchor != null)
       throw new HttpError(400, "Replies use their thread's location.");
     if (
       (input.flowId !== undefined && input.flowId !== parent.flow_id) ||
@@ -62,6 +74,14 @@ export async function commentContext(
       route: String(parent.route),
     };
   }
+  if (
+    input.elementAnchor &&
+    (input.flowId || input.stepId || input.edgeId || input.anchor)
+  )
+    throw new HttpError(
+      400,
+      "Live element comments belong to a page, not a captured recording.",
+    );
   if (input.edgeId) {
     if (!input.flowId || input.stepId != null || input.anchor != null)
       throw new HttpError(

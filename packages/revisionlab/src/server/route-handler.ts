@@ -6,7 +6,9 @@ import { handleComments, handleInvitations } from "./collaboration-routes.js";
 import { resolveConfig } from "./config.js";
 import { consumeRateLimit, getDatabase } from "./database.js";
 import { handleFlows } from "./flow-routes.js";
+import { handlePersonas, readPersonas } from "./persona-routes.js";
 import { readComments, readFlows, readInvitations } from "./queries.js";
+import { handleSettings, readSettings } from "./settings.js";
 import { assertSameOrigin, HttpError, json } from "./security.js";
 import type { RevisionLabConfig, RevisionLabRouteHandler } from "./types.js";
 
@@ -28,17 +30,22 @@ export function createRevisionLabHandler(
         path.length === 1 &&
         path[0] === "state"
       ) {
-        const [flows, comments, invitations] = await Promise.all([
-          readFlows(client, config.apiPath),
-          readComments(client),
-          actor.role === "owner" ? readInvitations(client) : [],
-        ]);
+        const [flows, comments, invitations, personas, settings] =
+          await Promise.all([
+            readFlows(client, config.apiPath),
+            readComments(client),
+            actor.role === "owner" ? readInvitations(client) : [],
+            readPersonas(client),
+            readSettings(client),
+          ]);
         return json({
           project: { id: config.projectId, name: config.projectName },
           actor,
           flows,
           comments,
           invitations,
+          personas,
+          settings,
         });
       }
       if (
@@ -54,6 +61,10 @@ export function createRevisionLabHandler(
       await consumeRateLimit(client, `mutate:${actor.id}`, 120, 60_000);
       if (path[0] === "flows")
         return await handleFlows(request, path, client, config, actor);
+      if (path[0] === "personas")
+        return await handlePersonas(request, path, client, actor);
+      if (path[0] === "settings")
+        return await handleSettings(request, path, client, actor);
       if (path[0] === "comments")
         return await handleComments(request, path, client, actor);
       if (path[0] === "invitations")

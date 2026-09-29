@@ -60,9 +60,11 @@ export async function reviewFixture(t: TestContext) {
       { params: Promise.resolve({ path: path.split("/") }) },
     );
   }
-  async function flow(name = "Checkout") {
+  let flowNumber = 0;
+  async function flow(name?: string) {
+    flowNumber += 1;
     const response = await call("flows", "POST", {
-      name,
+      name: name ?? (flowNumber === 1 ? "Checkout" : `Checkout ${flowNumber}`),
       persona: "Customer",
       route: "/checkout",
     });

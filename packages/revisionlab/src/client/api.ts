@@ -2,6 +2,7 @@ export class ApiError extends Error {
   constructor(
     public readonly status: number,
     message: string,
+    public readonly details?: unknown,
   ) {
     super(message);
   }
@@ -23,6 +24,7 @@ export async function apiRequest<T>(
     throw new ApiError(
       response.status,
       data.error ?? `Request failed (${response.status}).`,
+      data,
     );
   }
   return data as T;

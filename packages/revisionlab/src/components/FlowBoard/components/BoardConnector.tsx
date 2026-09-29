@@ -7,13 +7,15 @@ export function BoardConnector({
   edge,
   source,
   target,
+  lane,
 }: {
   edge: BoardEdge;
   source: BoardNode;
   target: BoardNode;
+  lane?: number;
 }) {
-  if (edge.kind === "manual") {
-    const points = manualConnectionPoints(source, target);
+  if (edge.kind === "manual" || lane !== undefined) {
+    const points = manualConnectionPoints(source, target, lane);
     const middle = { x: (points[1].x + points[2].x) / 2, y: points[1].y };
     return (
       <Box aria-hidden="true" pointerEvents="none">
@@ -35,8 +37,8 @@ export function BoardConnector({
             >
               <Box
                 borderTopWidth="2px"
-                borderStyle="dashed"
-                borderColor="blue.600"
+                borderStyle={edge.kind === "manual" ? "dashed" : "solid"}
+                borderColor={edge.kind === "manual" ? "blue.600" : "gray.600"}
               />
               {index === 2 && (
                 <Icon
@@ -45,7 +47,7 @@ export function BoardConnector({
                   top="-11px"
                   w="24px"
                   h="24px"
-                  color="blue.600"
+                  color={edge.kind === "manual" ? "blue.600" : "gray.600"}
                 >
                   <ArrowRight />
                 </Icon>

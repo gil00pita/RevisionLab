@@ -47,10 +47,12 @@
     "@chakra-ui/react": "^3.37.0",
     "@emotion/react": "^11.14.0",
     "@libsql/client": "^0.15.15",
+    "axe-core": "^4.13.0",
     "html-to-image": "^1.11.13",
+    "html2canvas-pro": "2.4.5",
     "lucide-react": "^1.47.0",
-    "zod": "^4.1.11",
-    "typescript": "^5"
+    "typescript": "^5",
+    "zod": "^4.1.11"
   },
   "peerDependencies": {
     "next": ">=15.0.0 <17",

@@ -70,6 +70,12 @@ export function CommentMessage({
         </Text>
       </Card.Header>
       <Card.Body px={isPlain ? "0" : undefined} py={isPlain ? "3" : undefined}>
+        {comment.elementAnchor && !comment.parentId && (
+          <Text fontSize="xs" color="blue.700" mb="2" overflowWrap="anywhere">
+            Live element · {comment.elementAnchor.tag}:{" "}
+            {comment.elementAnchor.label}
+          </Text>
+        )}
         <Text
           fontSize="md"
           lineHeight="tall"

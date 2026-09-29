@@ -1,7 +1,16 @@
 "use client";
 
 import { useId, useState, type ReactNode, type RefObject } from "react";
-import { Box, Button, Flex, Icon, Image, Stack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  Icon,
+  Image,
+  Stack,
+  Switch,
+  Text,
+} from "@chakra-ui/react";
 import { ImageOff, MessageSquarePlus } from "lucide-react";
 import type {
   RevisionLabComment,
@@ -12,6 +21,7 @@ import { layoutCommentBubbles } from "./bubble-layout.js";
 import { ScreenCommentBubbles } from "./components/ScreenCommentBubbles.js";
 import { ScreenCommentToolbar } from "./components/ScreenCommentToolbar.js";
 import { useImageSize } from "./hooks/useImageSize.js";
+import { CursorTrail } from "../CursorTrail/index.js";
 
 interface PinnedScreenProps {
   step: RevisionLabStep;
@@ -44,6 +54,7 @@ export function PinnedScreen({
   const [zoom, setZoom] = useState(1);
   const [showResolved, setShowResolved] = useState(false);
   const [showBubbles, setShowBubbles] = useState(true);
+  const [showCursor, setShowCursor] = useState(false);
   const [commentMode, setCommentMode] = useState(true);
   const [imageState, setImageState] = useState<"loading" | "ready" | "error">(
     "loading",
@@ -81,6 +92,20 @@ export function PinnedScreen({
         onToggleResolved={() => setShowResolved(!showResolved)}
         onZoomChange={setZoom}
       />
+      {Boolean(step.capture?.cursor.length) && (
+        <Switch.Root
+          size="sm"
+          colorPalette="pink"
+          checked={showCursor}
+          onCheckedChange={(event) => setShowCursor(event.checked)}
+        >
+          <Switch.HiddenInput />
+          <Switch.Control>
+            <Switch.Thumb />
+          </Switch.Control>
+          <Switch.Label>Cursor path</Switch.Label>
+        </Switch.Root>
+      )}
       {imageState === "error" ? (
         <Stack align="center" py="12" gap="3" color="gray.600">
           <Icon size="xl">
@@ -140,6 +165,9 @@ export function PinnedScreen({
                   onImageReadyChange(false);
                 }}
               />
+              {imageState === "ready" && showCursor && step.capture && (
+                <CursorTrail capture={step.capture} />
+              )}
               {imageState === "ready" && commentMode && (
                 <Button
                   unstyled

@@ -1,3 +1,10 @@
+import type { RevisionLabSettings } from "../comment-settings.js";
+import type { AccessibilityReport } from "../accessibility.js";
+export type {
+  RevisionLabSettings,
+  CommentBubbleColor,
+} from "../comment-settings.js";
+
 export type RevisionLabRole = "owner" | "editor" | "commenter";
 
 /** Server-only adapter. Keys are generated UUIDs, never user-provided paths. */
@@ -62,6 +69,21 @@ export interface RevisionLabFlow {
   updatedAt: string;
   steps: RevisionLabStep[];
   board: RevisionLabBoard;
+  transitions?: RevisionLabTransition[];
+}
+
+export interface RevisionLabClick {
+  target: RevisionLabElementAnchor;
+  point: RevisionLabPoint | null;
+  bounds: (RevisionLabPoint & { width: number; height: number }) | null;
+  activation: "pointer" | "keyboard";
+}
+
+export interface RevisionLabTransition {
+  id: string;
+  sourceStepId: string;
+  targetStepId: string;
+  interaction: RevisionLabClick | null;
 }
 
 export interface RevisionLabStep {
@@ -72,6 +94,21 @@ export interface RevisionLabStep {
   screenshot: string | null;
   position: number;
   createdAt: string;
+  capture?: RevisionLabCapture | null;
+}
+
+export interface RevisionLabCapture {
+  accessibility?: AccessibilityReport;
+  width: number;
+  height: number;
+  reason: "page" | "click" | "change" | "manual";
+  cursor: { x: number; y: number; t: number; click?: number }[];
+}
+
+export interface RevisionLabElementAnchor {
+  selector: string;
+  tag: string;
+  label: string;
 }
 
 export interface RevisionLabComment {
@@ -93,6 +130,7 @@ export interface RevisionLabComment {
   createdAt: string;
   resolvedAt: string | null;
   anchor: RevisionLabPoint | null;
+  elementAnchor?: RevisionLabElementAnchor | null;
   parentId: string | null;
 }
 
@@ -105,12 +143,23 @@ export interface RevisionLabInvitation {
   revokedAt: string | null;
 }
 
+export interface RevisionLabPersona {
+  id: string;
+  name: string;
+  description: string;
+  archivedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface RevisionLabState {
+  settings: RevisionLabSettings;
   project: { id: string; name: string };
   actor: RevisionLabActor;
   flows: RevisionLabFlow[];
   comments: RevisionLabComment[];
   invitations: RevisionLabInvitation[];
+  personas: RevisionLabPersona[];
 }
 
 export interface RevisionLabRouteContext {

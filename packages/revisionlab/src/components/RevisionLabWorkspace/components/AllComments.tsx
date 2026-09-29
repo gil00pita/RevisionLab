@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Box, Button, Flex, Heading, Stack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Link,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
 import type { RevisionLabState } from "../../../server/types.js";
 import { FeedbackThread } from "../../FeedbackThread/index.js";
 import { commentContextLabel, commentGroupKey } from "../comment-context.js";
@@ -8,15 +16,26 @@ export function AllComments({
   data,
   apiPath,
   onRefresh,
+  route,
+  basePath,
 }: {
   data: RevisionLabState;
   apiPath: string;
   onRefresh: () => Promise<void>;
+  route: string | null;
+  basePath: string;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
-  const groups = [...new Set(data.comments.map(commentGroupKey))];
+  const visibleComments =
+    route === null
+      ? data.comments
+      : data.comments.filter(
+          (comment) =>
+            comment.route === route && !comment.stepId && !comment.edgeId,
+        );
+  const groups = [...new Set(visibleComments.map(commentGroupKey))];
   const active = selected && groups.includes(selected) ? selected : groups[0];
-  const comments = data.comments.filter(
+  const comments = visibleComments.filter(
     (comment) => commentGroupKey(comment) === active,
   );
   const first = comments[0];
@@ -24,8 +43,22 @@ export function AllComments({
   return (
     <Stack gap="6" p={{ base: "5", md: "8" }} w="full">
       <Heading as="h2" size="xl">
-        All comments
+        {route === null ? "All comments" : "Page comments"}
       </Heading>
+      {route !== null && (
+        <Stack gap="1">
+          <Text fontSize="sm" overflowWrap="anywhere">
+            {route}
+          </Text>
+          <Link
+            href={`${basePath}?view=comments`}
+            color="blue.700"
+            fontSize="sm"
+          >
+            All workspace comments
+          </Link>
+        </Stack>
+      )}
       {groups.length === 0 ? (
         <Text color="gray.600">
           No feedback yet. Open a prototype page or recorded screen to add your
@@ -35,7 +68,7 @@ export function AllComments({
         <Flex gap="8" direction={{ base: "column", md: "row" }}>
           <Stack gap="2" w={{ base: "full", md: "72" }} flexShrink="0">
             {groups.map((key) => {
-              const comment = data.comments.find(
+              const comment = visibleComments.find(
                 (item) => commentGroupKey(item) === key,
               )!;
               return (
