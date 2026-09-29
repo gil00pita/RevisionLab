@@ -11,12 +11,19 @@ on:
 permissions:
   contents: read
 
+# Serialize version selection through publication, including explicit releases.
+concurrency:
+  group: npm-${{ github.repository }}-${{ (github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) && 'publish' || github.run_id }}
+  cancel-in-progress: false
+  queue: max
+
 jobs:
   verify:
     name: Build, test, and check the package
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
+      publish: ${{ steps.prepare.outputs.publish }}
       npm-tag: ${{ steps.release.outputs.npm-tag }}
       filename: ${{ steps.release.outputs.filename }}
     steps:
@@ -29,6 +36,12 @@ jobs:
           package-manager-cache: false
       - name: Pin npm with trusted-publishing support
         run: npm install --global npm@11.19.1 --ignore-scripts
+      - name: Prepare release version
+        id: prepare
+        run: node scripts/prepare-release.mjs
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
       - name: Check release metadata
         id: release
         run: npm run release:check
@@ -57,14 +70,15 @@ jobs:
 
   publish:
     name: Publish the verified tarball to npm
-    if: github.event_name == 'release' && github.repository == 'gil00pita/RevisionLab'
+    if: >-
+      needs.verify.outputs.publish == 'true' &&
+      github.repository == 'gil00pita/RevisionLab' &&
+      (github.event_name == 'release' ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main'))
     needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: npm
-    concurrency:
-      group: npm-publish
-      cancel-in-progress: false
     permissions:
       contents: read
       id-token: write
@@ -85,6 +99,11 @@ jobs:
           path: ${{ runner.temp }}/revisionlab-package
       - name: Publish with npm trusted publishing
         run: npm publish "$RUNNER_TEMP/revisionlab-package/$PACKAGE_FILE" --access public --tag "$NPM_TAG" --ignore-scripts --registry=https://registry.npmjs.org/
+        env:
+          PACKAGE_FILE: ${{ needs.verify.outputs.filename }}
+          NPM_TAG: ${{ needs.verify.outputs.npm-tag }}
+      - name: Report published package
+        run: echo "Published [$PACKAGE_FILE](https://www.npmjs.com/package/revisionlab) to npm under $NPM_TAG." >> "$GITHUB_STEP_SUMMARY"
         env:
           PACKAGE_FILE: ${{ needs.verify.outputs.filename }}
           NPM_TAG: ${{ needs.verify.outputs.npm-tag }}

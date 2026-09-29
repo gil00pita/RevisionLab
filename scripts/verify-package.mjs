@@ -91,6 +91,9 @@ async function verifyMetadata(entries, expected, extracted) {
   );
   assert.equal(manifest.name, expected.name, "Wrong package name");
   assert.equal(manifest.version, expected.version, "Wrong package version");
+  if (expected.gitHead) {
+    assert.equal(manifest.gitHead, expected.gitHead, "Wrong source commit");
+  }
   assert.equal(
     manifest.private,
     undefined,
