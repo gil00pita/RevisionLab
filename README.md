@@ -2,7 +2,7 @@
 
 Review prototype flows, comments, and versions from inside each Next.js project.
 
-The selected flow's title, recording action, and delete action live in the top workspace header. Use the **Whiteboard** and **Screen & comments** tabs to switch views, and the history icon beside them to choose a version. This compact layout is part of the local build.
+The selected flow's title, recording action, and delete action live in the top workspace header. Use the **Whiteboard** and **Screen & comments** tabs to switch views, and the history icon beside them to choose a version. Other workspace pages show their own title: **Comments**, **Personas**, **Settings**, or **Review access**; an empty flow workspace shows **Flows**. Each page has a subtitle describing its purpose, while selected flows show persona, status, and screen count. **Export report** and **Refresh** appear on Flows and Comments only. Reports still include the whole workspace. This compact layout is part of the local build.
 
 Whiteboard zoom, percentage/reset, and Fit controls float inside the board's bottom-right corner. Paths and other editing controls remain above the board.
 
@@ -49,7 +49,7 @@ Open a screen card, then click the captured image to place a numbered comment pi
 
 Direct editing is partially implemented and locally verified: package and production builds, lint, and all 113 package tests pass. Local browser checks cover autosave, grouped Undo, removal/restoration, retry, and navigation protection, with desktop/mobile layout evidence in [VALIDATION.md](VALIDATION.md). Fresh hosted and separate-host installation checks were not repeated. Decision elements and adding a screen by URL are **not implemented**. Decision-node versus prototype-form behavior, and URL capture versus a linked placeholder, remain unanswered in [PRODUCT.md](PRODUCT.md).
 
-Local development on localhost gives the developer owner access. Data persists in `.revisionlab/revisionlab.db`, with private screenshots in `.revisionlab/artifacts/`. Both are ignored by Git. There is no seeded application data; the workspace starts empty.
+Local development on localhost gives the developer owner access. If an old reviewer session leaves you on the access page, choose **Open local workspace** to clear that session and continue without email. This option appears only when local development owner access is enabled; hosted reviews still use email verification. Data persists in `.revisionlab/revisionlab.db`, with private screenshots in `.revisionlab/artifacts/`. Both are ignored by Git. There is no seeded application data; the workspace starts empty.
 
 ## Install in another Next.js project
 

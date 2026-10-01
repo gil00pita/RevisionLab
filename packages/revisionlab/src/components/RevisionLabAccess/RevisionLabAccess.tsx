@@ -14,6 +14,7 @@ import { LockKeyhole } from "lucide-react";
 import { RevisionLabLogo } from "../RevisionLabLogo/index.js";
 import { RevisionLabProvider } from "../RevisionLabProvider/index.js";
 import { AccessForm } from "./components/AccessForm.js";
+import { LocalWorkspaceAccess } from "./components/LocalWorkspaceAccess.js";
 
 export interface RevisionLabAccessProps {
   apiPath?: string;
@@ -71,6 +72,7 @@ export function RevisionLabAccess({
               rounded="xl"
               p={{ base: "5", md: "7" }}
             >
+              <LocalWorkspaceAccess apiPath={apiPath} basePath={basePath} />
               <AccessForm apiPath={apiPath} basePath={basePath} />
             </Box>
             <HStack align="start" gap="3" color="gray.600" fontSize="sm">

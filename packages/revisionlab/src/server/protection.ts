@@ -13,6 +13,7 @@ export async function protectRevisionLab(
     const url = new URL(request.url);
     const publicPaths = [
       `${config.basePath}/access`,
+      `${config.apiPath}/auth/options`,
       `${config.apiPath}/auth/request`,
       `${config.apiPath}/auth/verify`,
       `${config.apiPath}/auth/logout`,

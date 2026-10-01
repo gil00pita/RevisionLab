@@ -8,6 +8,7 @@ import {
   createToken,
   hashValue,
   HttpError,
+  isLoopback,
   json,
   readCookie,
   readJson,
@@ -40,6 +41,9 @@ export async function handleAuth(
   client: Client,
   config: ResolvedConfig,
 ): Promise<Response> {
+  if (request.method === "GET" && path.length === 1 && path[0] === "options") {
+    return json({ localOwner: Boolean(config.localOwner && isLoopback(request)) });
+  }
   if (request.method !== "POST" || path.length !== 1)
     throw new HttpError(404, "Not found.");
   if (path[0] === "request") return requestCode(request, client, config);
