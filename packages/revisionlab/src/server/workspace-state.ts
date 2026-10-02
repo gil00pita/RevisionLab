@@ -1,3 +1,4 @@
+import { expireTests } from "./test-sessions/store.js";
 import type { Client } from "@libsql/client";
 import type { ResolvedConfig } from "./config.js";
 import type { RevisionLabActor, RevisionLabState } from "./types.js";
@@ -5,15 +6,13 @@ import { readFlows, readComments, readInvitations } from "./queries.js";
 import { readPersonas } from "./persona-routes.js";
 import { readSettings } from "./settings.js";
 import { readSetup } from "./setup.js";
-import {
-  readAccessSettings,
-  readMemberships,
-} from "./membership-routes.js";
+import { readAccessSettings, readMemberships } from "./membership-routes.js";
 export async function readWorkspaceState(
   client: Client,
   config: ResolvedConfig,
   actor: RevisionLabActor,
 ): Promise<RevisionLabState> {
+  await expireTests(client);
   const [
     setup,
     flows,

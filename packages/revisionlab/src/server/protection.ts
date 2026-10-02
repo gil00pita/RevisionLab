@@ -1,3 +1,5 @@
+import { getDatabase } from "./database.js";
+import { participantSession } from "./test-sessions/store.js";
 import { authorizeRevisionLabRequest } from "./authentication.js";
 import { resolveConfig } from "./config.js";
 import { HttpError, json } from "./security.js";
@@ -20,6 +22,30 @@ export async function protectRevisionLab(
       `${config.apiPath}/auth/magic-consume`,
       `${config.apiPath}/auth/logout`,
     ];
+    // Participant capabilities authorize only prototype documents and their own API.
+    if (
+      url.pathname === `${config.apiPath}/test-participant` ||
+      url.pathname.startsWith(`${config.apiPath}/test-participant/`)
+    )
+      return undefined;
+    if (
+      request.method === "GET" &&
+      !url.pathname.startsWith(config.basePath) &&
+      !url.pathname.startsWith("/api/") &&
+      !url.pathname.startsWith(config.apiPath)
+    ) {
+      const test = await participantSession(
+        request,
+        await getDatabase(config),
+        config,
+      );
+      if (
+        test &&
+        ["waiting", "live"].includes(String(test.status)) &&
+        Number(test.expires_at) > Date.now()
+      )
+        return undefined;
+    }
     if (publicPaths.includes(url.pathname)) return undefined;
     // The federation route verifies its scoped API key; it cannot authorize host pages.
     if (url.pathname.startsWith(`${config.apiPath}/federation/`))

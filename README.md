@@ -1,4 +1,4 @@
-![RevisionLab logo placeholder — replace with the approved logo](docs/assets/logo-placeholder.svg)
+![RevisionLab logo](docs/assets/revisionlab-logo.svg)
 
 # RevisionLab
 
@@ -28,7 +28,7 @@ flowchart LR
   subgraph revisionlab["RevisionLab · shared context"]
     direction TB
     G["Record prototype flows and versions"] --> H["Review and comment together"]
-    H --> I["Test with real users · planned"]
+    H --> I["Test with real users"]
     I --> J["Pain points, issues and priorities · planned"]
     J --> K["Prepare Jira-ready tickets · report-based drafts planned"]
     K --> L["Fix with Codex, review and apply locally"]
@@ -44,11 +44,13 @@ The RevisionLab diagram shows the intended end-to-end workflow; planned steps ar
 | --- | --- |
 | **See the same journey** | Recorded screens, flow whiteboards, personas, versions, and connected workspaces for the same project. |
 | **Keep feedback in context** | Comments and replies on live components, captured screens, and flow paths. |
-| **Learn from real people** | Planned: create usability tests with real users and consolidate findings alongside team feedback. |
-| **Turn evidence into work** | Markdown review reports and editable Jira drafts for individual comments/accessibility issues. Planned: testing/flow reports with pain points, issues, priorities, and ticket drafts. |
+| **Learn from real people** | Share expiring test links, record participant sessions, inspect time/click metrics, and replay their journeys. Structured findings are planned. |
+| **Turn evidence into work** | Editable Jira drafts for individual comments/accessibility issues. Planned: testing/flow reports with pain points, issues, priorities, and ticket drafts. |
 | **Close the loop** | **Fix with Codex** sends screen feedback to your local Codex CLI in one click; review the proposed changes before applying them. |
 
-**Status:** this describes the repository's local build; some features are not yet published. Usability-test creation and report-based prioritisation/tickets are planned. Current Jira drafts are copied into Jira manually. Codex fixes require owner/editor access on localhost in development and a signed-in Codex CLI.
+**Status:** this describes the repository's local build; some features are not yet published. Test-session creation and replay are implemented locally; structured findings and report-based prioritisation/tickets are planned. Current Jira drafts are copied into Jira manually. Codex fixes require owner/editor access on localhost in development and a signed-in Codex CLI.
+
+Create a **New test session** with a time limit, share its link, and review the saved flow and replay in **Test sessions**; see the [test-session guide](WORKSPACE_GUIDE.md#prototype-test-sessions) for privacy and recording limits.
 
 ## A look inside
 

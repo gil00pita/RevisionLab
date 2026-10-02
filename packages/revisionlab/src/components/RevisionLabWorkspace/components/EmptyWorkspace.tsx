@@ -29,7 +29,7 @@ export function EmptyWorkspace({
       </Heading>
       <Text color="gray.600" maxW="lg">
         {unavailable
-          ? "The connection could not be loaded. Retry with Refresh or choose another workspace."
+          ? "The connection could not be loaded. Automatic updates will retry, or choose another workspace."
           : "Open your prototype, choose Record in the RevisionLab widget, and walk through a flow. Each captured screen keeps its persona, version, and feedback together."}
       </Text>
       <Button asChild colorPalette="blue">
