@@ -1,23 +1,26 @@
 import type { ReactNode } from "react";
-import { Badge, Box, Icon, IconButton } from "@chakra-ui/react";
+import { Badge, Box, Icon, IconButton, Spinner } from "@chakra-ui/react";
 import { Square } from "lucide-react";
 import { ToolHint } from "./ToolHint.js";
 
 export function WidgetTool({
   label,
-  active = false,
+  variant = "default",
   disabled = false,
   onClick,
   count = 0,
   children,
 }: {
   label: string;
-  active?: boolean;
+  variant?: "default" | "stop" | "scanning";
   disabled?: boolean;
   onClick: () => void;
   count?: number;
   children?: ReactNode;
 }) {
+  const active = variant !== "default";
+  const background = variant === "scanning" ? "blue.700" : "red.700";
+  const hoverBackground = variant === "scanning" ? "blue.800" : "red.800";
   return (
     <Box position="relative" flexShrink="0">
       <ToolHint label={label}>
@@ -35,19 +38,27 @@ export function WidgetTool({
           disabled={disabled}
           variant="plain"
           color="white"
-          bg={active ? "red.700" : "transparent"}
+          bg={active ? background : "transparent"}
           size="sm"
           boxSize="9"
           minW="9"
           borderRadius="full"
           mx="1"
-          _hover={{ bg: active ? "red.800" : "blackAlpha.200" }}
+          _hover={{ bg: active ? hoverBackground : "blackAlpha.200" }}
           focusRing="inset"
         >
-          {children ?? (
-            <Icon boxSize="5">
-              <Square />
-            </Icon>
+          {variant === "scanning" ? (
+            <Spinner
+              aria-hidden
+              size="sm"
+              _motionReduce={{ animation: "none" }}
+            />
+          ) : (
+            children ?? (
+              <Icon boxSize="5">
+                <Square />
+              </Icon>
+            )
           )}
         </IconButton>
       </ToolHint>
