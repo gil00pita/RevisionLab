@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Flex, Icon, Tabs } from "@chakra-ui/react";
 import { Image as ScreenIcon, Workflow } from "lucide-react";
 import type {
@@ -8,6 +9,7 @@ import type {
 import { FlowBoard } from "../../FlowBoard/index.js";
 import { ScreenReview } from "./ScreenReview.js";
 import { FlowVersionMenu } from "./FlowVersionMenu.js";
+import { ReviewAutomation } from "../../ReviewAutomation/index.js";
 
 export function FlowReview({
   data,
@@ -30,8 +32,13 @@ export function FlowReview({
   onDirtyChange: (dirty: boolean) => void;
   navigationPending: boolean;
 }) {
-  const [stepId, setStepId] = useState<string | null>(null);
-  const [view, setView] = useState("board");
+  const searchParams = useSearchParams();
+  const [stepId, setStepId] = useState<string | null>(() =>
+    searchParams.get("screen"),
+  );
+  const [view, setView] = useState(() =>
+    searchParams.has("screen") ? "screen" : "board",
+  );
   const step = flow.steps.find((item) => item.id === stepId) ?? flow.steps[0];
   const versions = data.flows
     .filter((item) => item.familyId === flow.familyId)
@@ -108,23 +115,32 @@ export function FlowReview({
       </Tabs.Content>
       <Tabs.Content value="screen" p="0" minW="0">
         {view === "screen" && (
-          <ScreenReview
+          <ReviewAutomation
             key={step?.id ?? flow.id}
             flow={flow}
             step={step}
-            onSelectStep={setStepId}
+            comments={data.comments}
             apiPath={apiPath}
-            basePath={basePath}
-            canResolve={canRecord}
-            onRefresh={onRefresh}
-            comments={data.comments.filter((comment) =>
-              step
-                ? comment.stepId === step.id
-                : comment.flowId === flow.id &&
-                  !comment.stepId &&
-                  !comment.edgeId,
-            )}
-          />
+            canEdit={canRecord}
+          >
+            <ScreenReview
+              key={step?.id ?? flow.id}
+              flow={flow}
+              step={step}
+              onSelectStep={setStepId}
+              apiPath={apiPath}
+              basePath={basePath}
+              canResolve={canRecord}
+              onRefresh={onRefresh}
+              comments={data.comments.filter((comment) =>
+                step
+                  ? comment.stepId === step.id
+                  : comment.flowId === flow.id &&
+                    !comment.stepId &&
+                    !comment.edgeId,
+              )}
+            />
+          </ReviewAutomation>
         )}
       </Tabs.Content>
     </Tabs.Root>

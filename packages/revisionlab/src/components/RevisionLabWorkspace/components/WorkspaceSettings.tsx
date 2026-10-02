@@ -12,6 +12,7 @@ import {
 import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabSettings } from "../../../comment-settings.js";
 import { BubbleColorPicker } from "./BubbleColorPicker.js";
+import { AiSettings } from "./AiSettings.js";
 
 export function WorkspaceSettings({
   apiPath,
@@ -120,6 +121,8 @@ export function WorkspaceSettings({
       <Text role="status" fontSize="sm" color="gray.600" minH="5">
         {busy ? "Saving settings..." : saved ? "Settings saved." : ""}
       </Text>
+      <Separator />
+      <AiSettings apiPath={apiPath} canEdit={canEdit} />
     </Stack>
   );
 }

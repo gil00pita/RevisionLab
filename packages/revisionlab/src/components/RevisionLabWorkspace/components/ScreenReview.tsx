@@ -9,6 +9,7 @@ import type {
 } from "../../../server/types.js";
 import { ScreenCanvas } from "./ScreenCanvas.js";
 import { ScreenFeedbackTabs } from "./ScreenFeedbackTabs.js";
+import { ReviewItemActions } from "../../ReviewAutomation/index.js";
 
 export function ScreenReview({
   flow,
@@ -93,6 +94,11 @@ export function ScreenReview({
               canResolve={canResolve}
               onRefresh={onRefresh}
               selectedCommentId={selectedPin.id}
+              renderActions={(comment) => (
+                <ReviewItemActions
+                  target={{ kind: "comment", commentId: comment.id }}
+                />
+              )}
             />
           )
         }
@@ -117,6 +123,14 @@ export function ScreenReview({
         borderColor="gray.200"
         p="5"
       >
+        {step && canResolve && (
+          <Stack mb="4" gap="2">
+            <Heading as="h3" size="sm">
+              Fix screen feedback
+            </Heading>
+            <ReviewItemActions target={{ kind: "screen" }} />
+          </Stack>
+        )}
         <ScreenFeedbackTabs
           value={feedbackTab}
           onChange={setFeedbackTab}
@@ -156,6 +170,11 @@ export function ScreenReview({
               onAnchorChange={setAnchor}
               onCancelAnchor={() => setAnchor(null)}
               selectedCommentId={selected}
+              renderActions={(comment) => (
+                <ReviewItemActions
+                  target={{ kind: "comment", commentId: comment.id }}
+                />
+              )}
               onSelectComment={revealComment}
               onCommentCreated={(id) => {
                 setSelected(id);
