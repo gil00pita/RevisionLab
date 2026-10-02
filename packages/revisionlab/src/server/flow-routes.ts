@@ -13,6 +13,7 @@ import {
 import type { ResolvedConfig } from "./config.js";
 import { write } from "./database.js";
 import { discardRecording } from "./recording-discard.js";
+import { finishRecording } from "./recording-finish.js";
 import { activePersonaName } from "./persona-routes.js";
 import { captureMetadataSchema } from "./capture-metadata.js";
 import { createFlow } from "./flow-creation.js";
@@ -79,6 +80,9 @@ export async function handleFlows(
     throw new HttpError(404, "Recording not found.");
   if (request.method === "POST" && path.length === 3 && path[2] === "discard") {
     return discardRecording(path[1], client, config, actor);
+  }
+  if (request.method === "POST" && path.length === 3 && path[2] === "finish") {
+    return finishRecording(path[1], client, actor);
   }
   if (request.method === "PATCH" && path.length === 3 && path[2] === "board") {
     return saveBoard(request, path[1], client);
