@@ -5,13 +5,18 @@ import type {
 
 export function commentGroupKey(comment: RevisionLabComment): string {
   if (comment.edgeId) return `edge:${comment.flowId}:${comment.edgeId}`;
-  return comment.stepId ?? comment.flowId ?? comment.route;
+  return (
+    comment.stepId ??
+    comment.flowId ??
+    `${comment.workspace?.id ?? "local"}:${comment.route}`
+  );
 }
 
 export function commentContextLabel(
   comment: RevisionLabComment,
   data: RevisionLabState,
 ): string {
+  const source = comment.workspace ? `${comment.workspace.name} · ` : "";
   const flow = data.flows.find((item) => item.id === comment.flowId);
   if (comment.edgeId) {
     const edge =
@@ -26,8 +31,8 @@ export function commentContextLabel(
     const path =
       edge?.label ||
       (source && target ? `${source} → ${target}` : "Connection");
-    return `${flow?.name ?? "Flow"} · v${flow?.version ?? "?"} · ${path}${comment.edge?.archived ? " (removed)" : ""}`;
+    return `${source}${flow?.name ?? "Flow"} · v${flow?.version ?? "?"} · ${path}${comment.edge?.archived ? " (removed)" : ""}`;
   }
   const step = flow?.steps.find((item) => item.id === comment.stepId);
-  return step?.title ?? comment.route;
+  return `${source}${step?.title ?? comment.route}`;
 }

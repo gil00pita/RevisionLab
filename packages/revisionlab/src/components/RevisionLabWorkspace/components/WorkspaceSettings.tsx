@@ -1,3 +1,6 @@
+import type { WorkspaceInstance } from "../../../workspace-instances.js";
+import { GeneralSettings } from "./GeneralSettings.js";
+import { WorkspaceInstancesSettings } from "./WorkspaceInstancesSettings.js";
 import { useRef, useState } from "react";
 import { Badge, Stack, Tabs, Text } from "@chakra-ui/react";
 import { apiRequest } from "../../../client/api.js";
@@ -10,6 +13,11 @@ import type { RevisionLabInvitation } from "../../../server/types.js";
 
 export function WorkspaceSettings({
   apiPath,
+  managementApiPath,
+  projectName,
+  workspaces,
+  settingsWorkspace,
+  onInstanceRemoved,
   settings,
   canEdit,
   invitations,
@@ -17,6 +25,11 @@ export function WorkspaceSettings({
   onRefresh,
 }: {
   apiPath: string;
+  managementApiPath: string;
+  projectName: string;
+  workspaces: WorkspaceInstance[];
+  settingsWorkspace?: WorkspaceInstance;
+  onInstanceRemoved: (id: string) => void;
   settings: RevisionLabSettings;
   canEdit: boolean;
   invitations?: RevisionLabInvitation[];
@@ -25,7 +38,9 @@ export function WorkspaceSettings({
 }) {
   const [selectedTab, setSelectedTab] = useState<string>(initialTab);
   const activeTab =
-    selectedTab === "users" && !invitations ? "system" : selectedTab;
+    ["users", "general", "instances"].includes(selectedTab) && !invitations
+      ? "system"
+      : selectedTab;
   const saving = useRef(false);
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<Partial<RevisionLabSettings> | null>(
@@ -77,6 +92,11 @@ export function WorkspaceSettings({
       maxW="3xl"
       aria-busy={busy}
     >
+      <Text fontSize="sm" color="gray.600">
+        Widget, Comments, and Audit settings apply to{" "}
+        {settingsWorkspace?.name ?? "This workspace"}. General, Users &amp;
+        Roles, and Workspace Instances manage this installation.
+      </Text>
       {!canEdit && <Badge alignSelf="start">Read only</Badge>}
       <Tabs.Root
         value={activeTab}
@@ -85,6 +105,11 @@ export function WorkspaceSettings({
         variant="line"
       >
         <Tabs.List aria-label="Settings sections" mb="6" flexWrap="wrap">
+          {invitations && (
+            <Tabs.Trigger value="general" px={{ base: "3", md: "4" }}>
+              General
+            </Tabs.Trigger>
+          )}
           <Tabs.Trigger value="system" px={{ base: "3", md: "4" }}>
             Widget
           </Tabs.Trigger>
@@ -99,7 +124,30 @@ export function WorkspaceSettings({
               Users &amp; Roles
             </Tabs.Trigger>
           )}
+          {invitations && (
+            <Tabs.Trigger value="instances" px={{ base: "3", md: "4" }}>
+              Workspace Instances
+            </Tabs.Trigger>
+          )}
         </Tabs.List>
+        {invitations && (
+          <Tabs.Content value="general" p="0">
+            <GeneralSettings
+              apiPath={managementApiPath}
+              projectName={projectName}
+            />
+          </Tabs.Content>
+        )}
+        {invitations && (
+          <Tabs.Content value="instances" p="0">
+            <WorkspaceInstancesSettings
+              apiPath={managementApiPath}
+              workspaces={workspaces}
+              onRefresh={onRefresh}
+              onRemoved={onInstanceRemoved}
+            />
+          </Tabs.Content>
+        )}
         <Tabs.Content value="system" p="0">
           <WidgetSettingsForm
             settings={settings}
@@ -127,7 +175,7 @@ export function WorkspaceSettings({
         {invitations && (
           <Tabs.Content value="users" p="0">
             <InvitationManager
-              apiPath={apiPath}
+              apiPath={managementApiPath}
               invitations={invitations}
               onRefresh={onRefresh}
             />

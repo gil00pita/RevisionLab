@@ -8,6 +8,20 @@ Whiteboard zoom, percentage/reset, and Fit controls float inside the board's bot
 
 RevisionLab is an installable Next.js App Router integration. The floating widget records real prototype screens and opens a full review workspace. This repository runs the same package that the installer adds to other projects.
 
+
+## Connected workspace instances
+
+Owners can connect deployed versions of the same project without copying or merging their databases:
+
+1. On the source installation, open **Settings → General**, name an API key, choose **Editor** or **Commenter**, and generate it. Copy the key while it is visible; it cannot be retrieved later.
+2. On the receiving installation, open **Settings → Workspace Instances → Add workspace**. Enter a name, the live URL, then the API key. Change the API path only if the source uses a custom path.
+3. With two workspaces available (this installation plus one connection), use the sidebar selector to choose a workspace or **All workspaces**. Flows, screenshots, comments, and personas identify their source. Edits save to that source, subject to both the signed-in user's role and the source key's permissions.
+
+Widget, Comments, and Audit settings follow the selected workspace; All workspaces uses local settings. General, Users & Roles, and Workspace Instances always manage the current installation. Open the source prototype to record there. Connected writes identify the named connection as their author. Refresh or polling retrieves current data; an unavailable source is marked and last-loaded data is retained during the session, while other sources stay usable. Removing a connection leaves its source data intact. Revoke a key on its source to stop its connections, then generate a replacement and use **Update connection** to reconnect.
+
+Both installations must run this unreleased workspace-connections implementation, share a RevisionLab project ID, and have distinct installation databases. Connections use public HTTPS on port 443; private network destinations and API redirects are rejected. URL paths are reduced to the origin, and the separate API path locates RevisionLab. Keys cannot manage invitations, other keys, or connections. Generated keys are hashed on their source; the receiving installation stores the connection credential in its server database for authenticated requests, never in browser state. Protect that database and its backups as credentials. Requests use bounded concurrency, timeouts, and a 16 MiB response limit. This is live access to each installation, not background replication or recursive connections.
+
+
 ## Run locally
 
 Recordings now save an accessibility report with each screen. Whiteboard cards show status/counts; open a screen and choose **Accessibility** beside **Comments** to review rule severity, affected-element locations, and documentation links. Reports survive reloads and stay with their original screen/version. Existing captures show **Not checked**; failed, unstable, or unmatched pre-interaction checks show **Check unavailable**, never a pass. Automated checks are not compliance certification. This is part of the local build, not the published package.

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { chmod, mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { createClient, type Client, type Transaction } from "@libsql/client";
@@ -39,6 +40,10 @@ async function initialize(
       sql: "INSERT OR IGNORE INTO installation (id, project_id) VALUES (1, ?)",
       args: [config.projectId],
     });
+    await client.execute({
+      sql: "UPDATE installation SET instance_id = ? WHERE id = 1 AND instance_id IS NULL",
+      args: [randomUUID()],
+    });
     const installation = await client.execute(
       "SELECT project_id FROM installation WHERE id = 1",
     );
@@ -59,6 +64,7 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
   // One write transaction prevents simultaneous instances from applying an ALTER twice.
   await write(client, async (transaction) => {
     const additions = {
+      installation: [["instance_id", "TEXT"]],
       workspace_settings: [
         [
           "wcag_version",

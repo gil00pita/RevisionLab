@@ -14,13 +14,14 @@ import {
 } from "@chakra-ui/react";
 import { ArrowLeft } from "lucide-react";
 import { apiRequest, ApiError } from "../../client/api.js";
-import { useRevisionLab } from "../../client/useRevisionLab.js";
+import { useWorkspaceData } from "./hooks/useWorkspaceData.js";
+import { sourceApiPath, sourceCanEdit } from "../../workspace-instances.js";
 import { WorkspaceHeader } from "./components/WorkspaceHeader.js";
 import { FlowHeaderActions } from "./components/FlowHeaderActions.js";
 import { RevisionLabProvider } from "../RevisionLabProvider/index.js";
 import type { WorkspaceView } from "./components/WorkspaceNavigation.js";
 import { WorkspaceSidebar } from "./components/WorkspaceSidebar.js";
-import { PersonaManager } from "./components/PersonaManager.js";
+import { WorkspacePersonas } from "./components/WorkspacePersonas.js";
 import { AllComments } from "./components/AllComments.js";
 import { FlowReview } from "./components/FlowReview.js";
 import { EmptyWorkspace } from "./components/EmptyWorkspace.js";
@@ -61,7 +62,13 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
     ? "settings"
     : searchParams.get("view");
   const commentRoute = searchParams.get("route");
-  const { data: loadedData, error, loading, refresh } = useRevisionLab(apiPath);
+  const selection = searchParams.get("workspace") ?? "local";
+  const {
+    data: loadedData,
+    error,
+    loading,
+    refresh,
+  } = useWorkspaceData(apiPath, selection);
   const view: WorkspaceView =
     requestedView === "comments" ||
     requestedView === "personas" ||
@@ -96,6 +103,11 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   });
   const data = deletion.data;
   const flow = data?.flows.find((item) => item.id === flowId) ?? data?.flows[0];
+  const sourceUnavailable =
+    data?.workspaces.some(
+      (source) =>
+        source.id === flow?.workspace?.id && source.status === "unavailable",
+    ) ?? false;
   // Pin the initial choice: polling may reorder flows when another editor saves.
   if (flow && flowId !== flow.id) setFlowId(flow.id);
 
@@ -135,6 +147,22 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
     setFlowId(id);
   }
 
+  async function selectWorkspace(next: string) {
+    if (
+      signingOut ||
+      startingRecording ||
+      deletion.pending ||
+      !(await canLeaveBoard())
+    )
+      return;
+    const query = new URLSearchParams(searchParams.toString());
+    query.set("workspace", next);
+    query.delete("flow");
+    query.delete("route");
+    router.replace(`${basePath}?${query}`, { scroll: false });
+    setFlowId(null);
+  }
+
   async function selectView(next: WorkspaceView) {
     if (
       signingOut ||
@@ -144,7 +172,10 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
     )
       return false;
     if (next !== view)
-      router.replace(`${basePath}?view=${next}`, { scroll: false });
+      router.replace(
+        `${basePath}?${new URLSearchParams({ view: next, workspace: selection })}`,
+        { scroll: false },
+      );
     return true;
   }
 
@@ -190,6 +221,11 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
               ) : (
                 <Button onClick={() => void refresh()}>Try again</Button>
               )}
+              {selection !== "local" && (
+                <Link href={basePath} color="blue.700">
+                  Open this workspace
+                </Link>
+              )}
               <Link href="/" color="blue.700">
                 <Icon>
                   <ArrowLeft />
@@ -205,6 +241,9 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   return (
     <Flex minH="100dvh" bg="white" direction={{ base: "column", lg: "row" }}>
       <WorkspaceSidebar
+        workspaces={data.workspaces}
+        selection={selection}
+        onWorkspaceChange={(next) => void selectWorkspace(next)}
         data={data}
         view={view}
         selectedFlow={flow}
@@ -224,7 +263,9 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           onSignOut={signOut}
           signingOut={signingOut}
           actions={
-            view === "flows" && flow && data.actor.role !== "commenter" ? (
+            view === "flows" &&
+            flow &&
+            sourceCanEdit(data.actor.role, flow.workspace) ? (
               <FlowHeaderActions
                 key={flow.id}
                 flow={flow}
@@ -234,6 +275,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
                 apiPath={apiPath}
                 basePath={basePath}
                 disabled={
+                  sourceUnavailable ||
                   completingBoard ||
                   signingOut ||
                   startingRecording ||
@@ -251,6 +293,21 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             {error?.message || actionError || boardNavigationError}
           </Text>
         )}
+        {data.workspaces
+          .filter((source) => source.status === "unavailable")
+          .map((source) => (
+            <Text
+              key={source.id}
+              role="alert"
+              px="6"
+              py="3"
+              bg="orange.50"
+              color="orange.800"
+            >
+              {source.name}: {source.error} Showing any last-loaded data; this
+              workspace is unavailable. Use Refresh to retry.
+            </Text>
+          ))}
         {completingBoard && (
           <Text role="status" px="6" py="3" color="gray.600">
             Finishing board autosave…
@@ -258,20 +315,30 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
         )}
         {view === "settings" ? (
           <WorkspaceSettings
-            apiPath={apiPath}
+            key={selection}
+            apiPath={sourceApiPath(apiPath, data.settingsWorkspace)}
+            managementApiPath={apiPath}
+            projectName={data.project.name}
+            workspaces={data.workspaces}
+            settingsWorkspace={data.settingsWorkspace}
+            onInstanceRemoved={(id) => {
+              if (selection === id) void selectWorkspace("local");
+            }}
             settings={data.settings ?? defaultSettings}
             invitations={
               data.actor.role === "owner" ? data.invitations : undefined
             }
             initialTab={legacyPeopleView ? "users" : "system"}
-            canEdit={data.actor.role !== "commenter"}
+            canEdit={
+              sourceCanEdit(data.actor.role, data.settingsWorkspace) &&
+              data.settingsWorkspace?.status !== "unavailable"
+            }
             onRefresh={refresh}
           />
         ) : view === "personas" ? (
-          <PersonaManager
+          <WorkspacePersonas
+            data={data}
             apiPath={apiPath}
-            personas={data.personas ?? []}
-            canEdit={data.actor.role !== "commenter"}
             onRefresh={refresh}
           />
         ) : view === "comments" ? (
@@ -290,13 +357,14 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
                 key={flow.id}
                 data={data}
                 flow={flow}
-                apiPath={apiPath}
+                apiPath={sourceApiPath(apiPath, flow.workspace)}
                 basePath={basePath}
                 onFlowSelect={selectFlow}
                 onRefresh={refresh}
                 onBeforeLeaveChange={registerBoardFlush}
                 onDirtyChange={boardDirtyChanged}
                 navigationPending={
+                  sourceUnavailable ||
                   completingBoard ||
                   signingOut ||
                   startingRecording ||
@@ -304,7 +372,17 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
                 }
               />
             ) : (
-              <EmptyWorkspace canRecord={data.actor.role !== "commenter"} />
+              <EmptyWorkspace
+                unavailable={data.workspaces.some(
+                  (source) => source.status === "unavailable",
+                )}
+                prototypeUrl={
+                  data.workspaces.find((source) => source.id === selection)?.url
+                }
+                canRecord={
+                  data.actor.role !== "commenter" && selection === "local"
+                }
+              />
             )}
           </Flex>
         )}

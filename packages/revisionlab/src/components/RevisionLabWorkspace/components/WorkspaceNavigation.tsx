@@ -13,11 +13,13 @@ export type WorkspaceView = "flows" | "comments" | "personas" | "settings";
 
 export function WorkspaceNavigation({
   data,
+  prototypeHref,
   view,
   onViewChange,
   flowsTriggerRef,
 }: {
   data: RevisionLabState;
+  prototypeHref: string;
   view: WorkspaceView;
   onViewChange: (view: WorkspaceView) => void;
   flowsTriggerRef: RefObject<HTMLButtonElement | null>;
@@ -41,7 +43,7 @@ export function WorkspaceNavigation({
         mb="2"
       >
         {/* Native navigation preserves the board's pending-save unload warning. */}
-        <Link href="/" _hover={{ textDecoration: "none" }}>
+        <Link href={prototypeHref} _hover={{ textDecoration: "none" }}>
           <Icon>
             <ArrowLeft />
           </Icon>

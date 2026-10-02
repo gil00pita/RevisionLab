@@ -1,14 +1,18 @@
+import { handleApiKeys } from "./instances/keys.js";
+import { handleConnections } from "./instances/connections.js";
+import { handleFederation } from "./instances/federation.js";
+import { connectedState, proxyInstance } from "./instances/workspaces.js";
+import { readWorkspaceState } from "./workspace-state.js";
 import { z } from "zod";
-import { authenticate } from "./authentication.js";
+import { authenticate, requireRole } from "./authentication.js";
 import { handleAuth } from "./auth-routes.js";
 import { readArtifact } from "./artifacts.js";
 import { handleComments, handleInvitations } from "./collaboration-routes.js";
 import { resolveConfig } from "./config.js";
 import { consumeRateLimit, getDatabase } from "./database.js";
 import { handleFlows } from "./flow-routes.js";
-import { handlePersonas, readPersonas } from "./persona-routes.js";
-import { readComments, readFlows, readInvitations } from "./queries.js";
-import { handleSettings, readSettings } from "./settings.js";
+import { handlePersonas } from "./persona-routes.js";
+import { handleSettings } from "./settings.js";
 import { assertSameOrigin, HttpError, json } from "./security.js";
 import type { RevisionLabConfig, RevisionLabRouteHandler } from "./types.js";
 
@@ -19,34 +23,36 @@ export function createRevisionLabHandler(
     try {
       const config = resolveConfig(initialConfig);
       const { path = [] } = await context.params;
-      if (path.length > 3) throw new HttpError(404, "Not found.");
+      if (path.length > 6) throw new HttpError(404, "Not found.");
       if (request.method !== "GET") assertSameOrigin(request);
       const client = await getDatabase(config);
       if (path[0] === "auth")
         return await handleAuth(request, path.slice(1), client, config);
+      if (path[0] === "federation")
+        return await handleFederation(request, path.slice(1), client, config);
       const actor = await authenticate(request, client, config);
+      if (request.method !== "GET")
+        await consumeRateLimit(client, `mutate:${actor.id}`, 120, 60_000);
+      if (path[0] === "api-keys")
+        return await handleApiKeys(request, path, client, actor);
+      if (path[0] === "instances") {
+        if (path[2] === "proxy")
+          return await proxyInstance(request, path, client, actor, config);
+        requireRole(actor, "owner");
+        return await handleConnections(request, path, client, config);
+      }
+      if (
+        request.method === "GET" &&
+        path.length === 1 &&
+        path[0] === "workspace-state"
+      )
+        return await connectedState(request, client, config, actor);
       if (
         request.method === "GET" &&
         path.length === 1 &&
         path[0] === "state"
       ) {
-        const [flows, comments, invitations, personas, settings] =
-          await Promise.all([
-            readFlows(client, config.apiPath),
-            readComments(client),
-            actor.role === "owner" ? readInvitations(client) : [],
-            readPersonas(client),
-            readSettings(client),
-          ]);
-        return json({
-          project: { id: config.projectId, name: config.projectName },
-          actor,
-          flows,
-          comments,
-          invitations,
-          personas,
-          settings,
-        });
+        return json(await readWorkspaceState(client, config, actor));
       }
       if (
         request.method === "GET" &&
@@ -58,7 +64,6 @@ export function createRevisionLabHandler(
       }
       if (!["POST", "PATCH"].includes(request.method))
         throw new HttpError(404, "Not found.");
-      await consumeRateLimit(client, `mutate:${actor.id}`, 120, 60_000);
       if (path[0] === "flows")
         return await handleFlows(request, path, client, config, actor);
       if (path[0] === "personas")

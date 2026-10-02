@@ -1,4 +1,14 @@
 export const schema = [
+  `CREATE TABLE IF NOT EXISTS workspace_api_keys (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE,
+    role TEXT NOT NULL CHECK(role IN ('editor', 'commenter')),
+    created_by TEXT NOT NULL REFERENCES reviewers(id), created_at TEXT NOT NULL, revoked_at TEXT
+  )`,
+  `CREATE TABLE IF NOT EXISTS workspace_instances (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL, url TEXT NOT NULL UNIQUE,
+    instance_id TEXT NOT NULL UNIQUE, api_path TEXT NOT NULL, base_path TEXT NOT NULL,
+    api_key TEXT NOT NULL, created_at TEXT NOT NULL
+  )`,
   `CREATE TABLE IF NOT EXISTS workspace_settings (
     id INTEGER PRIMARY KEY CHECK(id = 1),
     show_comment_bubbles INTEGER NOT NULL DEFAULT 1 CHECK(show_comment_bubbles IN (0, 1)),

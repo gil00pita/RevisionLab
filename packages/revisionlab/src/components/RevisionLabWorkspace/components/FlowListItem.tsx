@@ -46,7 +46,7 @@ export function FlowListItem({
           minH="10"
           flexShrink="0"
           checked={checked}
-          disabled={disabled || active}
+          disabled={disabled || active || flow.workspace?.role === "commenter"}
           onCheckedChange={(event) => onCheck(event.checked === true)}
         >
           <Checkbox.HiddenInput aria-label={`Select ${flow.name}`} />
@@ -80,6 +80,17 @@ export function FlowListItem({
           <Text fontWeight="semibold" overflowWrap="anywhere">
             {flow.name}
           </Text>
+          {flow.workspace && (
+            <Badge
+              mt="1"
+              colorPalette="blue"
+              maxW="full"
+              whiteSpace="normal"
+              overflowWrap="anywhere"
+            >
+              {flow.workspace.name}
+            </Badge>
+          )}
           <Text fontSize="xs" color="gray.600" mt="1" overflowWrap="anywhere">
             {flow.persona}
           </Text>

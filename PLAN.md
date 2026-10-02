@@ -1547,3 +1547,7 @@ Updating the underlying prototype and replaying the flow must refresh the genera
 - review history
 
 That behaviour is the central product promise.
+
+## Current increment — Connected workspace instances
+
+Add owner-managed General API keys and Workspace Instances connections, a workspace/all selector, bounded authenticated federation, namespaced review data/artifacts, source-aware editing, failure feedback, and departure guards. Validate key lifecycle, same-project identity, SSRF boundaries, role restrictions, collision isolation, partial failures, and desktop/mobile workflows with isolated installations. Implemented with the confirmed two-workspace selector threshold and permission-limited remote editing. PRODUCT.md records these decisions; VALIDATION.md records checks and remaining deployment verification.

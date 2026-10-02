@@ -12,7 +12,7 @@ import { write } from "./database.js";
 import { HttpError, json, readJson } from "./security.js";
 import type { RevisionLabActor } from "./types.js";
 
-const settingsSchema = z
+export const settingsSchema = z
   .object({
     wcagVersion: z.enum(wcagVersions),
     wcagLevel: z.enum(wcagLevels),

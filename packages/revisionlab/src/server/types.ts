@@ -1,3 +1,4 @@
+import type { WorkspaceOrigin } from "../workspace-instances.js";
 import type { RevisionLabSettings } from "../comment-settings.js";
 import type { AccessibilityReport } from "../accessibility.js";
 export type {
@@ -57,6 +58,7 @@ export interface RevisionLabBoard {
 }
 
 export interface RevisionLabFlow {
+  workspace?: WorkspaceOrigin;
   id: string;
   familyId: string;
   version: number;
@@ -112,6 +114,7 @@ export interface RevisionLabElementAnchor {
 }
 
 export interface RevisionLabComment {
+  workspace?: WorkspaceOrigin;
   id: string;
   flowId: string | null;
   stepId: string | null;
@@ -144,6 +147,7 @@ export interface RevisionLabInvitation {
 }
 
 export interface RevisionLabPersona {
+  workspace?: WorkspaceOrigin;
   id: string;
   name: string;
   description: string;
