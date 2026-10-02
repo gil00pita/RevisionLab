@@ -9,7 +9,8 @@ import {
   instanceUrl,
   publicAddress,
 } from "./instances/transport.js";
-import { scopeData } from "./instances/data.js";
+import { defaultAiSettings } from "../ai-instructions/index.js";
+import { scopeData, remoteStateSchema } from "./instances/data.js";
 import type { WorkspaceState } from "../workspace-instances.js";
 
 async function pair(t: Parameters<typeof reviewFixture>[0]) {
@@ -492,4 +493,72 @@ test("outbound connections reject private URLs and namespaced mutations reject c
     ),
     { flowId: "id", body: "source~keep my text", hiddenStepIds: ["step"] },
   );
+});
+
+test("Audit AI instructions and design systems save only to the selected connected workspace", async (t) => {
+  const f = await pair(t);
+  const proxy = `instances/${f.connection.id}/proxy`;
+  const ai = {
+    ...defaultAiSettings,
+    instructions: "Remote guidance",
+    designSystemEnabled: true,
+    designSystemId: "govuk-chakra",
+  };
+  assert.equal(
+    (
+      await f.local.call(`${proxy}/settings/ai`, "PATCH", {
+        instructions: ai.instructions,
+      })
+    ).status,
+    200,
+  );
+  assert.equal(
+    (await f.local.call(`${proxy}/settings`, "PATCH", { ai })).status,
+    200,
+  );
+  const document = await (await f.local.call(`${proxy}/settings/ai`)).json();
+  assert.equal(document.instructions, ai.instructions);
+  assert.equal(document.filePath, f.remote.config.aiInstructionsFile);
+  assert.deepEqual((await f.workspace(f.connection.id)).settings.ai, ai);
+  assert.deepEqual((await f.local.state()).settings.ai, defaultAiSettings);
+  assert.equal(
+    (await (await f.local.call("settings/ai")).json()).exists,
+    false,
+  );
+  const commenter = await f.local.login("commenter");
+  assert.equal(
+    (await f.local.call(`${proxy}/settings/ai`, "GET", undefined, commenter))
+      .status,
+    200,
+  );
+  assert.equal(
+    (
+      await f.local.call(
+        `${proxy}/settings/ai`,
+        "PATCH",
+        { instructions: "Denied" },
+        commenter,
+      )
+    ).status,
+    403,
+  );
+  f.setOnline(false);
+  assert.notEqual((await f.local.call(`${proxy}/settings/ai`)).status, 200);
+  assert.equal(
+    (await (await f.local.call("settings/ai")).json()).exists,
+    false,
+  );
+});
+
+test("connected workspace state predating AI settings still loads with defaults", async (t) => {
+  const f = await pair(t);
+  const state = await f.remote.state();
+  const legacySettings: Partial<typeof state.settings> = { ...state.settings };
+  delete legacySettings.ai;
+  const legacy = remoteStateSchema.parse({
+    ...state,
+    instanceId: randomUUID(),
+    settings: legacySettings,
+  });
+  assert.deepEqual(legacy.settings.ai, defaultAiSettings);
 });

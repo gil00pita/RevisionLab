@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readdir } from "node:fs/promises";
 import test from "node:test";
+import { defaultAiSettings } from "../ai-instructions/index.js";
 import { reviewFixture } from "./review-test-fixture.js";
 
 test("workspace history restores deletions with screenshots and can undo the restore", async (t) => {
@@ -189,4 +190,52 @@ test("history covers settings, personas, comments, and point-in-time later chang
   assert.equal(restored.settings.widgetColor, "blue");
   assert.deepEqual(restored.personas, []);
   assert.deepEqual(restored.comments, []);
+});
+
+test("history restores design-system choices and accepts snapshots predating AI settings", async (t) => {
+  const f = await reviewFixture(t);
+  const ai = {
+    ...defaultAiSettings,
+    designSystemEnabled: true,
+    designSystemId: "govuk-chakra",
+  };
+  await f.call("settings", "PATCH", { ai });
+  await f.call("settings/ai", "PATCH", {
+    instructions: "File stays authoritative",
+  });
+  await f.call("settings", "PATCH", {
+    ai: { ...ai, designSystemEnabled: false },
+  });
+  const history = (await (await f.call("history")).json()).history;
+  const change = history[0];
+  assert.equal(
+    (await f.call(`history/${change.id}/restore`, "POST", {})).status,
+    200,
+  );
+  assert.deepEqual((await f.state()).settings.ai, ai);
+  assert.equal(
+    (await (await f.call("settings/ai")).json()).instructions,
+    "File stays authoritative",
+  );
+  const row = (
+    await f.client.execute({
+      sql: "SELECT snapshot_json FROM workspace_history WHERE id = ?",
+      args: [change.id],
+    })
+  ).rows[0];
+  const snapshot = JSON.parse(String(row.snapshot_json));
+  delete snapshot.workspace_settings[0].ai_instructions_json;
+  await f.client.execute({
+    sql: "UPDATE workspace_history SET snapshot_json = ? WHERE id = ?",
+    args: [JSON.stringify(snapshot), change.id],
+  });
+  assert.equal(
+    (await f.call(`history/${change.id}/restore`, "POST", {})).status,
+    200,
+  );
+  assert.deepEqual((await f.state()).settings.ai, defaultAiSettings);
+  assert.equal(
+    (await (await f.call("settings/ai")).json()).instructions,
+    "File stays authoritative",
+  );
 });

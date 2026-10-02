@@ -362,3 +362,39 @@ test("accessibility tickets include the selected rule only and a screen run excl
     0,
   );
 });
+
+test("Codex composes file guidance with the enabled design system and respects disabling and empty files", async (t) => {
+  const f = await fixture(t);
+  const ai = {
+    ...(await f.state()).settings.ai,
+    instructions: "Stale database fallback",
+    designSystemEnabled: true,
+    designSystemId: "chakra",
+    installSkill: true,
+  };
+  assert.equal((await f.call("settings", "PATCH", { ai })).status, 200);
+  assert.equal((await f.call("ai/fixes", "POST", f.input)).status, 201);
+  let prompt = await readFile(join(f.root, "prompt.txt"), "utf8");
+  assert.match(prompt, /Prefer accessible Chakra controls/);
+  assert.match(prompt, /https:\/\/chakra-ui.com\/docs/);
+  assert.match(prompt, /Install the AI skill/);
+  assert.doesNotMatch(prompt, /Stale database fallback/);
+  assert.equal(
+    (
+      await f.call("settings", "PATCH", {
+        ai: { ...ai, designSystemEnabled: false },
+      })
+    ).status,
+    200,
+  );
+  assert.equal(
+    (await f.call("settings/ai", "PATCH", { instructions: "" })).status,
+    200,
+  );
+  assert.equal((await f.call("ai/fixes", "POST", f.input)).status, 201);
+  prompt = await readFile(join(f.root, "prompt.txt"), "utf8");
+  assert.doesNotMatch(
+    prompt,
+    /# DESIGN SYSTEM|Stale database fallback|Prefer accessible Chakra controls/,
+  );
+});

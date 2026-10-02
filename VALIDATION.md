@@ -1,5 +1,32 @@
 # Release validation
 
+## Audit tab integration and latest main merge — 2 October 2026
+
+Merged `origin/main` at `9d99002`, preserving the setup wizard, users/roles, connected workspaces, history, and widget/audit controls. AI Instructions and design-system settings now live inside Settings → Audit; the separate AI tab is removed. Both instruction-file and design-system saves target the selected workspace. History includes saved AI configuration and accepts older snapshots without it; the external Markdown file remains outside history, as explained in the interface and documentation.
+
+Validation: lint, production build, all 212 package tests, and all 19 release tests passed. New integration tests cover partial AI/WCAG saves preserving each other, connected-source file/configuration isolation and commenter permissions, unavailable sources, legacy remote-state compatibility, and current/legacy history restoration while retaining the authoritative Markdown file. After the final history-help-text change, targeted component lint passed.
+
+Chrome against an isolated local test database verified the Audit tab contains existing controls plus one AI editor, the full 17,922-character default prompt, framework draft retention across tab switches, save/reload persistence, keyboard arrow navigation between tabs, and zero horizontal overflow at 390px. Desktop/mobile screenshots are `.context/audit-ai-desktop.png` and `.context/audit-ai-mobile.png`; browser errors were empty. The browser-created instruction file was removed after verification to restore its original absence. Connected behavior was exercised through real route handlers with mocked transport; no deployed instance was changed.
+
+## Main merge integration — 2 October 2026
+
+Merged `origin/main` (2656018), retaining local Codex fixes, Jira drafts, persistent navigation, Yarn dependency management, and release automation. Resolved the overlapping AI editor into one Settings section: the local Markdown file supplies base text, the database retains design-system choices and a fallback, and Codex composes the same enabled resource appendix as preview/copy. New installations still receive the complete template; external file edits and intentionally empty files take precedence over the fallback. Missing files can be saved without editing the template. Partial saves explicitly report that Markdown succeeded while settings need retry.
+
+Validation: frozen Yarn installation, lint, production build, all 182 package tests, and all 19 release tests pass. Both original AI test suites are retained, with integration checks for database fallback, file precedence/empty files, and design-system inclusion/exclusion in the actual Codex prompt. Chrome checks verified one AI editor, enabled Save for a missing default file, selection/save/reload, generated resources, external file edits on reopening, a simulated settings failure after successful file save retaining the draft and enabling retry, successful retry, and no horizontal overflow at 390px. Browser error collection was empty. Test settings/files were restored; no live Codex execution, Jira submission, or deployment was performed.
+
+## AI Instructions and design systems — 2 October 2026
+
+Local validation completed:
+
+- `npm run lint` and `npm run build` passed after the final code changes.
+- `npm run test:package`: all 167 tests passed. New checks cover the exact SHA-256 of the supplied prompt, fresh-install defaults, persisted edits and blank instructions, reopening the database, additive migration of a legacy settings table, toggle/base-text isolation, all 18 catalogue resources, manual setup output, URL/length validation, owner/editor/commenter permissions, and concurrent updates preserving comment preferences.
+- The package dry-run manifest includes the default prompt, catalogue, and Settings editor, so installed host projects receive the same defaults. A separate host installation was not repeated.
+- Local Chrome checks at `http://localhost:3127/revisionlab?view=settings` verified prefilled text, Chakra selection and setup options, save/reload, exact base output when disabled, restored selection when re-enabled, a manual name/docs/skill/MCP entry and persisted output, copy success, and injected HTTP 503 save failure retaining the draft followed by successful retry. ArrowDown moved selection and focus from Chakra UI to Radix; only one radio was selected. Browser error collection was empty.
+- Visual checks at 1440px and 390px, plus overflow checks at 390px and 320px, found no horizontal page overflow. Screenshots are under `.context/ai-settings-desktop.png`, `.context/ai-settings-mobile.png`, and `.context/screenshot-1790956393042.png` (gitignored).
+- axe checked the AI Instructions form against WCAG 2 A/AA and 2.1 AA tags: zero violations, 17 passing checks, one incomplete/manual-review check. This is not a compliance certification; real assistive technology and other browsers were not tested.
+- All 18 GitHub star counts were fetched from the GitHub repository API on 2 October 2026 and saved with a date. Resource URLs are the supplied catalogue references; resource contents and external installers were not audited or executed.
+- The test workspace's AI settings were restored to the original full prompt with the design-system toggle off after browser checks. No package was published and no skill or MCP was installed by the feature. Setup options append instructions for the receiving agent.
+
 ## Thirty-day workspace history - 2 October 2026
 
 Settings now has a History tab covering flow, capture, recording, whiteboard, comment, persona, and Widget/Comments/Audit mutations for 30 days. Restore is source-specific, permission-limited, point-in-time, and creates its own recoverable entry. Deleted screenshot evidence remains private while referenced by history; expiry cleanup retries external storage failures. Access, keys, invitations, sessions, reviewers, and connection configuration are excluded. PRODUCT.md, PLAN.md, and both READMEs reflect the confirmed scope and restore semantics.

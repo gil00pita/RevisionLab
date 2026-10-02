@@ -72,6 +72,7 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
       installation: [["instance_id", "TEXT"]],
       workspace_history: [["committed_at", "TEXT"]],
       workspace_settings: [
+        ["ai_instructions_json", "TEXT"],
         [
           "wcag_version",
           "TEXT NOT NULL DEFAULT '2.2' CHECK(wcag_version IN ('2.0', '2.1', '2.2'))",

@@ -1,7 +1,9 @@
+import { readAiInstructionDocument } from "../ai-instructions.js";
+import { readSettings } from "../settings.js";
+import { composeAiInstructions } from "../../ai-instructions/index.js";
 import type { Client } from "@libsql/client";
 import { randomUUID } from "node:crypto";
-import { readFile, realpath } from "node:fs/promises";
-import { resolve } from "node:path";
+import { realpath } from "node:fs/promises";
 import { z } from "zod";
 import { feedbackContext } from "../../review-automation.js";
 import { requireRole } from "../authentication.js";
@@ -80,18 +82,14 @@ export async function handleAutomation(
           400,
           "This screen has no selected comments or saved accessibility issues to fix.",
         );
-      let instructions = "";
-      try {
-        instructions = await readFile(
-          resolve(
-            config.aiInstructionsFile ?? ".revisionlab/ai-instructions.md",
-          ),
-          "utf8",
-        );
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== "ENOENT")
-          throw new HttpError(503, "Could not read workspace AI instructions.");
-      }
+      const [document, settings] = await Promise.all([
+        readAiInstructionDocument(config, client),
+        readSettings(client),
+      ]);
+      const instructions = composeAiInstructions({
+        ...settings.ai,
+        instructions: document.instructions,
+      });
       const prompt = codexPrompt(context, instructions);
       if (prompt.length > 128_000)
         throw new HttpError(
