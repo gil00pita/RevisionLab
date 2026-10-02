@@ -1,4 +1,5 @@
 import { defaultWcagSettings, type WcagSettings } from "../wcag-settings.js";
+import { unavailableAccessibility } from "../accessibility.js";
 import type { RevisionLabCapture } from "../server/types.js";
 import { captureAccessibility } from "./recording-accessibility.js";
 import { apiRequest } from "./api.js";
@@ -25,6 +26,7 @@ export interface AutomaticCaptureRequest {
 export async function captureRecordingScreens({
   standard = defaultWcagSettings,
   apiPath,
+  auditRecordings = true,
   flowId,
   route,
   title,
@@ -35,6 +37,7 @@ export async function captureRecordingScreens({
 }: {
   standard?: WcagSettings;
   apiPath: string;
+  auditRecordings?: boolean;
   flowId: string;
   route: string;
   title?: string;
@@ -76,11 +79,13 @@ export async function captureRecordingScreens({
     route;
   const screenshot = await captureScreen();
   if (cancelled()) return false;
-  evidence.accessibility = await captureAccessibility(
-    signature,
-    () => Boolean(cancelled()),
-    standard,
-  );
+  evidence.accessibility = auditRecordings
+    ? await captureAccessibility(
+        signature,
+        () => Boolean(cancelled()),
+        standard,
+      )
+    : unavailableAccessibility("not-scanned");
   if (cancelled()) return false;
   const persist = async (
     image: string,
@@ -142,7 +147,9 @@ export async function captureRecordingScreens({
         height: before.height,
         reason: "click",
         cursor: before.cursor,
-        accessibility: before.accessibility,
+        accessibility: auditRecordings
+          ? before.accessibility
+          : unavailableAccessibility("not-scanned"),
       },
       `${(before.title || route).slice(0, 160 - suffix.length)}${suffix}`,
       before.signature,

@@ -1,5 +1,17 @@
 # RevisionLab
 
+First-use wizard (implemented locally; not yet published): on a fresh workspace, the prototype shows **Setup** with a “Let’s set up RevisionLab” introduction. The workspace wizard saves the owner’s name/email and an editable, detected live URL first. Then configure widget color, position and visibility, live comments, accessibility checks, optional personas, and users/roles. You can skip the remaining steps after saving the first step. Progress and preferences persist in the workspace database; existing installations retain their normal interface. All optional settings remain available afterward, even when the widget is hidden. Explicit server owner-email configuration takes precedence; hosted email delivery still needs server configuration.
+
+## Local Codex fixes and Jira drafts
+
+In **Screen & comments**, **Fix with Codex** runs on all open screen comments/saved accessibility issues or on an individual comment/rule. A signed-in local Codex CLI uses the workspace AI instructions, route and screen evidence, and recorded screenshot when available to return a before/after proposal. Review it before **Apply locally**, **Discard fix**, or **Create draft PR**. **Undo local fix** restores the saved source only when it has not changed since applying. Existing feedback and captured accessibility reports are preserved; run project checks and a fresh scan before resolving them.
+
+Execution requires owner/editor access from localhost in development, a Git checkout, and `codex` on the server PATH with `codex login` completed. The optional server-only `aiProjectDirectory` chooses another local Git checkout. Read-only Codex generation cannot directly apply its proposed replacements; RevisionLab validates existing nonignored source paths, unique replacement matches, and JavaScript/TypeScript syntax. Up to eight source files may change. New files, dependencies, and full automated project validation are outside this increment. Relevant code and screenshots may be sent through the configured Codex account. See [Codex automation](https://learn.chatgpt.com/docs/non-interactive-mode).
+
+**Create draft PR** uses `gh auth login` and the GitHub `origin` remote to push only the reviewed Codex changes from a separate checkout and branch, leaving the active branch untouched. Affected source files must match the fetched default-branch baseline; otherwise the action stops with an explanation. PRs remain drafts and are not merged/deployed. Proposals and undo snapshots stay under `.revisionlab/ai-fixes/`; the browser remembers the latest proposal per screen/scope for the current tab session.
+
+**Generate Jira ticket** on each screen comment/accessibility issue creates an editable summary and description with evidence, screen/version context, a review link, and acceptance criteria. Copy the complete ticket or its fields and paste into Jira. No Jira connection or AI run is needed, and no remote ticket is created. This increment is implemented locally, not yet published. Claude/GitHub AI providers remain future work; GitHub draft PR creation is a separate supported action.
+
 Whiteboard zoom out, percentage/reset, zoom in, and Fit now float in a compact widget at the board's bottom-right corner. The controls stay stationary during pan/zoom and remain within the canvas beside any open connection panel. Paths and editing controls stay above the board.
 
 In the workspace, the selected flow's title and recording/delete actions share the top header. **Whiteboard** and **Screen & comments** are tabs; the history icon beside them opens the version menu with the current version checked. Switching tabs preserves the board camera and pending edits. Version changes, recording, and deletion retain their autosave and permission safeguards. This compact header belongs to the local build, not the previously published package.
@@ -25,6 +37,8 @@ Restore is a point-in-time operation: it returns that source to immediately befo
 ## Comment on live elements
 
 **Workspace > Settings > Live comments** controls default bubble visibility and color. Owners and editors can choose from gray, red, orange, yellow, green, teal, cyan, blue, purple, and pink; changes save to the workspace database. Commenters have read-only access. Existing installations retain visible blue markers until changed. The live Show comments switch is a temporary page-level override; new pages use the saved default, with details closed until activation.
+
+**Workspace > Settings > AI** stores Markdown instructions in `.revisionlab/ai-instructions.md`, relative to the host project's working directory. Owners and editors use **Save instructions**; commenters have read-only access. The editor shows the full path and reads the file on reopening, including changes made in an external editor. Saving empty text clears the instructions; the limit is 32,000 characters. Set `aiInstructionsFile` in your server-side RevisionLab config to use another `.md` path. Storage must be writable and persistent on the host server; this does not save to a remote visitor's computer or automatically configure an AI provider. The default path uses RevisionLab's gitignored runtime directory. This increment is implemented locally and is not yet published.
 
 Opening a saved live comment bubble highlights its attached component with an outline and subtle tint matching the workspace bubble color. The highlight follows the open preview during scrolling and resizing without blocking clicks. It disappears when the preview closes, comments are hidden, or the target is unavailable; Escape preserves it when comments remain visible.
 
@@ -112,7 +126,7 @@ Automatic captures now reuse an identical captured image on the same route withi
 
 The workspace has one drill-down sidebar: choose **Flows** to replace the main menu with **Your flows**, then **Back** to restore the menu. The selected flow and canvas stay mounted during this transition; no second flow-list column consumes canvas width.
 
-Flow metadata and comments persist in `.revisionlab/revisionlab.db`, a local SQLite database initialized automatically; private screenshots are stored in `.revisionlab/artifacts/`. Open `/revisionlab` to review recorded steps and discussions. A loopback development session gets local owner access; this development shortcut is disabled in production. Set `REVISIONLAB_LOCAL_OWNER=false` to test invitation access during development.
+Flow metadata and comments persist in `.revisionlab/revisionlab.db`, a local SQLite database initialized automatically; private screenshots are stored in `.revisionlab/artifacts/`. Open `/revisionlab` to review recorded steps and discussions. A loopback development session gets local owner access; this development shortcut is disabled in production and whenever Vercel deployment markers are present. Set `REVISIONLAB_LOCAL_OWNER=false` to test passwordless membership access during development.
 
 Screenshots capture the rendered DOM. Cross-origin images, embedded frames, video, and canvas content may be unavailable to the browser capture API. Record only prototype data that reviewers may access. A persona is a recording label; it does not impersonate or log in as a host application's user.
 
@@ -175,9 +189,13 @@ REVISIONLAB_DATABASE_AUTH_TOKEN=your-database-token
 REVISIONLAB_OWNER_EMAIL=owner@example.com
 RESEND_API_KEY=your-email-api-key
 REVISIONLAB_EMAIL_FROM=RevisionLab <reviews@your-verified-domain.com>
+REVISIONLAB_SYSTEM_URL=https://reviews.example.com
+REVISIONLAB_PERSONA_ENCRYPTION_KEY=your-32-byte-base64url-secret
 ```
 
-The owner signs in with an email verification code, then creates expiring commenter/editor invitations in the workspace. Reviewers use their own email address; they do not need a Vercel account. Named invitations require the invited address; an open invitation can be used by anyone who holds its link and verifies an email address. Revoking an invitation removes the sessions issued through it.
+The owner opens **Users & roles** to configure the canonical system URL, exact-email/domain self-join policy, and a revocable workspace code. Employees join with the link, code, and verified company email. Owners can also add a member and role directly; RevisionLab sends a project-named single-use login link. RevisionLab stores no member password, and suspending a member or changing their role invalidates existing sessions. Existing invitation records remain supported during migration.
+
+Owners can save an optional synthetic prototype username/password in Persona settings after configuring `REVISIONLAB_PERSONA_ENCRYPTION_KEY`. The credential is encrypted at rest, omitted from ordinary persona responses and exports, and revealed only to an authorized Owner/Editor through the selected persona's widget banner. Do not store production credentials.
 
 Local SQLite and artifact files need persistent writable storage. Use a remote libSQL/Turso database on a serverless host such as Vercel. Remote mode stores screenshots as private database BLOBs by default, so it needs no additional storage service. An optional server configuration `artifactStorage` adapter can provide separate private object storage. Screenshot reads require authentication; uploads accept PNG, JPEG, or WebP up to 3 MB.
 

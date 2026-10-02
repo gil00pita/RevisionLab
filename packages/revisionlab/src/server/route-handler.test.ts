@@ -28,6 +28,7 @@ async function fixture(t: TestContext) {
   const envKeys = [
     "NODE_ENV",
     "VERCEL",
+    "VERCEL_ENV",
     "RESEND_API_KEY",
     "REVISIONLAB_LOCAL_OWNER",
     "REVISIONLAB_DATABASE_AUTH_TOKEN",
@@ -388,23 +389,43 @@ test("local access options respect production, host, and configuration restricti
     assert.equal(response.status, 200);
     return response.json();
   };
-  const localRequest = () => new Request(`${BASE}/api/revisionlab/auth/options`);
+  const localRequest = () =>
+    new Request(`${BASE}/api/revisionlab/auth/options`);
   assert.deepEqual(
     await options({ ...f.config, localOwner: false }, localRequest()),
     { localOwner: false },
   );
   for (const request of [
     new Request("https://prototype.example/api/revisionlab/auth/options"),
-    new Request(localRequest(), { headers: { "x-forwarded-host": "prototype.example" } }),
-    new Request(localRequest(), { headers: { forwarded: "host=prototype.example" } }),
+    new Request(localRequest(), {
+      headers: { "x-forwarded-host": "prototype.example" },
+    }),
+    new Request(localRequest(), {
+      headers: { forwarded: "host=prototype.example" },
+    }),
   ]) {
     assert.deepEqual(await options(f.config, request), { localOwner: false });
   }
   process.env.REVISIONLAB_LOCAL_OWNER = "false";
-  assert.deepEqual(await options(f.config, localRequest()), { localOwner: false });
+  assert.deepEqual(await options(f.config, localRequest()), {
+    localOwner: false,
+  });
   delete process.env.REVISIONLAB_LOCAL_OWNER;
+  const hostedConfig = {
+    ...f.config,
+    databaseUrl: "libsql://revisionlab-test.turso.io",
+    databaseAuthToken: "test-token",
+  };
+  process.env.VERCEL = "1";
+  assert.equal(resolveConfig(hostedConfig).localOwner, false);
+  delete process.env.VERCEL;
+  process.env.VERCEL_ENV = "preview";
+  assert.equal(resolveConfig(hostedConfig).localOwner, false);
+  delete process.env.VERCEL_ENV;
   process.env.NODE_ENV = "production";
-  assert.deepEqual(await options(f.config, localRequest()), { localOwner: false });
+  assert.deepEqual(await options(f.config, localRequest()), {
+    localOwner: false,
+  });
   await f.call("auth/logout", "POST");
   assert.equal((await f.call("state")).status, 401);
 });
@@ -525,6 +546,15 @@ test("navigation protection allows login, protects prototype routes, and rejects
     await protectRevisionLab(new Request(`${BASE}/revisionlab/access`), config),
     undefined,
   );
+  for (const path of ["magic-request", "magic-consume"]) {
+    assert.equal(
+      await protectRevisionLab(
+        new Request(`${BASE}/api/revisionlab/auth/${path}`, { method: "POST" }),
+        config,
+      ),
+      undefined,
+    );
+  }
   const protectedPage = await protectRevisionLab(
     new Request(`${BASE}/checkout?step=2`),
     config,

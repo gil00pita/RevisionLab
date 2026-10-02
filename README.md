@@ -1,5 +1,7 @@
 # RevisionLab
 
+First-use wizard (implemented locally; not yet published): on a new installation, choose **Setup** on the prototype to open the first-use wizard. Save your identity and live URL first, then configure the widget, comments, accessibility audits, personas, and users/roles. You can skip the remaining steps after the first save and adjust them later in the workspace. Setup progress is stored in the workspace database.
+
 Review prototype flows, comments, and versions from inside each Next.js project.
 
 The selected flow's title, recording action, and delete action live in the top workspace header. Use the **Whiteboard** and **Screen & comments** tabs to switch views, and the history icon beside them to choose a version. Other workspace pages show their own title: **Comments**, **Personas**, **Settings**, or **Review access**; an empty flow workspace shows **Flows**. Each page has a subtitle describing its purpose, while selected flows show persona, status, and screen count. **Export report** and **Refresh** appear on Flows and Comments only. Reports still include the whole workspace. This compact layout is part of the local build.
@@ -28,6 +30,14 @@ Restore returns that source workspace to immediately before the chosen change, i
 
 ## Run locally
 
+In **Screen & comments**, use **Fix with Codex** for all open screen comments and saved accessibility findings, or choose it on an individual comment or rule. The local, signed-in Codex CLI prepares a reviewable before/after proposal using the workspace AI instructions and recorded screenshot when available. **Apply locally**, **Discard fix**, and **Undo local fix** preserve unrelated work and reject stale source files. **Create draft PR** publishes the reviewed fix on a separate GitHub branch, using GitHub CLI, without switching your active branch. Changed files must match the remote default-branch baseline for PR creation. Verify project checks and a fresh accessibility scan before resolving feedback; historical reports/comments are retained.
+
+Run these actions from `localhost` with the development server as an owner/editor. Install and sign in to Codex (`codex login`); draft PRs also need GitHub CLI (`gh auth login`) and a GitHub `origin` remote. The server must find these commands on its PATH. Optional `aiProjectDirectory` selects the local Git checkout; it defaults to the server working directory. Code and screenshots may be sent through your Codex account. [Codex automation documentation](https://learn.chatgpt.com/docs/non-interactive-mode) describes CLI authentication and sandboxing. This increment is implemented locally, not published; Claude and GitHub AI providers remain future work.
+
+**Generate Jira ticket** on any screen comment or saved accessibility issue opens an editable summary and description with evidence, review link, and acceptance criteria. Use **Copy ticket**, **Copy summary**, or **Copy description**, then paste into Jira. This requires no AI/Jira connection and does not create a ticket remotely.
+
+**Workspace → Settings → AI** lets owners and editors save Markdown instructions for their AI tools. Choose **Save instructions** to write `.revisionlab/ai-instructions.md` in the host project; the full local path appears beside the editor. Reopening Settings reads the file, including edits made outside the app. Commenters can read it. The file is stored on the machine running the server, requires writable persistent storage, and is gitignored by default. This feature stores guidance; it does not automatically configure or invoke an AI tool. Hosts can override the location with the server-only `aiInstructionsFile` option in `revisionlab.config.ts`.
+
 Recordings now save an accessibility report with each screen. Whiteboard cards show status/counts; open a screen and choose **Accessibility** beside **Comments** to review rule severity, affected-element locations, and documentation links. Reports survive reloads and stay with their original screen/version. Existing captures show **Not checked**; failed, unstable, or unmatched pre-interaction checks show **Check unavailable**, never a pass. Automated checks are not compliance certification. This is part of the local build, not the published package.
 
 In **Flows > Your flows**, owners and editors can use the trash icon in the open flow's header or choose **Select** in the menu to reveal checkboxes and **Delete selected**. **Select all** applies to completed flows in the filtered results; **Select none** clears every selection. **Done** clears selection and hides the bulk controls. Confirmation removes each selected flow family, screenshots, boards, and attached comments from the active workspace. It can be restored for 30 days from **Settings → History**; live-page comments and unrelated flows are kept. Finish or discard unfinished recordings first. This is part of the local build, not the published package.
@@ -45,9 +55,11 @@ In **Workspace → Settings → Widget**, owners/editors can show or hide the la
 Click the comment icon to select components directly on the live page. The crosshair and highlight show the target; clicking opens an anchored speech bubble with a comment field, **Post**, and **Cancel**, without activating the host control. Submission or cancellation returns to selection; **Stop commenting** or Escape ends the mode. Saved comment markers follow the workspace default (initially visible); click a marker (or activate it with the keyboard) to open its details and component highlight. Use **Show comments** in the selection controls to hide or show the markers. Closing details leaves markers visible; showing markers again never opens details automatically. Escape or Stop commenting preserves visibility. The layer temporarily hides while composing and restores markers afterward. Route changes/reload restore the workspace default with details closed. Replies and resolution remain in the workspace, reached through **All comments on this page**. The toolbar badge still counts open page threads, not replies. Keyboard selection uses Up/Down and Enter, without floating navigation buttons. No recording is required. Targets persist across reloads and comments are scoped to the pathname, not a recorded version. Opening comment mode preserves the last accessibility result; actual host changes still invalidate it. Existing deployment enablement and reviewer access still apply.
 
 ```bash
-npm install
-npm run dev
+yarn install
+yarn dev
 ```
+
+The example app links `revisionlab` from `packages/revisionlab` through workspaces. Keep its dependency as `"*"`: Yarn Classic copies `file:` dependencies, which can leave the app without the compiled package. The dev and build scripts compile the linked package before starting Next.js.
 
 Opening a saved live comment bubble highlights its attached component with an outline and subtle tint matching the workspace bubble color. The highlight follows the open preview as the page moves, without blocking clicks. Closing the preview or hiding comments removes it; Escape preserves it when comments remain visible.
 
@@ -71,7 +83,7 @@ Open a screen card, then click the captured image to place a numbered comment pi
 
 Direct editing is partially implemented and locally verified: package and production builds, lint, and all 113 package tests pass. Local browser checks cover autosave, grouped Undo, removal/restoration, retry, and navigation protection, with desktop/mobile layout evidence in [VALIDATION.md](VALIDATION.md). Fresh hosted and separate-host installation checks were not repeated. Decision elements and adding a screen by URL are **not implemented**. Decision-node versus prototype-form behavior, and URL capture versus a linked placeholder, remain unanswered in [PRODUCT.md](PRODUCT.md).
 
-Local development on localhost gives the developer owner access. If an old reviewer session leaves you on the access page, choose **Open local workspace** to clear that session and continue without email. This option appears only when local development owner access is enabled; hosted reviews still use email verification. Data persists in `.revisionlab/revisionlab.db`, with private screenshots in `.revisionlab/artifacts/`. Both are ignored by Git. There is no seeded application data; the workspace starts empty.
+Local development on localhost gives the developer owner access. If an old reviewer session leaves you on the access page, choose **Open local workspace** to clear that session and continue without email. This option appears only when local development owner access is enabled; production and Vercel preview/production deployments cannot display or authorize it, even if `NODE_ENV` is misconfigured as `development`. Hosted reviews always use passwordless workspace membership. Data persists in `.revisionlab/revisionlab.db`, with private screenshots in `.revisionlab/artifacts/`. Both are ignored by Git. There is no seeded application data; the workspace starts empty.
 
 ## Install in another Next.js project
 
@@ -106,7 +118,7 @@ See the [package guide](packages/revisionlab/README.md) for all options and manu
 
 ## Automatic npm releases
 
-[The publishing workflow](.github/workflows/publish.yml) now publishes after each merge or direct push to `main`, once all checks pass. It selects the next patch above npm's highest stable version, updates the workspace version and lockfile inside CI, and publishes the exact tested archive to `latest`. No manual version bump or GitHub Release is needed. This change takes effect after it is merged into `main`.
+[The publishing workflow](.github/workflows/publish.yml) now publishes after each merge or direct push to `main`, once all checks pass. It selects the next patch above npm's highest stable version, updates the workspace version inside CI while preserving `yarn.lock`, and publishes the exact tested archive to `latest`. No manual version bump or GitHub Release is needed. This change takes effect after it is merged into `main`.
 
 Release runs queue through version selection and publication. Already-published source commits are skipped on full reruns; registry errors and failed checks stop publication. Checked-in versions remain development baselines, with no bot commits. Pull requests and manual workflow runs validate only. Explicit GitHub Releases still support intentional releases (`latest` for stable versions, `next` for prereleases).
 
@@ -115,6 +127,12 @@ npm trusted publishing uses no stored npm token. The GitHub `npm` environment is
 ## Shared review
 
 Configure the server-only settings in [.env.example](.env.example): a Turso/libSQL database, owner email, and Resend delivery credentials. The owner verifies their email at `/revisionlab/access`, then creates invitations from **Review access**. Employees and clients can use any permitted email; no Vercel account or separate registration is required. Invitations expire and can be revoked, including their active sessions. Commenters can review and comment; editors can record and resolve feedback; owners manage access.
+
+### Users and roles security increment
+
+The local build adds **Users & roles** with fixed Owner, Editor, and Commenter roles; workspace self-join through a link plus a revocable code and configurable exact-email/domain policy; manual member addition with a project-named email; and passwordless single-use email links for login. A canonical system URL controls absolute join and login links. Existing invitation records and routes remain supported during migration. This increment is not yet published.
+
+Editors and Owners creating flows choose a saved persona. A persona may optionally hold an encrypted synthetic prototype username/password configured by an Owner. The widget shows an authorized **Test account for {persona}** banner with the password masked until reveal/copy. These credentials are prototype-only, excluded from captures/exports/logs, and never grant RevisionLab permissions. See [PRODUCT.md](PRODUCT.md) for the accepted experience and [PLAN.md](PLAN.md) for the migration and security requirements.
 
 Remote mode stores private screenshot BLOBs in the same database by default. A server-only artifact adapter can use separate object storage. Vercel cannot persist a local SQLite file, and its Deployment Protection sits in front of this application: the review deployment must allow invitees to reach RevisionLab's own email gate. This repository includes that gate in `src/proxy.ts`.
 

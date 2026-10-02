@@ -81,7 +81,7 @@ export async function handleFederation(
       config,
       actor,
       historyAction(request.method, path),
-      () => handlePersonas(request, path, client, actor),
+      () => handlePersonas(request, path, client, actor, config),
     );
   if (path[0] === "settings")
     return withHistory(

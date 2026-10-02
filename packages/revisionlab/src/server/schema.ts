@@ -19,11 +19,18 @@ export const schema = [
     instance_id TEXT NOT NULL UNIQUE, api_path TEXT NOT NULL, base_path TEXT NOT NULL,
     api_key TEXT NOT NULL, created_at TEXT NOT NULL
   )`,
+  `CREATE TABLE IF NOT EXISTS setup_progress (
+    id INTEGER PRIMARY KEY CHECK(id = 1), step INTEGER NOT NULL DEFAULT 0,
+    completed INTEGER NOT NULL DEFAULT 0, name TEXT NOT NULL DEFAULT '',
+    email TEXT NOT NULL DEFAULT ''
+  )`,
   `CREATE TABLE IF NOT EXISTS workspace_settings (
     id INTEGER PRIMARY KEY CHECK(id = 1),
     show_comment_bubbles INTEGER NOT NULL DEFAULT 1 CHECK(show_comment_bubbles IN (0, 1)),
     comment_bubble_color TEXT NOT NULL DEFAULT 'blue'
-      CHECK(comment_bubble_color IN ('gray', 'red', 'orange', 'yellow', 'green', 'teal', 'cyan', 'blue', 'purple', 'pink'))
+      CHECK(comment_bubble_color IN ('gray', 'red', 'orange', 'yellow', 'green', 'teal', 'cyan', 'blue', 'purple', 'pink')),
+    system_url TEXT, allowed_email_rules TEXT NOT NULL DEFAULT '[]',
+    join_code_hash TEXT, join_code_created_at TEXT
   )`,
   `CREATE TABLE IF NOT EXISTS personas (
     id TEXT PRIMARY KEY, name TEXT NOT NULL, name_key TEXT NOT NULL UNIQUE,
@@ -47,7 +54,30 @@ export const schema = [
   `CREATE TABLE IF NOT EXISTS sessions (
     id TEXT PRIMARY KEY, reviewer_id TEXT NOT NULL REFERENCES reviewers(id),
     role TEXT NOT NULL CHECK(role IN ('owner', 'editor', 'commenter')), token_hash TEXT NOT NULL UNIQUE,
-    invitation_id TEXT REFERENCES invitations(id), expires_at TEXT NOT NULL, created_at TEXT NOT NULL
+    invitation_id TEXT REFERENCES invitations(id), membership_id TEXT,
+    membership_revision INTEGER, expires_at TEXT NOT NULL, created_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS workspace_memberships (
+    id TEXT PRIMARY KEY, reviewer_id TEXT REFERENCES reviewers(id), email TEXT NOT NULL UNIQUE,
+    role TEXT NOT NULL CHECK(role IN ('owner', 'editor', 'commenter')),
+    status TEXT NOT NULL CHECK(status IN ('pending', 'active', 'suspended', 'removed')),
+    revision INTEGER NOT NULL DEFAULT 1, source TEXT NOT NULL,
+    invited_by TEXT REFERENCES reviewers(id), created_at TEXT NOT NULL, activated_at TEXT,
+    updated_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS login_challenges (
+    id TEXT PRIMARY KEY, membership_id TEXT REFERENCES workspace_memberships(id),
+    email TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, return_to TEXT NOT NULL,
+    expires_at TEXT NOT NULL, used_at TEXT, created_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS persona_credentials (
+    persona_id TEXT PRIMARY KEY REFERENCES personas(id) ON DELETE CASCADE,
+    username_ciphertext TEXT NOT NULL, password_ciphertext TEXT NOT NULL,
+    updated_at TEXT NOT NULL, updated_by TEXT NOT NULL REFERENCES reviewers(id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS audit_events (
+    id TEXT PRIMARY KEY, actor_id TEXT REFERENCES reviewers(id), action TEXT NOT NULL,
+    target_type TEXT NOT NULL, target_id TEXT, created_at TEXT NOT NULL
   )`,
   `CREATE TABLE IF NOT EXISTS flows (
     id TEXT PRIMARY KEY, family_id TEXT, version INTEGER NOT NULL DEFAULT 1,
@@ -95,7 +125,9 @@ export const schema = [
   "CREATE INDEX IF NOT EXISTS idx_comments_route ON comments(route, created_at)",
   "CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token_hash)",
   "CREATE INDEX IF NOT EXISTS idx_sessions_invitation ON sessions(invitation_id)",
+  "CREATE INDEX IF NOT EXISTS idx_sessions_membership ON sessions(membership_id)",
   "CREATE INDEX IF NOT EXISTS idx_challenges_invitation ON otp_challenges(invitation_id)",
   "CREATE INDEX IF NOT EXISTS idx_workspace_history_expiry ON workspace_history(expires_at, created_at)",
   "CREATE INDEX IF NOT EXISTS idx_workspace_history_artifacts ON workspace_history_artifacts(artifact_id)",
+  "CREATE INDEX IF NOT EXISTS idx_login_challenges_email ON login_challenges(email, created_at)",
 ];

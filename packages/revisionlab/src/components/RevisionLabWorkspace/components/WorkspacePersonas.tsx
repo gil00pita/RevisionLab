@@ -34,6 +34,9 @@ export function WorkspacePersonas({
               (persona) => persona.workspace?.id === source.id,
             )}
             canEdit={sourceCanEdit(data.actor.role, source)}
+            canManageCredentials={
+              data.actor.role === "owner" && source.id === "local"
+            }
             onRefresh={onRefresh}
           />
         </Stack>

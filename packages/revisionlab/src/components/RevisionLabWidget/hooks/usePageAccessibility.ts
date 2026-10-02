@@ -35,6 +35,23 @@ export interface PageAccessibility {
   error?: string;
 }
 
+function createScheduler() {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  return {
+    schedule(callback: () => void, delay: number) {
+      if (timer !== undefined) clearTimeout(timer);
+      timer = setTimeout(() => {
+        timer = undefined;
+        callback();
+      }, delay);
+    },
+    cancel() {
+      if (timer !== undefined) clearTimeout(timer);
+      timer = undefined;
+    },
+  };
+}
+
 export function usePageAccessibility(
   route: string,
   enabled: boolean,
@@ -62,7 +79,7 @@ export function usePageAccessibility(
     if (!enabled || stopped) return;
     const controller = new AbortController();
     activeScan.current = controller;
-    let timer: ReturnType<typeof setTimeout>;
+    const scheduler = createScheduler();
     let running = false;
     let dirty = false;
     const publish = (next: PageAccessibility) => {
@@ -74,8 +91,7 @@ export function usePageAccessibility(
       dirty = true;
       if (!running) {
         setResult((previous) => ({ ...previous, status: "stale" }));
-        clearTimeout(timer);
-        timer = setTimeout(() => void scan(), 1800);
+        scheduler.schedule(() => void scan(), 1800);
       }
     });
     async function scan() {
@@ -135,11 +151,11 @@ export function usePageAccessibility(
       } finally {
         running = false;
         if (dirty && !controller.signal.aborted)
-          timer = setTimeout(() => void scan(), 1800);
+          scheduler.schedule(() => void scan(), 1800);
       }
     }
     // Defer state updates and scans until the committed host page is available.
-    timer = setTimeout(() => {
+    scheduler.schedule(() => {
       if (controller.signal.aborted) return;
       // Review UI does not invalidate a completed host-page scan.
       // Keep observing while paused so real host changes still mark it stale.
@@ -154,7 +170,7 @@ export function usePageAccessibility(
     }, 0);
     return () => {
       controller.abort();
-      clearTimeout(timer);
+      scheduler.cancel();
       observer.disconnect();
     };
   }, [route, enabled, suspended, revision, stopped, wcagVersion, wcagLevel]);

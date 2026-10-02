@@ -5,25 +5,22 @@ import { defaultBoard, readBoard } from "./board.js";
 import { HttpError } from "./security.js";
 
 const normalized = z.number().finite().min(0).max(1);
-const point = z.object({ x: normalized, y: normalized }).strict();
+const point = z.strictObject({ x: normalized, y: normalized });
 export const interactionSchema = z
-  .object({
+  .strictObject({
     sourceStepId: z.string().uuid(),
     target: z
-      .object({
+      .strictObject({
         selector: z.string().min(1).max(2000),
         tag: z.string().min(1).max(80),
         label: z.string().min(1).max(160),
-      })
-      .strict(),
+      }),
     point: point.nullable(),
     bounds: point
       .extend({ width: normalized, height: normalized })
-      .strict()
       .nullable(),
     activation: z.enum(["pointer", "keyboard"]),
   })
-  .strict()
   .refine(
     ({ bounds }) =>
       !bounds ||

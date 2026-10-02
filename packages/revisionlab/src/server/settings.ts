@@ -23,6 +23,9 @@ export const settingsSchema = z
     widgetSide: z.enum(["left", "right"]),
     widgetOffset: z.number().int().min(0).max(maxWidgetOffset),
     widgetBottomOffset: z.number().int().min(0).max(maxWidgetOffset),
+    widgetPosition: z.enum(["bottom-right", "bottom-left"]),
+    auditLivePages: z.boolean(),
+    auditRecordings: z.boolean(),
   })
   .strict();
 const settingsPatch = settingsSchema
@@ -43,10 +46,13 @@ export async function readSettings(
     ? settingsSchema.parse({
         wcagVersion: row.wcag_version,
         wcagLevel: row.wcag_level,
+        widgetColor: row.widget_color,
+        widgetPosition: row.widget_position,
+        auditLivePages: Number(row.audit_live_pages) === 1,
+        auditRecordings: Number(row.audit_recordings) === 1,
         showCommentBubbles: Number(row.show_comment_bubbles) === 1,
         commentBubbleColor: row.comment_bubble_color,
         showWidget: Number(row.show_widget) === 1,
-        widgetColor: row.widget_color,
         widgetSide: row.widget_side,
         widgetOffset: Number(row.widget_offset),
         widgetBottomOffset: Number(row.widget_bottom_offset),
@@ -68,13 +74,16 @@ export async function handleSettings(
     const next = { ...(await readSettings(transaction)), ...patch };
     await transaction.execute({
       sql: `INSERT INTO workspace_settings (id, show_comment_bubbles, comment_bubble_color,
-        show_widget, widget_color, widget_side, widget_offset, widget_bottom_offset, wcag_version, wcag_level)
-        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        show_widget, widget_color, widget_side, widget_offset, widget_bottom_offset, wcag_version, wcag_level,
+        widget_position, audit_live_pages, audit_recordings)
+        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET show_comment_bubbles = excluded.show_comment_bubbles,
         comment_bubble_color = excluded.comment_bubble_color, show_widget = excluded.show_widget,
         widget_color = excluded.widget_color, widget_side = excluded.widget_side,
         widget_offset = excluded.widget_offset, widget_bottom_offset = excluded.widget_bottom_offset,
-        wcag_version = excluded.wcag_version, wcag_level = excluded.wcag_level`,
+        wcag_version = excluded.wcag_version, wcag_level = excluded.wcag_level,
+        widget_position = excluded.widget_position, audit_live_pages = excluded.audit_live_pages,
+        audit_recordings = excluded.audit_recordings`,
       args: [
         next.showCommentBubbles ? 1 : 0,
         next.commentBubbleColor,
@@ -85,6 +94,9 @@ export async function handleSettings(
         next.widgetBottomOffset,
         next.wcagVersion,
         next.wcagLevel,
+        next.widgetPosition,
+        next.auditLivePages ? 1 : 0,
+        next.auditRecordings ? 1 : 0,
       ],
     });
     return next;

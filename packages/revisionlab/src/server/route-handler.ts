@@ -5,6 +5,9 @@ import { connectedState, proxyInstance } from "./instances/workspaces.js";
 import { readWorkspaceState } from "./workspace-state.js";
 import { z } from "zod";
 import { authenticate, requireRole } from "./authentication.js";
+import { handleSetup } from "./setup.js";
+import { handleAiInstructions } from "./ai-instructions.js";
+import { handleAutomation } from "./automation/routes.js";
 import { handleAuth } from "./auth-routes.js";
 import { readArtifact } from "./artifacts.js";
 import { handleComments, handleInvitations } from "./collaboration-routes.js";
@@ -14,6 +17,7 @@ import { handleFlows } from "./flow-routes.js";
 import { handlePersonas } from "./persona-routes.js";
 import { handleSettings } from "./settings.js";
 import { handleHistory, historyAction, withHistory } from "./history.js";
+import { handleMemberships } from "./membership-routes.js";
 import { assertSameOrigin, HttpError, json } from "./security.js";
 import type { RevisionLabConfig, RevisionLabRouteHandler } from "./types.js";
 
@@ -50,13 +54,17 @@ export function createRevisionLabHandler(
         path[0] === "workspace-state"
       )
         return await connectedState(request, client, config, actor);
+      if (path[0] === "ai")
+        return await handleAutomation(request, path, client, config, actor);
+      if (path.length === 2 && path[0] === "settings" && path[1] === "ai") {
+        return await handleAiInstructions(request, config, actor);
+      }
       if (
         request.method === "GET" &&
         path.length === 1 &&
         path[0] === "state"
-      ) {
+      )
         return json(await readWorkspaceState(client, config, actor));
-      }
       if (
         request.method === "GET" &&
         path.length === 2 &&
@@ -65,8 +73,10 @@ export function createRevisionLabHandler(
       ) {
         return await readArtifact(path[1], client, config, true);
       }
-      if (!["POST", "PATCH"].includes(request.method))
+      if (!["POST", "PATCH", "DELETE"].includes(request.method))
         throw new HttpError(404, "Not found.");
+      if (path[0] === "setup" && path.length === 1)
+        return await handleSetup(request, client, actor, config);
       if (path[0] === "flows")
         return await withHistory(
           client,
@@ -81,8 +91,10 @@ export function createRevisionLabHandler(
           config,
           actor,
           historyAction(request.method, path),
-          () => handlePersonas(request, path, client, actor),
+          () => handlePersonas(request, path, client, actor, config),
         );
+      if (path[0] === "members" || path[0] === "access")
+        return await handleMemberships(request, path, client, config, actor);
       if (path[0] === "settings")
         return await withHistory(
           client,

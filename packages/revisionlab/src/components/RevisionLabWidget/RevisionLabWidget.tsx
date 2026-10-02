@@ -11,6 +11,7 @@ import { LiveCommentBalloons } from "./components/LiveCommentBalloons.js";
 import { useLiveFeedback } from "./hooks/useLiveFeedback.js";
 import { RevisionLabProvider } from "../RevisionLabProvider/index.js";
 import { WidgetPanel } from "./components/WidgetPanel.js";
+import { SetupLauncher } from "./components/SetupLauncher.js";
 import { WidgetLauncher } from "./components/WidgetLauncher.js";
 import { RecordingSetup } from "./components/RecordingSetup.js";
 import { RecordingPopover } from "./components/RecordingPopover.js";
@@ -63,13 +64,21 @@ function Widget({
   const recorder = useRecording(
     apiPath,
     route,
-    Boolean(data && data.actor.role !== "commenter" && !reviewRoute),
+    Boolean(
+      data?.setup.completed && data.actor.role !== "commenter" && !reviewRoute,
+    ),
     open || live.commenting,
     settings,
+    settings.auditRecordings,
   );
   const accessibility = usePageAccessibility(
     route,
-    Boolean(data && !reviewRoute && settings.showWidget),
+    Boolean(
+      data?.setup.completed &&
+        settings.auditLivePages &&
+        !reviewRoute &&
+        settings.showWidget,
+    ),
     open || live.commenting,
     settings,
   );
@@ -158,6 +167,12 @@ function Widget({
       </>
     );
 
+  if (workspace.loading) return null;
+  if (data && !data.setup.completed)
+    return (
+      <SetupLauncher basePath={basePath} owner={data.actor.role === "owner"} />
+    );
+
   return (
     <>
       {data && live.picking && (
@@ -244,6 +259,7 @@ function Widget({
                   recorder={recorder}
                   personas={data.personas ?? []}
                   basePath={basePath}
+                  apiPath={apiPath}
                 />
                 <RecordingActions
                   recorder={recorder}
@@ -257,6 +273,7 @@ function Widget({
                   recorder={recorder}
                   personas={data.personas ?? []}
                   basePath={basePath}
+                  apiPath={apiPath}
                   onStarted={() => {
                     setOpen(false);
                     setExpanded(false);
@@ -302,6 +319,7 @@ function Widget({
           workspace={workspace}
           recorder={recorder}
           basePath={basePath}
+          apiPath={apiPath}
           tab={tab}
           onTabChange={setTab}
         >

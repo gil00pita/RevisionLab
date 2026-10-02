@@ -80,6 +80,12 @@ const comment = z.object({
 });
 export const remoteStateSchema = z.object({
   instanceId: z.string().uuid(),
+  setup: z.object({
+    step: z.number(),
+    completed: z.boolean(),
+    name: text,
+    email: text,
+  }),
   project: z.object({ id: text, name: text }),
   actor: z.object({
     id: text,
@@ -97,10 +103,13 @@ export const remoteStateSchema = z.object({
       name: text,
       description: text,
       archivedAt: text.nullable(),
+      hasCredentials: z.boolean(),
       createdAt: text,
       updatedAt: text,
     }),
   ),
+  memberships: z.array(z.unknown()).transform(() => []),
+  accessSettings: z.unknown().nullable().transform(() => null),
 });
 const ids = new Set([
   "id",

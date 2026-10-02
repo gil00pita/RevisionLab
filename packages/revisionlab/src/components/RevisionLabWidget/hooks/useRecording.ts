@@ -26,6 +26,7 @@ export function useRecording(
   enabled: boolean,
   paused = false,
   standard: WcagSettings = defaultWcagSettings,
+  auditRecordings = true,
 ) {
   const { wcagVersion, wcagLevel } = standard;
   const [recording, setRecording] = useState<ActiveRecording | null>(null);
@@ -82,6 +83,7 @@ export function useRecording(
           return await captureRecordingScreens({
             standard: { wcagVersion, wcagLevel },
             apiPath,
+            auditRecordings,
             flowId: target.flowId,
             route,
             title,
@@ -118,7 +120,15 @@ export function useRecording(
       pendingCapture.current = task;
       return task;
     },
-    [apiPath, enabled, route, updateOperation, wcagVersion, wcagLevel],
+    [
+      apiPath,
+      enabled,
+      route,
+      updateOperation,
+      auditRecordings,
+      wcagVersion,
+      wcagLevel,
+    ],
   );
 
   useAutomaticCapture({

@@ -7,6 +7,10 @@ export function defineRevisionLabConfig(
   return config;
 }
 
+function isHostedRuntime(): boolean {
+  return Boolean(process.env.VERCEL || process.env.VERCEL_ENV);
+}
+
 export function resolveConfig(
   config: RevisionLabConfig,
 ): Required<
@@ -56,10 +60,19 @@ export function resolveConfig(
       config.emailFrom?.trim() ||
       process.env.REVISIONLAB_EMAIL_FROM?.trim() ||
       undefined,
+    systemUrl:
+      config.systemUrl?.trim() ||
+      process.env.REVISIONLAB_SYSTEM_URL?.trim() ||
+      undefined,
+    personaEncryptionKey:
+      config.personaEncryptionKey?.trim() ||
+      process.env.REVISIONLAB_PERSONA_ENCRYPTION_KEY?.trim() ||
+      undefined,
     basePath: config.basePath ?? "/revisionlab",
     apiPath: config.apiPath ?? "/api/revisionlab",
     localOwner:
       process.env.NODE_ENV === "development" &&
+      !isHostedRuntime() &&
       process.env.REVISIONLAB_LOCAL_OWNER !== "false" &&
       (config.localOwner ?? true),
     artifactsDirectory: config.artifactsDirectory ?? ".revisionlab/artifacts",

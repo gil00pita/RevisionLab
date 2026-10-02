@@ -23,11 +23,17 @@ export interface RevisionLabConfig {
   ownerEmail?: string;
   resendApiKey?: string;
   emailFrom?: string;
+  systemUrl?: string;
+  personaEncryptionKey?: string;
   basePath?: string;
   apiPath?: string;
   localOwner?: boolean;
   artifactsDirectory?: string;
   artifactStorage?: RevisionLabArtifactStorage;
+  /** Local Markdown file, relative to the host working directory or absolute. */
+  aiInstructionsFile?: string;
+  /** Local Git project used for Codex proposals. Defaults to the host working directory. */
+  aiProjectDirectory?: string;
 }
 
 export interface RevisionLabActor {
@@ -154,9 +160,34 @@ export interface RevisionLabPersona {
   archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  hasCredentials: boolean;
+}
+
+export type RevisionLabMembershipStatus =
+  | "pending"
+  | "active"
+  | "suspended"
+  | "removed";
+
+export interface RevisionLabMembership {
+  id: string;
+  email: string;
+  name: string | null;
+  role: RevisionLabRole;
+  status: RevisionLabMembershipStatus;
+  source: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RevisionLabAccessSettings {
+  systemUrl: string;
+  allowedEmails: string[];
+  joinCodeCreatedAt: string | null;
 }
 
 export interface RevisionLabState {
+  setup: import("../setup.js").SetupProgress;
   settings: RevisionLabSettings;
   project: { id: string; name: string };
   actor: RevisionLabActor;
@@ -164,6 +195,8 @@ export interface RevisionLabState {
   comments: RevisionLabComment[];
   invitations: RevisionLabInvitation[];
   personas: RevisionLabPersona[];
+  memberships: RevisionLabMembership[];
+  accessSettings: RevisionLabAccessSettings | null;
 }
 
 export interface RevisionLabRouteContext {

@@ -26,6 +26,7 @@ import { AllComments } from "./components/AllComments.js";
 import { FlowReview } from "./components/FlowReview.js";
 import { EmptyWorkspace } from "./components/EmptyWorkspace.js";
 import { WorkspaceSettings } from "./components/WorkspaceSettings.js";
+import { SetupWizard } from "./components/SetupWizard.js";
 import { defaultSettings } from "../../comment-settings.js";
 import { useFlowDeletion } from "./hooks/useFlowDeletion.js";
 import { workspaceViewTitles } from "./constants.js";
@@ -78,6 +79,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const [flowId, setFlowId] = useState<string | null>(() =>
     searchParams.get("flow"),
   );
+  const [setupFinished, setSetupFinished] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [startingRecording, setStartingRecording] = useState(false);
   const [actionError, setActionError] = useState("");
@@ -85,12 +87,6 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const [completingBoard, setCompletingBoard] = useState(false);
   const boardFlush = useRef<(() => Promise<boolean>) | null>(null);
   const checkingBoard = useRef(false);
-  const registerBoardFlush = useCallback(
-    (handler: (() => Promise<boolean>) | null) => {
-      boardFlush.current = handler;
-    },
-    [],
-  );
   const boardDirtyChanged = useCallback((dirty: boolean) => {
     if (!dirty) setBoardNavigationError("");
   }, []);
@@ -171,11 +167,16 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
       !(await canLeaveBoard())
     )
       return false;
-    if (next !== view)
-      router.replace(
-        `${basePath}?${new URLSearchParams({ view: next, workspace: selection })}`,
-        { scroll: false },
-      );
+    if (next !== view) {
+      // Sections share this mounted workspace; sync search params without a
+      // server navigation or replacing the sidebar and its local state.
+      const query = new URLSearchParams(searchParams.toString());
+      query.set("view", next);
+      query.set("workspace", selection);
+      query.delete("flow");
+      query.delete("route");
+      window.history.replaceState(null, "", `${basePath}?${query}`);
+    }
     return true;
   }
 
@@ -236,6 +237,17 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           )}
         </Stack>
       </Flex>
+    );
+
+  if (!data.setup.completed && !setupFinished)
+    return (
+      <SetupWizard
+        onComplete={() => setSetupFinished(true)}
+        data={data}
+        apiPath={apiPath}
+        basePath={basePath}
+        onRefresh={refresh}
+      />
     );
 
   return (
@@ -330,6 +342,9 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             invitations={
               data.actor.role === "owner" ? data.invitations : undefined
             }
+            memberships={data.memberships}
+            accessSettings={data.accessSettings}
+            basePath={basePath}
             initialTab={legacyPeopleView ? "users" : "system"}
             canEdit={
               sourceCanEdit(data.actor.role, data.settingsWorkspace) &&
@@ -363,7 +378,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
                 basePath={basePath}
                 onFlowSelect={selectFlow}
                 onRefresh={refresh}
-                onBeforeLeaveChange={registerBoardFlush}
+                beforeLeaveRef={boardFlush}
                 onDirtyChange={boardDirtyChanged}
                 navigationPending={
                   sourceUnavailable ||

@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Icon, IconButton, Image, Popover, Portal, Spinner } from "@chakra-ui/react";
+import {
+  Icon,
+  IconButton,
+  Image,
+  Popover,
+  Portal,
+  Spinner,
+} from "@chakra-ui/react";
 import { CircleHelp, CircleAlert } from "lucide-react";
 import type { PageAccessibility } from "../hooks/usePageAccessibility.js";
 import { AccessibilityResults } from "./AccessibilityResults.js";
@@ -24,24 +31,22 @@ const labels: Record<PageAccessibility["status"], string> = {
   error: "Accessibility: check failed",
 };
 export function AccessibilityControl({
+  color = "white",
   result,
   onRerun,
   disabled,
 }: {
+  color?: string;
   result: PageAccessibility;
   onRerun: () => void;
   disabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [topPanel, setTopPanel] = useState(false);
   const label = labels[result.status];
   return (
     <Popover.Root
       open={open}
-      onOpenChange={(event) => {
-        setOpen(event.open);
-        if (!event.open) setTopPanel(false);
-      }}
+      onOpenChange={(event) => setOpen(event.open)}
       onInteractOutside={(event) => {
         if (
           event.detail.target instanceof Element &&
@@ -50,11 +55,8 @@ export function AccessibilityControl({
           event.preventDefault();
       }}
       positioning={{
-        placement: topPanel ? "bottom-end" : "top",
+        placement: "top",
         strategy: "fixed",
-        getAnchorRect: topPanel
-          ? () => ({ x: window.innerWidth - 16, y: 8, width: 0, height: 0 })
-          : undefined,
       }}
       lazyMount
       unmountOnExit
@@ -68,7 +70,7 @@ export function AccessibilityControl({
           minW="9"
           borderRadius="0"
           variant="plain"
-          color="white"
+          color={color}
           _hover={{ bg: "blackAlpha.200" }}
           focusRing="inset"
         >
@@ -100,7 +102,6 @@ export function AccessibilityControl({
             label={label}
             onRerun={onRerun}
             disabled={disabled}
-            onPlacementChange={setTopPanel}
           />
         </Portal>
       )}

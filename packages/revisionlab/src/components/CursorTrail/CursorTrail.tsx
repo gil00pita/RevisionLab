@@ -49,7 +49,7 @@ export function CursorTrail({
           dy = point.y - from.y;
         return (
           <Box
-            key={`line-${index}`}
+            key={`line-${from.t}-${point.t}-${from.x}-${from.y}-${point.x}-${point.y}`}
             position="absolute"
             left={`${from.x}px`}
             top={`${from.y}px`}
@@ -66,9 +66,9 @@ export function CursorTrail({
       })}
       {points
         .filter((point) => point.click)
-        .map((point, index) => (
+        .map((point) => (
           <Flex
-            key={`click-${index}`}
+            key={`click-${point.click}`}
             position="absolute"
             left={`${point.x}px`}
             top={`${point.y}px`}

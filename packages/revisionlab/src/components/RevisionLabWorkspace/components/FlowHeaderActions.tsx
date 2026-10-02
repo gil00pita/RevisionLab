@@ -39,7 +39,6 @@ export function FlowHeaderActions({
     setBusy(true);
     onRecordingTransitionChange(true);
     setError("");
-    let navigating = false;
     try {
       if (!(await beforeLeave())) return;
       let id = flow.id;
@@ -71,7 +70,6 @@ export function FlowHeaderActions({
             : 0,
       });
       window.location.assign(safePrototypeRoute(flow.route, basePath));
-      navigating = true;
     } catch (cause) {
       setError(
         cause instanceof Error
@@ -79,11 +77,9 @@ export function FlowHeaderActions({
           : "Could not start this recording.",
       );
     } finally {
-      if (!navigating) {
-        running.current = false;
-        setBusy(false);
-        onRecordingTransitionChange(false);
-      }
+      running.current = false;
+      setBusy(false);
+      onRecordingTransitionChange(false);
     }
   }
 

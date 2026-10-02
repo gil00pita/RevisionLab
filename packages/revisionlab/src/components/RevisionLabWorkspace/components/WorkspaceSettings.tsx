@@ -1,17 +1,24 @@
 import type { WorkspaceInstance } from "../../../workspace-instances.js";
-import type { RevisionLabRole } from "../../../server/types.js";
+import type {
+  RevisionLabAccessSettings,
+  RevisionLabInvitation,
+  RevisionLabMembership,
+  RevisionLabRole,
+} from "../../../server/types.js";
 import { GeneralSettings } from "./GeneralSettings.js";
 import { WorkspaceInstancesSettings } from "./WorkspaceInstancesSettings.js";
 import { WorkspaceHistory } from "./WorkspaceHistory.js";
 import { useRef, useState } from "react";
-import { Badge, Stack, Tabs, Text } from "@chakra-ui/react";
+import { Badge, Separator, Stack, Tabs, Text } from "@chakra-ui/react";
 import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabSettings } from "../../../comment-settings.js";
 import { WidgetSettingsForm } from "./WidgetSettingsForm.js";
 import { CommentSettings } from "./CommentSettings.js";
 import { AuditSettings } from "./AuditSettings.js";
-import { InvitationManager } from "../../InvitationManager/index.js";
-import type { RevisionLabInvitation } from "../../../server/types.js";
+import { UsersRoleManager } from "../../UsersRoleManager/index.js";
+import { AppearanceSettings } from "../../AppearanceSettings/index.js";
+import { SystemUrlSettings } from "./SystemUrlSettings.js";
+import { AiSettings } from "./AiSettings.js";
 
 export function WorkspaceSettings({
   apiPath,
@@ -25,6 +32,9 @@ export function WorkspaceSettings({
   settings,
   canEdit,
   invitations,
+  memberships,
+  accessSettings,
+  basePath,
   initialTab = "system",
   onRefresh,
 }: {
@@ -39,12 +49,17 @@ export function WorkspaceSettings({
   settings: RevisionLabSettings;
   canEdit: boolean;
   invitations?: RevisionLabInvitation[];
+  memberships: RevisionLabMembership[];
+  accessSettings: RevisionLabAccessSettings | null;
+  basePath: string;
   initialTab?: "system" | "users";
   onRefresh: () => Promise<void>;
 }) {
   const [selectedTab, setSelectedTab] = useState<string>(initialTab);
+  const canManageInstallation = actorRole === "owner" && Boolean(invitations);
   const activeTab =
-    ["users", "general", "instances"].includes(selectedTab) && !invitations
+    ["users", "general", "instances"].includes(selectedTab) &&
+    !canManageInstallation
       ? "system"
       : selectedTab;
   const saving = useRef(false);
@@ -130,7 +145,10 @@ export function WorkspaceSettings({
           <Tabs.Trigger value="history" px={{ base: "3", md: "4" }}>
             History
           </Tabs.Trigger>
-          {invitations && (
+          <Tabs.Trigger value="ai" px={{ base: "3", md: "4" }}>
+            AI
+          </Tabs.Trigger>
+          {canManageInstallation && accessSettings && (
             <Tabs.Trigger value="users" px={{ base: "3", md: "4" }}>
               Users &amp; Roles
             </Tabs.Trigger>
@@ -143,10 +161,20 @@ export function WorkspaceSettings({
         </Tabs.List>
         {invitations && (
           <Tabs.Content value="general" p="0">
-            <GeneralSettings
-              apiPath={managementApiPath}
-              projectName={projectName}
-            />
+            <Stack gap="7">
+              {accessSettings && (
+                <SystemUrlSettings
+                  apiPath={managementApiPath}
+                  settings={accessSettings}
+                  onRefresh={onRefresh}
+                />
+              )}
+              <Separator />
+              <GeneralSettings
+                apiPath={managementApiPath}
+                projectName={projectName}
+              />
+            </Stack>
           </Tabs.Content>
         )}
         {invitations && (
@@ -176,12 +204,21 @@ export function WorkspaceSettings({
           />
         </Tabs.Content>
         <Tabs.Content value="audit" p="0">
-          <AuditSettings
-            settings={settings}
-            canEdit={canEdit}
-            busy={busy}
-            onSave={update}
-          />
+          <Stack gap="7">
+            <AppearanceSettings
+              section="accessibility"
+              value={displayed}
+              disabled={!canEdit || busy}
+              onChange={(patch) => void update(patch)}
+            />
+            <Separator />
+            <AuditSettings
+              settings={settings}
+              canEdit={canEdit}
+              busy={busy}
+              onSave={update}
+            />
+          </Stack>
         </Tabs.Content>
         <Tabs.Content value="history" p="0">
           <WorkspaceHistory
@@ -195,11 +232,16 @@ export function WorkspaceSettings({
             onRefresh={onRefresh}
           />
         </Tabs.Content>
-        {invitations && (
+        <Tabs.Content value="ai" p="0">
+          <AiSettings apiPath={managementApiPath} canEdit={canEdit} />
+        </Tabs.Content>
+        {canManageInstallation && accessSettings && (
           <Tabs.Content value="users" p="0">
-            <InvitationManager
+            <UsersRoleManager
               apiPath={managementApiPath}
-              invitations={invitations}
+              basePath={basePath}
+              memberships={memberships}
+              settings={accessSettings}
               onRefresh={onRefresh}
             />
           </Tabs.Content>

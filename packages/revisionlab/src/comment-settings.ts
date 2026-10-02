@@ -16,6 +16,9 @@ export const commentBubbleColors = [
 export type CommentBubbleColor = (typeof commentBubbleColors)[number];
 
 export interface RevisionLabSettings extends WcagSettings {
+  widgetPosition: "bottom-right" | "bottom-left";
+  auditLivePages: boolean;
+  auditRecordings: boolean;
   showCommentBubbles: boolean;
   commentBubbleColor: CommentBubbleColor;
   showWidget: boolean;
@@ -27,6 +30,9 @@ export interface RevisionLabSettings extends WcagSettings {
 
 export const defaultSettings: RevisionLabSettings = {
   ...defaultWcagSettings,
+  widgetPosition: "bottom-right",
+  auditLivePages: true,
+  auditRecordings: true,
   showCommentBubbles: true,
   commentBubbleColor: "blue",
   showWidget: true,

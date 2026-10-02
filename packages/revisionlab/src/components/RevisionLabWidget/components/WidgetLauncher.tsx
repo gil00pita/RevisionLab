@@ -10,6 +10,7 @@ import {
   widgetPlacement,
   type WidgetSettings,
 } from "../../../widget-settings.js";
+import type { RevisionLabSettings } from "../../../comment-settings.js";
 import { WidgetToggle } from "./WidgetToggle.js";
 
 export function WidgetLauncher({
@@ -29,7 +30,7 @@ export function WidgetLauncher({
   onComment,
   authorized,
 }: {
-  settings: WidgetSettings;
+  settings: WidgetSettings & Pick<RevisionLabSettings, "auditLivePages">;
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
   onStopAudit: () => void;
@@ -99,11 +100,13 @@ export function WidgetLauncher({
           flexDirection={settings.widgetSide === "left" ? "row-reverse" : "row"}
         >
           <WidgetWorkspaceLink href={workspaceHref} />
-          <AccessibilityControl
-            result={accessibility}
-            onRerun={onRerun}
-            disabled={!authorized}
-          />
+          {settings.auditLivePages && (
+            <AccessibilityControl
+              result={accessibility}
+              onRerun={onRerun}
+              disabled={!authorized}
+            />
+          )}
           {canRecord && !recording && (
             <WidgetTool
               label="Record prototype"
@@ -140,7 +143,7 @@ export function WidgetLauncher({
       {commenting && (
         <WidgetTool label="Stop commenting" active onClick={onComment} />
       )}
-      {auditing && (
+      {settings.auditLivePages && auditing && (
         <WidgetTool label="Stop auditing" active onClick={onStopAudit} />
       )}
       <WidgetToggle expanded={expanded} accessibility={accessibility} />

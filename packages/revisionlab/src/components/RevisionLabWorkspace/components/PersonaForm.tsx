@@ -16,18 +16,24 @@ import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabPersona } from "../../../server/types.js";
 
 export function PersonaForm({
+  onBusyChange,
   apiPath,
   persona,
   onSaved,
   onCancel,
+  canManageCredentials,
 }: {
+  onBusyChange?: (busy: boolean) => void;
   apiPath: string;
   persona?: RevisionLabPersona;
   onSaved: () => Promise<void>;
   onCancel: () => void;
+  canManageCredentials: boolean;
 }) {
   const [name, setName] = useState(persona?.name ?? "");
   const [description, setDescription] = useState(persona?.description ?? "");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const pending = useRef(false);
@@ -35,9 +41,10 @@ export function PersonaForm({
     if (!name.trim() || pending.current) return;
     pending.current = true;
     setBusy(true);
+    onBusyChange?.(true);
     setError("");
     try {
-      await apiRequest(
+      const result = await apiRequest<{ id: string }>(
         apiPath,
         persona ? `personas/${persona.id}` : "personas",
         {
@@ -45,6 +52,15 @@ export function PersonaForm({
           body: JSON.stringify({ name, description }),
         },
       );
+      const personaId = persona?.id ?? result.id;
+      if (canManageCredentials && (username || password)) {
+        if (!username || !password)
+          throw new Error("Enter both a test username and password.");
+        await apiRequest(apiPath, `personas/${personaId}/credentials`, {
+          method: "PATCH",
+          body: JSON.stringify({ username, password }),
+        });
+      }
       await onSaved();
       setName("");
       setDescription("");
@@ -55,6 +71,7 @@ export function PersonaForm({
     } finally {
       pending.current = false;
       setBusy(false);
+      onBusyChange?.(false);
     }
   }
   return (
@@ -92,6 +109,43 @@ export function PersonaForm({
             placeholder="Role, goals, or relevant context"
           />
         </Field.Root>
+        {canManageCredentials && (
+          <Stack
+            gap="3"
+            borderWidth="1px"
+            borderColor="border"
+            rounded="md"
+            p="4"
+          >
+            <Heading as="h4" size="sm">
+              Synthetic test account
+            </Heading>
+            <Text color="gray.600" fontSize="sm">
+              Leave both fields blank to keep the existing account unchanged.
+              These credentials are encrypted and excluded from captures and
+              exports.
+            </Text>
+            <Field.Root disabled={busy}>
+              <Field.Label>Prototype username</Field.Label>
+              <Input
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                autoComplete="off"
+                maxLength={254}
+              />
+            </Field.Root>
+            <Field.Root disabled={busy}>
+              <Field.Label>Prototype password</Field.Label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="new-password"
+                maxLength={1024}
+              />
+            </Field.Root>
+          </Stack>
+        )}
         {error && (
           <Text role="alert" color="red.700">
             {error}

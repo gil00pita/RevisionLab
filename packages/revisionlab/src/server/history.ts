@@ -21,6 +21,9 @@ const snapshotTables = {
     "widget_bottom_offset",
     "wcag_version",
     "wcag_level",
+    "widget_position",
+    "audit_live_pages",
+    "audit_recordings",
   ],
   personas: [
     "id",
