@@ -64,6 +64,9 @@ export function resolveConfig(
       config.systemUrl?.trim() ||
       process.env.REVISIONLAB_SYSTEM_URL?.trim() ||
       undefined,
+    notificationEncryptionKey:
+      config.notificationEncryptionKey?.trim() ||
+      process.env.REVISIONLAB_NOTIFICATION_ENCRYPTION_KEY?.trim() || undefined,
     personaEncryptionKey:
       config.personaEncryptionKey?.trim() ||
       process.env.REVISIONLAB_PERSONA_ENCRYPTION_KEY?.trim() ||

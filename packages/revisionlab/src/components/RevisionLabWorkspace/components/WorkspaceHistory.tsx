@@ -115,7 +115,8 @@ export function WorkspaceHistory({
           reverts its later content changes.
         </Text>
         <Text color="gray.600" fontSize="sm">
-          Access, API keys, and workspace connections are not included.
+          Access, API keys, workspace connections, and the AI instructions Markdown
+          file are not included. Saved design-system choices are included.
         </Text>
       </Stack>
       {loading ? (

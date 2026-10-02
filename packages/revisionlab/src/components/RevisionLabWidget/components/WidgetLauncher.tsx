@@ -135,16 +135,20 @@ export function WidgetLauncher({
       {recording && (
         <WidgetTool
           label="Stop recording"
-          active
+          variant="stop"
           disabled={busy}
           onClick={onRecord}
         />
       )}
       {commenting && (
-        <WidgetTool label="Stop commenting" active onClick={onComment} />
+        <WidgetTool label="Stop commenting" variant="stop" onClick={onComment} />
       )}
       {settings.auditLivePages && auditing && (
-        <WidgetTool label="Stop auditing" active onClick={onStopAudit} />
+        <WidgetTool
+          label="Stop auditing"
+          variant="scanning"
+          onClick={onStopAudit}
+        />
       )}
       <WidgetToggle expanded={expanded} accessibility={accessibility} />
     </Collapsible.Root>

@@ -1,3 +1,5 @@
+import type { Client } from "@libsql/client";
+import { readSettings } from "./settings.js";
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
@@ -17,11 +19,10 @@ const instructionsSchema = z
   })
   .strict();
 
-export async function handleAiInstructions(
-  request: Request,
+export async function readAiInstructionDocument(
   config: ResolvedConfig,
-  actor: RevisionLabActor,
-) {
+  client: Client,
+): Promise<RevisionLabAiInstructions> {
   const filePath = resolve(
     config.aiInstructionsFile ?? ".revisionlab/ai-instructions.md",
   );
@@ -30,20 +31,42 @@ export async function handleAiInstructions(
       503,
       "Configure an AI instructions file ending in .md.",
     );
-
-  if (request.method === "GET") {
-    let instructions = "";
-    try {
-      instructions = await readFile(filePath, "utf8");
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT")
-        throw new HttpError(
-          503,
-          "Could not read the AI instructions file. Check the server's file permissions and retry.",
-        );
-    }
-    return json({ instructions, filePath } satisfies RevisionLabAiInstructions);
+  try {
+    return {
+      instructions: await readFile(filePath, "utf8"),
+      filePath,
+      exists: true,
+    };
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT")
+      throw new HttpError(
+        503,
+        "Could not read the AI instructions file. Check the server's file permissions and retry.",
+      );
+    return {
+      instructions: (await readSettings(client)).ai.instructions,
+      filePath,
+      exists: false,
+    };
   }
+}
+
+export async function handleAiInstructions(
+  request: Request,
+  config: ResolvedConfig,
+  actor: RevisionLabActor,
+  client: Client,
+) {
+  if (request.method === "GET")
+    return json(await readAiInstructionDocument(config, client));
+  const filePath = resolve(
+    config.aiInstructionsFile ?? ".revisionlab/ai-instructions.md",
+  );
+  if (!filePath.toLowerCase().endsWith(".md"))
+    throw new HttpError(
+      503,
+      "Configure an AI instructions file ending in .md.",
+    );
 
   requireRole(actor, "editor");
   if (request.method !== "PATCH") throw new HttpError(404, "Not found.");
@@ -64,5 +87,9 @@ export async function handleAiInstructions(
   } finally {
     await rm(temporaryPath, { force: true }).catch(() => undefined);
   }
-  return json({ instructions, filePath } satisfies RevisionLabAiInstructions);
+  return json({
+    instructions,
+    filePath,
+    exists: true,
+  } satisfies RevisionLabAiInstructions);
 }

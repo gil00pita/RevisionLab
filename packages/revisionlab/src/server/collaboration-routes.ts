@@ -1,3 +1,4 @@
+import { notifyReviewEvent } from "./notifications/events.js";
 import { randomUUID } from "node:crypto";
 import type { Client } from "@libsql/client";
 import { z } from "zod";
@@ -25,6 +26,8 @@ export async function handleComments(
   path: string[],
   client: Client,
   actor: RevisionLabActor,
+  config?: ResolvedConfig,
+  notificationDeadline?: number,
 ): Promise<Response> {
   if (request.method === "POST" && path.length === 1) {
     const input = commentSchema.parse(await readJson(request));
@@ -50,6 +53,17 @@ export async function handleComments(
         ],
       });
     });
+    if (config)
+      await notifyReviewEvent(
+        client,
+        config,
+        {
+          type: "comments",
+          title: input.parentId ? "New comment reply" : "New comment",
+          detail: `${actor.name}: ${input.body}`,
+        },
+        notificationDeadline,
+      );
     return json({ id }, 201);
   }
   if (

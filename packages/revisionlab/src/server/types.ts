@@ -25,6 +25,7 @@ export interface RevisionLabConfig {
   emailFrom?: string;
   systemUrl?: string;
   personaEncryptionKey?: string;
+  notificationEncryptionKey?: string;
   basePath?: string;
   apiPath?: string;
   localOwner?: boolean;

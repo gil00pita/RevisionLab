@@ -322,3 +322,37 @@ test("per-screen metrics count all clicks and aggregate revisits without double-
   assert.equal(result.screens.get("a")?.duration, 6000);
   assert.equal(result.screens.get("b")?.duration, 4000);
 });
+
+test("ordinary recording finish cannot discard or complete a live test flow", async (t) => {
+  const f = await reviewFixture(t);
+  const invitation = await create(f);
+  const cookie = await start(f, invitation.cookie);
+  const flowId = (await f.state()).flows[0].id;
+  for (const withScreen of [false, true]) {
+    if (withScreen) {
+      const captured = await f.call(
+        "test-participant/screens",
+        "POST",
+        {
+          title: "Checkout",
+          route: "/checkout",
+          screenshot: TEST_PNG,
+        },
+        cookie,
+      );
+      assert.equal(captured.status, 201);
+    }
+    const response = await f.call(`flows/${flowId}/finish`, "POST");
+    assert.equal(response.status, 409);
+    assert.equal((await f.state()).flows[0].status, "recording");
+    const detail = await (
+      await f.call(`test-sessions/${invitation.id}`)
+    ).json();
+    assert.equal(detail.session.status, "live");
+  }
+  assert.equal(
+    (await f.call(`test-sessions/${invitation.id}/stop`, "POST")).status,
+    200,
+  );
+  assert.equal((await f.state()).flows[0].status, "complete");
+});

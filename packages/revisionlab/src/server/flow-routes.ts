@@ -1,3 +1,4 @@
+import { notifyReviewEvent } from "./notifications/events.js";
 import { createHash, randomUUID } from "node:crypto";
 import type { Client, Transaction } from "@libsql/client";
 import { z } from "zod";
@@ -12,6 +13,7 @@ import {
 import type { ResolvedConfig } from "./config.js";
 import { write } from "./database.js";
 import { discardRecording } from "./recording-discard.js";
+import { finishRecording } from "./recording-finish.js";
 import { activePersonaName } from "./persona-routes.js";
 import { captureMetadataSchema } from "./capture-metadata.js";
 import { createFlow } from "./flow-creation.js";
@@ -78,7 +80,7 @@ export async function handleFlows(
     throw new HttpError(404, "Recording not found.");
   if (
     (path.length === 2 && request.method === "PATCH") ||
-    ["steps", "discard"].includes(path[2])
+    ["steps", "discard", "finish"].includes(path[2])
   ) {
     const test = await client.execute({
       sql: "SELECT id FROM test_sessions WHERE flow_id = ?",
@@ -89,6 +91,9 @@ export async function handleFlows(
   }
   if (request.method === "POST" && path.length === 3 && path[2] === "discard") {
     return discardRecording(path[1], client, config, actor);
+  }
+  if (request.method === "POST" && path.length === 3 && path[2] === "finish") {
+    return finishRecording(path[1], client, actor);
   }
   if (request.method === "PATCH" && path.length === 3 && path[2] === "board") {
     return saveBoard(request, path[1], client);
@@ -250,6 +255,13 @@ export async function captureStep(
       };
     });
     if (reused) await discardArtifact(artifact, config);
+    if (!reused && input.capture?.accessibility?.violationCount) {
+      await notifyReviewEvent(client, config, {
+        type: "issues",
+        title: "New accessibility issues",
+        detail: `${input.capture.accessibility.violationCount} accessibility issue(s) saved on ${input.title} (${input.route}).`,
+      });
+    }
     return json({ id, ...saved, reused }, 201);
   } catch (error) {
     await discardArtifact(artifact, config).catch(() => undefined);

@@ -280,13 +280,7 @@ async function requestCode(
     role = String(invitation.role) as RevisionLabRole;
     invitationExpires = Date.parse(String(invitation.expires_at));
   }
-  const development = usesDevelopmentEmail(request, config);
-  if (!development && (!config.resendApiKey || !config.emailFrom)) {
-    throw new HttpError(
-      503,
-      "Configure RESEND_API_KEY and REVISIONLAB_EMAIL_FROM to deliver verification emails.",
-    );
-  }
+  const development = await usesDevelopmentEmail(request, config);
   const code = createOtp();
   const challengeId = randomUUID();
   const now = new Date();

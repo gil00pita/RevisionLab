@@ -1,3 +1,4 @@
+import { handleAiInstructions } from "../ai-instructions.js";
 import type { Client } from "@libsql/client";
 import { z } from "zod";
 import type { ResolvedConfig } from "../config.js";
@@ -22,8 +23,14 @@ export async function handleFederation(
   path: string[],
   client: Client,
   config: ResolvedConfig,
+  notificationDeadline = Date.now() + 4000,
 ) {
   const actor = await authenticateApiKey(request, client);
+  if (path.length === 2 && path[0] === "settings" && path[1] === "ai") {
+    if (request.method !== "GET")
+      await consumeRateLimit(client, `federation:${actor.id}`, 120, 60_000);
+    return handleAiInstructions(request, config, actor, client);
+  }
   if (request.method === "GET" && path.length === 1 && path[0] === "manifest")
     return json({
       protocol: 1,
@@ -73,7 +80,15 @@ export async function handleFederation(
       config,
       actor,
       historyAction(request.method, path),
-      () => handleComments(request, path, client, actor),
+      () =>
+        handleComments(
+          request,
+          path,
+          client,
+          actor,
+          config,
+          notificationDeadline,
+        ),
     );
   if (path[0] === "personas")
     return withHistory(

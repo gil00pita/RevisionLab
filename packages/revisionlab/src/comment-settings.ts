@@ -1,3 +1,7 @@
+import {
+  defaultAiSettings,
+  type AiInstructionSettings,
+} from "./ai-instructions/index.js";
 import { defaultWcagSettings, type WcagSettings } from "./wcag-settings.js";
 
 export const commentBubbleColors = [
@@ -16,6 +20,7 @@ export const commentBubbleColors = [
 export type CommentBubbleColor = (typeof commentBubbleColors)[number];
 
 export interface RevisionLabSettings extends WcagSettings {
+  ai: AiInstructionSettings;
   widgetPosition: "bottom-right" | "bottom-left";
   auditLivePages: boolean;
   auditRecordings: boolean;
@@ -29,6 +34,7 @@ export interface RevisionLabSettings extends WcagSettings {
 }
 
 export const defaultSettings: RevisionLabSettings = {
+  ai: defaultAiSettings,
   ...defaultWcagSettings,
   widgetPosition: "bottom-right",
   auditLivePages: true,

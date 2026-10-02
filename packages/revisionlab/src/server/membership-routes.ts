@@ -156,7 +156,9 @@ export async function createMagicLogin(
   const access = await readAccessConfiguration(client, config);
   const systemUrl =
     access.systemUrl ||
-    (usesDevelopmentEmail(request, config) ? new URL(request.url).origin : "");
+    ((await usesDevelopmentEmail(request, config))
+      ? new URL(request.url).origin
+      : "");
   if (!systemUrl)
     throw new HttpError(
       503,
@@ -185,7 +187,7 @@ export async function createMagicLogin(
     });
   });
   const url = loginUrl(validatedUrl, config, token);
-  const development = usesDevelopmentEmail(request, config);
+  const development = await usesDevelopmentEmail(request, config);
   await deliverLoginLink(config, email, url, development, addedByOwner);
   return development ? { devLoginUrl: url } : {};
 }

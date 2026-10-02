@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiRequest } from "../../../client/api.js";
 import { flowNameConflicts } from "../../../client/flow-name-conflicts.js";
+import { finishPendingRecording } from "../../../client/recording-finish.js";
 import {
   loadRecording,
   saveRecording,
@@ -191,22 +192,21 @@ export function useRecording(
     updateOperation("finish");
     setError("");
     try {
-      saveRecording({ ...target, finishRequested: true });
-      // Stop accepting captures immediately, then finish the one already underway.
-      await pendingCapture.current;
-      if (loadRecording()?.flowId !== target.flowId) return false;
-      if (!loadRecording()?.count)
-        throw new Error(
-          "Recording has no captured screens. Discard it and start a new recording.",
-        );
-      await apiRequest(apiPath, `flows/${target.flowId}`, {
-        method: "PATCH",
-        body: JSON.stringify({ status: "complete" }),
-      });
+      const result = await finishPendingRecording(
+        apiPath,
+        pendingCapture.current,
+      );
+      if (!result) return false;
       generation.current += 1;
-      saveRecording(null);
-      setSavedRecording({ id: target.flowId, name: target.name });
-      setNotice("Recording ended and saved.");
+      setError("");
+      setSavedRecording(
+        result.outcome === "saved" ? { id: result.id, name: result.name } : null,
+      );
+      setNotice(
+        result.outcome === "saved"
+          ? "Recording ended and saved."
+          : "Recording stopped. No screens were captured, so nothing was saved.",
+      );
       return true;
     } catch (cause) {
       setError(

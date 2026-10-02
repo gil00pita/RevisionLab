@@ -90,7 +90,7 @@ export function useSetupWizard(
           body: JSON.stringify(patch),
         });
       }
-      if (finish || step === 5) {
+      if (finish || step === 6) {
         next = await apiRequest<SetupProgress>(apiPath, "setup", {
           method: "PATCH",
           body: JSON.stringify({ action: "finish" }),
