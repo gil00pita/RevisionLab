@@ -22,10 +22,12 @@ export function RecorderPanel({
   recorder,
   personas,
   basePath,
+  apiPath,
 }: {
   recorder: ReturnType<typeof useRecording>;
   personas: RevisionLabPersona[];
   basePath: string;
+  apiPath: string;
 }) {
   const [title, setTitle] = useState("");
 
@@ -94,6 +96,7 @@ export function RecorderPanel({
           recorder={recorder}
           personas={personas}
           basePath={basePath}
+          apiPath={apiPath}
         />
       )}
       {recorder.error && (

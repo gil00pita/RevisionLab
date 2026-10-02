@@ -16,6 +16,11 @@ import {
 } from "./security.js";
 import { sessionCookie, sessionCookieName } from "./authentication.js";
 import { deliverCode, usesDevelopmentEmail } from "./email.js";
+import {
+  createMagicLogin,
+  emailAllowed,
+  readAccessConfiguration,
+} from "./membership-routes.js";
 import type { RevisionLabRole } from "./types.js";
 
 const emailSchema = z
@@ -34,6 +39,16 @@ const verifySchema = z.object({
   code: z.string().regex(/^\d{6}$/),
   name: z.string().trim().min(1).max(120),
 });
+const magicRequestSchema = z.object({
+  email: emailSchema,
+  name: z.string().trim().min(1).max(120),
+  joinCode: z.string().min(8).max(128).optional(),
+  returnTo: z.string().max(2048).default(""),
+});
+const magicConsumeSchema = z.object({
+  token: z.string().min(16).max(256),
+  name: z.string().trim().min(1).max(120).optional(),
+});
 
 export async function handleAuth(
   request: Request,
@@ -42,12 +57,18 @@ export async function handleAuth(
   config: ResolvedConfig,
 ): Promise<Response> {
   if (request.method === "GET" && path.length === 1 && path[0] === "options") {
-    return json({ localOwner: Boolean(config.localOwner && isLoopback(request)) });
+    return json({
+      localOwner: Boolean(config.localOwner && isLoopback(request)),
+    });
   }
   if (request.method !== "POST" || path.length !== 1)
     throw new HttpError(404, "Not found.");
   if (path[0] === "request") return requestCode(request, client, config);
   if (path[0] === "verify") return verifyCode(request, client, config);
+  if (path[0] === "magic-request")
+    return requestMagicLink(request, client, config);
+  if (path[0] === "magic-consume")
+    return consumeMagicLink(request, client, config);
   if (path[0] === "logout") {
     const token = readCookie(request, sessionCookieName(config));
     if (token)
@@ -62,6 +83,163 @@ export async function handleAuth(
     });
   }
   throw new HttpError(404, "Not found.");
+}
+
+function safeReturnTo(value: string, config: ResolvedConfig): string {
+  if (!value) return config.basePath;
+  try {
+    const url = new URL(value, "http://revisionlab.local");
+    if (
+      url.origin !== "http://revisionlab.local" ||
+      url.pathname.startsWith(config.apiPath)
+    )
+      return config.basePath;
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return config.basePath;
+  }
+}
+
+async function requestMagicLink(
+  request: Request,
+  client: Client,
+  config: ResolvedConfig,
+): Promise<Response> {
+  const input = magicRequestSchema.parse(await readJson(request));
+  await consumeRateLimit(client, "magic:project", 100, 60 * 60_000);
+  await consumeRateLimit(
+    client,
+    `magic:email:${hashValue(input.email)}`,
+    5,
+    15 * 60_000,
+  );
+  const access = await readAccessConfiguration(client, config);
+  const existing = await client.execute({
+    sql: "SELECT id, status FROM workspace_memberships WHERE email = ?",
+    args: [input.email],
+  });
+  let membershipId =
+    existing.rows[0] && existing.rows[0].status !== "removed"
+      ? String(existing.rows[0].id)
+      : null;
+  const owner = input.email === config.ownerEmail;
+  const mayJoin = Boolean(
+    input.joinCode &&
+      access.joinCodeHash &&
+      valuesMatch(input.joinCode, access.joinCodeHash) &&
+      emailAllowed(input.email, access.allowedEmails),
+  );
+  if (!membershipId && (owner || mayJoin)) {
+    membershipId = randomUUID();
+    const now = new Date().toISOString();
+    await write(client, async (transaction) => {
+      await transaction.execute({
+        sql: "INSERT INTO reviewers (id, email, name, created_at) VALUES (?, ?, ?, ?) ON CONFLICT(email) DO UPDATE SET name = excluded.name",
+        args: [randomUUID(), input.email, input.name, now],
+      });
+      await transaction.execute({
+        sql: `INSERT INTO workspace_memberships (id, reviewer_id, email, role, status, revision, source, created_at, activated_at, updated_at)
+          VALUES (?, (SELECT id FROM reviewers WHERE email = ?), ?, ?, ?, 1, ?, ?, ?, ?)`,
+        args: [
+          membershipId,
+          input.email,
+          input.email,
+          owner ? "owner" : "commenter",
+          owner ? "active" : "pending",
+          owner ? "owner-bootstrap" : "code-join",
+          now,
+          owner ? now : null,
+          now,
+        ],
+      });
+    });
+  }
+  if (!membershipId) return json({ ok: true });
+  const membership = await client.execute({
+    sql: "SELECT status FROM workspace_memberships WHERE id = ?",
+    args: [membershipId],
+  });
+  if (["suspended", "removed"].includes(String(membership.rows[0]?.status)))
+    return json({ ok: true });
+  const result = await createMagicLogin(
+    request,
+    client,
+    config,
+    membershipId,
+    input.email,
+    safeReturnTo(input.returnTo, config),
+  );
+  return json({ ok: true, ...result });
+}
+
+async function consumeMagicLink(
+  request: Request,
+  client: Client,
+  config: ResolvedConfig,
+): Promise<Response> {
+  const input = magicConsumeSchema.parse(await readJson(request));
+  const now = new Date();
+  const sessionToken = createToken();
+  const result = await write(client, async (transaction) => {
+    const found = await transaction.execute({
+      sql: `SELECT login_challenges.*, workspace_memberships.role, workspace_memberships.status,
+        workspace_memberships.revision FROM login_challenges
+        JOIN workspace_memberships ON workspace_memberships.id = login_challenges.membership_id
+        WHERE login_challenges.token_hash = ?`,
+      args: [hashValue(input.token)],
+    });
+    const challenge = found.rows[0];
+    if (
+      !challenge ||
+      challenge.used_at ||
+      String(challenge.expires_at) <= now.toISOString() ||
+      ["suspended", "removed"].includes(String(challenge.status))
+    )
+      return null;
+    await transaction.execute({
+      sql: "INSERT OR IGNORE INTO reviewers (id, email, name, created_at) VALUES (?, ?, ?, ?)",
+      args: [
+        randomUUID(),
+        challenge.email,
+        input.name ?? String(challenge.email).split("@")[0],
+        now.toISOString(),
+      ],
+    });
+    await transaction.execute({
+      sql: `UPDATE workspace_memberships SET reviewer_id = (SELECT id FROM reviewers WHERE email = ?),
+        status = 'active', activated_at = COALESCE(activated_at, ?), updated_at = ? WHERE id = ?`,
+      args: [
+        challenge.email,
+        now.toISOString(),
+        now.toISOString(),
+        challenge.membership_id,
+      ],
+    });
+    await transaction.execute({
+      sql: `INSERT INTO sessions (id, reviewer_id, role, token_hash, membership_id, membership_revision, expires_at, created_at)
+        VALUES (?, (SELECT id FROM reviewers WHERE email = ?), ?, ?, ?, ?, ?, ?)`,
+      args: [
+        randomUUID(),
+        challenge.email,
+        challenge.role,
+        hashValue(sessionToken),
+        challenge.membership_id,
+        challenge.revision,
+        new Date(now.getTime() + 14 * 86_400_000).toISOString(),
+        now.toISOString(),
+      ],
+    });
+    await transaction.execute({
+      sql: "UPDATE login_challenges SET used_at = ? WHERE id = ?",
+      args: [now.toISOString(), challenge.id],
+    });
+    return { returnTo: String(challenge.return_to) };
+  });
+  if (!result)
+    throw new HttpError(403, "This login link is invalid or has expired.");
+  return json({ ok: true, returnTo: result.returnTo }, 200, {
+    "Set-Cookie": sessionCookie(request, config, sessionToken, 14 * 86_400),
+  });
 }
 
 async function requestCode(
@@ -206,15 +384,41 @@ async function verifyCode(
         ON CONFLICT(email) DO UPDATE SET name = excluded.name`,
       args: [randomUUID(), input.email, input.name, now.toISOString()],
     });
+    const effectiveRole = String(challenge.invitation_role ?? challenge.role);
+    let membershipId: string | null = null;
+    let membershipRevision: number | null = null;
+    if (effectiveRole === "owner") {
+      await transaction.execute({
+        sql: `INSERT INTO workspace_memberships (id, reviewer_id, email, role, status, revision, source, created_at, activated_at, updated_at)
+          VALUES (?, (SELECT id FROM reviewers WHERE email = ?), ?, 'owner', 'active', 1, 'owner-bootstrap', ?, ?, ?)
+          ON CONFLICT(email) DO UPDATE SET reviewer_id = excluded.reviewer_id, role = 'owner', status = 'active', revision = workspace_memberships.revision + 1, updated_at = excluded.updated_at`,
+        args: [
+          randomUUID(),
+          input.email,
+          input.email,
+          now.toISOString(),
+          now.toISOString(),
+          now.toISOString(),
+        ],
+      });
+      const membership = await transaction.execute({
+        sql: "SELECT id, revision FROM workspace_memberships WHERE email = ?",
+        args: [input.email],
+      });
+      membershipId = String(membership.rows[0].id);
+      membershipRevision = Number(membership.rows[0].revision);
+    }
     await transaction.execute({
-      sql: `INSERT INTO sessions (id, reviewer_id, role, token_hash, invitation_id, expires_at, created_at)
-        VALUES (?, (SELECT id FROM reviewers WHERE email = ?), ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO sessions (id, reviewer_id, role, token_hash, invitation_id, membership_id, membership_revision, expires_at, created_at)
+        VALUES (?, (SELECT id FROM reviewers WHERE email = ?), ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         randomUUID(),
         input.email,
-        String(challenge.invitation_role ?? challenge.role),
+        effectiveRole,
         hashValue(sessionToken),
         challenge.invitation_id ?? null,
+        membershipId,
+        membershipRevision,
         expiresAt.toISOString(),
         now.toISOString(),
       ],

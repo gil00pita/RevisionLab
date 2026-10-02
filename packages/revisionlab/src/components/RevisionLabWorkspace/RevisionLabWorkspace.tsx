@@ -3,7 +3,6 @@
 import { Suspense, useCallback, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  Box,
   Button,
   Flex,
   Heading,
@@ -18,7 +17,7 @@ import { apiRequest, ApiError } from "../../client/api.js";
 import { useRevisionLab } from "../../client/useRevisionLab.js";
 import { WorkspaceHeader } from "./components/WorkspaceHeader.js";
 import { FlowHeaderActions } from "./components/FlowHeaderActions.js";
-import { InvitationManager } from "../InvitationManager/index.js";
+import { UsersRoleManager } from "../UsersRoleManager/index.js";
 import { RevisionLabProvider } from "../RevisionLabProvider/index.js";
 import type { WorkspaceView } from "./components/WorkspaceNavigation.js";
 import { WorkspaceSidebar } from "./components/WorkspaceSidebar.js";
@@ -269,16 +268,19 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             apiPath={apiPath}
             personas={data.personas ?? []}
             canEdit={data.actor.role !== "commenter"}
+            canManageCredentials={data.actor.role === "owner"}
             onRefresh={refresh}
           />
-        ) : view === "people" && data.actor.role === "owner" ? (
-          <Box p={{ base: "5", md: "8" }} maxW="5xl">
-            <InvitationManager
-              apiPath={apiPath}
-              invitations={data.invitations}
-              onRefresh={refresh}
-            />
-          </Box>
+        ) : view === "people" &&
+          data.actor.role === "owner" &&
+          data.accessSettings ? (
+          <UsersRoleManager
+            apiPath={apiPath}
+            basePath={basePath}
+            memberships={data.memberships}
+            settings={data.accessSettings}
+            onRefresh={refresh}
+          />
         ) : view === "comments" ? (
           <AllComments
             key={commentRoute}

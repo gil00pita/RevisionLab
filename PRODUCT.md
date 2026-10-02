@@ -2,7 +2,11 @@
 
 This is the living product specification. Update it as new product requests and decisions arise. Requirements describe intended behavior unless explicitly marked implemented; proposals and open questions are not accepted implementation decisions.
 
-## Current delivery boundary — 29 September 2026
+## Current delivery boundary — 2 October 2026
+
+Workspace users, roles, join codes, and persona credentials (confirmed and implemented locally 2 October 2026; not yet published): add a **Users & roles** workspace area that absorbs the current **Review access** invitation view and uses the fixed default RevisionLab roles Owner, Editor, and Commenter. Owners can add or remove members and change roles; Editors can create flows and manage recording personas; Commenters can review and comment but cannot create flows or manage access. A permitted user creating a flow must choose an active persona. Persona settings may contain a synthetic prototype username and password, and the widget identifies the selected persona and shows its test credentials to an authorized flow creator, with the password concealed until an intentional reveal or copy action. These prototype credentials never grant RevisionLab permissions and are stored as encrypted server-side secrets, omitted from ordinary persona responses, captures, logs, reports, and exports, and accessed only through an audited authorization check.
+
+Workspace access supports two passwordless membership paths. First, an owner shares a workspace join link and a separately entered, revocable join code; the recipient must use an email allowed by the workspace email policy and verify control of that address before membership is activated. Second, an owner manually adds an email and role in **Users & roles**; RevisionLab emails the recipient that they were added to the named project and includes a single-use login link. RevisionLab stores no user password. A signed-out user requests a fresh email login link for each new login, while an established session may remain active until its configured expiry or revocation. Configure a canonical system URL for join and login emails; production values must be explicit HTTPS origins, with HTTP allowed only for loopback development. Existing open invitations that allow arbitrary verified domains are superseded for new workspace membership by the configurable email policy. Detailed security behavior and acceptance criteria are under **Shared Access and Low-Friction Commenting** and **Security** in `PLAN.md`.
 
 Page-aware workspace header (implemented locally; not yet published): replace the project-name heading (normally RevisionLab) with the active page title: Comments, Personas, Settings, Review access, or Flows when no flow is selected. Each page has its own purpose-specific subtitle instead of the shared “Screens, versions, and feedback in one place”: Flows — “Review recorded journeys, screens, and versions.”; Comments — “Review feedback and follow the discussion.”; Personas — “Organize the personas used in your recordings.”; Settings — “Choose how comments appear on your prototype.”; Review access — “Manage invitations and reviewer permissions.” An open flow retains its selected flow title and persona/status/screen metadata instead of a generic subtitle. Loading/error screens use the active page title as well. Confirmed requirement: show Export report and Refresh only on Flows and Comments; hide both on Personas, Settings, and Review access. Preserve the existing workspace-wide Markdown report, refresh behavior, automatic polling, sign-out availability, sidebar branding, and flow actions. Acceptance: navigating between sections immediately updates the heading, page-specific subtitle, and action visibility; empty/loading states use page titles; desktop/mobile layouts retain readable titles and keyboard-operable controls.
 
@@ -210,31 +214,46 @@ For deployed shared reviews, use a hosted SQLite-compatible store and private ar
 
 # Shared Access and Low-Friction Commenting
 
-RevisionLab uses passwordless review invitations. Reviewers may be employees, clients, suppliers, or other stakeholders with unrelated email domains. They do not need a Vercel account, company SSO membership, or a permanent RevisionLab account.
+RevisionLab uses passwordless workspace membership and email login. Members may be employees, clients, suppliers, or other stakeholders, subject to the workspace's configured email policy. They do not need a Vercel account, company SSO membership, or a RevisionLab password.
 
 ## Local access recovery
 
 Login troubleshooting (1 October 2026, implemented locally; not yet published): an old reviewer cookie can redirect a local developer to the email access form even though localhost development already permits owner access. The access page offers an explicit **Open local workspace** action only when the server confirms development mode, a loopback request, and enabled local-owner access. It clears the saved reviewer session through the existing logout endpoint before opening the workspace, with a retryable error if logout fails. The user confirmed the login problem occurs on localhost. Stale-cookie lockout was reproduced locally; the exact original error remains unconfirmed. Acceptance: stale sessions can be cleared without email configuration; reading access options never grants access or changes a valid reviewer’s role; production, forwarded remote hosts, and disabled local-owner configurations offer no local shortcut and retain normal invitation/OTP checks.
 
-## Invitation flow
+## Workspace membership paths
 
-1. An owner creates an invitation scoped to a project, review, flow, or prototype version.
-2. RevisionLab produces a share link. The owner may restrict it to named email addresses or allow any verified email that possesses the link.
-3. The reviewer opens the link, enters their email address, and receives a short-lived one-time code. A magic-link email may be offered as an alternative.
-4. After verification, RevisionLab creates a secure reviewer session and returns the reviewer to the original flow, screen, comment, or version link.
-5. The reviewer can immediately add, reply to, and resolve comments allowed by the invitation. There is no password, signup form, profile setup, or separate account-management area.
+**Join link and code:**
 
-The first verified email creates a lightweight `ReviewerIdentity` containing a provider-independent subject, normalized email, display name, and timestamps. Revisiting with the same verified email reuses that identity. Comments store the identity reference and an immutable author-name/email snapshot so historical attribution remains understandable after a name change.
+1. An owner creates or rotates a workspace join code and shares the workspace join link separately or together with the intended recipients.
+2. The recipient opens the link, enters the current code, and supplies a company email address.
+3. RevisionLab checks the normalized address against the workspace email policy, then sends a short-lived, single-use verification/login link. The code alone never creates a session or proves identity.
+4. Opening the verified link creates the member identity and the least-privileged configured join role, creates a secure session, and returns the member to a validated project-local destination.
 
-## Invitation modes and permissions
+**Manual member addition:**
 
-- **Named invitation:** only listed email addresses can verify. Use this by default for sensitive client work.
-- **Open review invitation:** anyone possessing the link may verify an email and join. The link remains revocable and expires; possessing it alone does not create a session or submit comments.
-- **Commenter:** view the scoped review and its board, place screen-area comments, and reply to threads. Resolution follows the installation's permission policy; in the current implementation it remains an owner/editor action.
-- **Editor:** commenter permissions plus recording, board arrangement, connection editing, and comment resolution within their authorized scope.
-- **Owner:** installation configuration, invitations, recording access, destructive actions, exports, and storage settings.
+1. An owner opens **Users & roles**, enters an email address, and chooses a default role.
+2. RevisionLab creates a pending membership and emails the recipient that they were added to the named project, using the configured system URL for the login destination.
+3. The recipient opens a short-lived, single-use login link. The membership becomes active after the email is verified; no password is created or stored.
 
-Prototype roles/personas such as Applicant or Administrator are recording contexts and never grant RevisionLab permissions. A display name, email domain, invitation URL, or prototype role alone must never confer editor or owner access.
+A signed-out member enters their email to request a fresh link whenever they want to log in. Generic responses must not reveal whether an email, membership, or workspace exists. An already authenticated session remains usable until its configured expiry, sign-out, membership suspension/removal, role change requiring rotation, or owner revocation. Direct flow, screen, comment, and version links preserve their destination through login.
+
+## Allowed-email policy
+
+Owners configure which emails may self-join with a workspace code. Support normalized exact-address rules and domain rules, with a deny-by-default mode suitable for company-only workspaces. Verification proves control of the address; a domain match never grants a higher role. Manual addition is explicit and may admit an address outside the self-join policy only after a clear owner confirmation, so client access remains possible without weakening company self-service rules. Policy changes prevent future joins and do not silently remove existing members; owners manage those memberships explicitly.
+
+## Default roles and permissions
+
+- **Commenter:** view the workspace and allowed prototype, place screen-area comments, and reply to threads. This is the default and least-privileged self-join role. Resolution remains an Owner/Editor action.
+- **Editor:** Commenter permissions plus creating and recording flows, choosing active personas, arranging boards, editing connections, resolving comments, and managing non-secret persona details.
+- **Owner:** Editor permissions plus user and role management, join-code and allowed-email configuration, system URL and installation settings, persona credential management, destructive actions, exports, and storage settings.
+
+The three fixed roles are the initial role-management scope; custom role creation and per-permission role editing are not yet confirmed requirements. A workspace must retain at least one active Owner, and users cannot promote themselves or remove/demote the last Owner. Role checks are enforced server-side for every protected action, not only by hiding controls.
+
+Prototype roles/personas such as Applicant or Administrator are recording contexts and never grant RevisionLab permissions. A display name, allowed email/domain, join code, invitation URL, or prototype role alone must never confer Editor or Owner access.
+
+## System URL
+
+Owners configure a canonical system URL used to build absolute join, notification, and passwordless login links. Production accepts only an explicit `https` origin and supported base path; loopback development may use `http`. The server must not derive security-sensitive links from an untrusted request `Host` header, and redirect destinations must remain inside the configured installation. Changing the URL affects newly generated links only and must be audited.
 
 ## Commenting experience
 
@@ -248,15 +267,15 @@ Prototype roles/personas such as Applicant or Administrator are recording contex
 
 ## Deployment boundary
 
-Vercel Authentication is not the reviewer login because it requires Vercel identities and would block many clients before they reach RevisionLab. The dedicated review deployment/domain must allow the application authentication route to load, then RevisionLab middleware protects the prototype pages, workspace, APIs, and artifacts with the passwordless invitation session. Before verification, visitors see only the access screen. Direct review links preserve their destination through verification.
+Vercel Authentication is not the member login because it requires Vercel identities and would block many clients before they reach RevisionLab. The dedicated review deployment/domain must allow the application authentication route to load, then RevisionLab middleware protects the prototype pages, workspace, APIs, and artifacts with the passwordless membership session. Before verification, visitors see only the access screen. Direct review links preserve their destination through verification.
 
-Vercel shareable links may be used to reach a deployment that still has platform protection, but they are not reviewer identity and do not replace RevisionLab authorization. For the simplest client workflow, configure a dedicated review environment whose effective access control is RevisionLab's invitation gate. Keep production integration disabled unless explicitly configured.
+Vercel shareable links may be used to reach a deployment that still has platform protection, but they are not member identity and do not replace RevisionLab authorization. For the simplest client workflow, configure a dedicated review environment whose effective access control is RevisionLab's membership gate. Keep production integration disabled unless explicitly configured.
 
-Email delivery uses a replaceable server-side adapter; the recommended initial provider is Resend. Codes are single-use, expire quickly, are stored only as hashes, and are subject to request/verification rate limits. Sessions use secure, HTTP-only, same-site cookies, expire, can be revoked with the invitation, and rotate after successful verification. Avoid revealing whether an email already has access.
+Email delivery uses a replaceable server-side adapter; the recommended initial provider is Resend. Join codes, emailed login tokens, and any fallback verification codes expire or rotate as appropriate, are stored only as hashes, and are subject to request/verification rate limits. Sessions use secure, HTTP-only, same-site cookies, expire, can be revoked with the membership, and rotate after successful verification. Avoid revealing whether an email already has access.
 
-Hosted comments and invitation records use the configured Turso/libSQL store, and generated screens/traces use private persistent artifact storage. Configuration is performed once by the project owner. `.revisionlab/` remains the local SQLite workspace; publishing, importing, and exporting are explicit operations rather than implied automatic synchronization. See [Vercel's SQLite guidance](https://vercel.com/kb/guide/is-sqlite-supported-in-vercel) and the [Turso integration](https://vercel.com/marketplace/tursocloud/database).
+Hosted comments, memberships, access challenges, and migrated invitation records use the configured Turso/libSQL store, and generated screens/traces use private persistent artifact storage. Configuration is performed once by the project owner. `.revisionlab/` remains the local SQLite workspace; publishing, importing, and exporting are explicit operations rather than implied automatic synchronization. See [Vercel's SQLite guidance](https://vercel.com/kb/guide/is-sqlite-supported-in-vercel) and the [Turso integration](https://vercel.com/marketplace/tursocloud/database).
 
-Acceptance criteria: an employee and a client with different email domains can use the same scoped invitation, verify independently without Vercel accounts or RevisionLab passwords, add and reply to comments with verified attribution, reload or follow a deep link without losing access during the active session, and lose access after the invitation or session is revoked. An unverified visitor cannot read the prototype, review data, APIs, or artifacts.
+Acceptance criteria: an allowed employee can join only with both the current workspace code and verified control of their email; a disallowed address receives no membership even with the code. A manually added employee or client receives a project-named notification and can log in with a single-use email link without a stored password. Owners can list pending/active/suspended members, change roles, remove access, rotate the join code, and update the allowed-email policy and system URL. Revocation blocks the prototype, workspace, APIs, and artifacts immediately. Deep-link return and verified comment attribution survive login; unverified visitors cannot read protected data. Role changes affect authorization without rewriting historical authorship.
 
 ---
 
@@ -312,7 +331,9 @@ Implementation limits: settling uses document/font/image readiness, host `aria-b
 
 Confirmed refinement: place a **Record prototype** icon directly on the floating widget, beside the review action. One click opens a modal containing the recording name and a selector of personas already saved in this installation's database. Opening the modal does not begin recording; **Start recording** submits the chosen name/persona. Replace the widget's free-text persona entry with this selector. Existing recording, Stop/Discard, and live element commenting remain available.
 
-Add a **Personas** section to the full workspace where users manage reusable persona types. Implementation decisions: owners and editors create/edit a name and optional description, archive unused personas, and restore them; commenters can read the list but cannot modify it. Names are trimmed and unique without regard to case. New installations begin with an empty list and a direct **Manage personas** link from the recording dialog; starting requires an active saved persona. Existing recording labels remain historical snapshots and are not rewritten when a persona is renamed or archived. A persona describes the reviewer journey; it does not log into the host application or change permissions.
+Add a **Personas** section to the full workspace where users manage reusable persona types. Owners and Editors create/edit a name and optional description, archive unused personas, and restore them; Commenters can read the non-secret persona list but cannot modify it. Names are trimmed and unique without regard to case. New installations begin with an empty list and a direct **Manage personas** link from the recording dialog; starting requires an active saved persona. Existing recording labels remain historical snapshots and are not rewritten when a persona is renamed or archived.
+
+A persona may also reference one synthetic prototype username/password pair configured in persona settings by an Owner. Store retrievable credentials encrypted with a server-side key or secret-provider reference separate from the persona record; never store them in plaintext, hash them as if they were RevisionLab login passwords, or return them in ordinary persona/list APIs. Editors creating a flow may request the selected persona's credentials through a dedicated audited endpoint. The widget then shows a clearly separated **Test account for {persona}** banner containing the username and password, with the password masked until an explicit reveal and with copy actions that do not write the value to logs. The banner and credentials must be excluded from recordings, screenshots, accessibility scans, comments, reports, analytics, and JSON exports. Closing the banner, changing persona, signing out, losing permission, or ending the session clears the client copy. Persona credentials authenticate only to the prototype and never alter RevisionLab authorization.
 
 Acceptance criteria:
 
@@ -321,8 +342,9 @@ Acceptance criteria:
 3. Empty, loading, duplicate-name, unauthorized, missing/archived selection, and failed-save states are explicit. Failed requests retain form input and cannot claim a recording has started.
 4. A renamed or archived persona never changes existing recordings or their comments. Existing versions retain their recorded persona snapshot.
 5. Keyboard and mobile users can reach the record icon, modal, selection, and persona management controls; live comment selection and visible Stop/Discard controls continue working.
+6. Owners can add, replace, or remove a persona's test credentials without changing historical flows. An authorized Editor selecting that persona can intentionally reveal/copy the current test account in the widget, while a Commenter, unauthorized user, ordinary persona-list request, capture, export, or log cannot retrieve it.
 
-Status: implemented and locally verified. This section supersedes the earlier free-text persona naming workflow. The package suite has 127 passing tests; browser checks cover management, saved selection, failed starts, cancellation, and recording alongside live comments. Hosted and separate-installation checks were not repeated.
+Status: saved persona selection, persona credential management, and the widget test-account banner are implemented locally. This section supersedes the earlier free-text persona naming workflow. Automated security coverage includes encrypted/redacted storage, role-protected reveal, join policy, membership session invalidation, and last-Owner protection. Hosted email delivery and separate-installation browser checks remain to be repeated.
 
 ### Live website element comments
 
@@ -474,11 +496,11 @@ Each flow can have separate recorded variants for different role/persona profile
 
 # Roles and Personas
 
-A role describes the permissions or responsibilities represented in the prototype, such as **Applicant**, **Caseworker**, or **Administrator**. A persona describes the user scenario and test data, such as **First-time applicant**, **Returning applicant**, or **Caseworker with an assigned case**. Several personas can share one role.
+A RevisionLab workspace role controls product permissions: Owner, Editor, or Commenter. It is separate from a prototype role, which describes the permissions or responsibilities represented in the prototype, such as **Applicant**, **Caseworker**, or **Administrator**. A persona describes the user scenario and synthetic test data, such as **First-time applicant**, **Returning applicant**, or **Caseworker with an assigned case**. Several personas can share one prototype role.
 
 Project owners configure reusable recording profiles combining a role, an optional persona, synthetic starting data, and any required test-account setup. Profiles are selectable in the widget. Projects without role-specific behavior can use an explicit **Default** profile.
 
-Choosing a profile must prepare or verify the matching prototype session; changing its label alone does not change the prototype's permissions. RevisionLab's reviewer permissions remain separate from the role being demonstrated. If the required account or starting state is unavailable, show setup guidance before recording begins.
+Choosing a profile must prepare or verify the matching prototype session; changing its label alone does not change the prototype's permissions. If a persona has configured test credentials, the authorized flow creator receives them through the protected widget banner and uses them to establish the intended prototype session. RevisionLab workspace permissions remain separate from the role being demonstrated. If the required account or starting state is unavailable, show setup guidance before recording begins.
 
 For example, record **Submit an application** as **Applicant / First-time applicant**, then record **Review an application** as **Caseworker / Assigned case**. Each generates its own screen sequence. The same journey can also have multiple persona variants, such as first-time and returning applicants.
 

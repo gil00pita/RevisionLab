@@ -1,5 +1,13 @@
 # Release validation
 
+## Workspace users, roles, and persona credentials - 2 October 2026
+
+The local build replaces the workspace's invitation-management surface with **Users & roles** while retaining legacy invitation routes and data during migration. Owners configure an HTTPS/loopback system URL, exact-email/domain self-join rules, and a rotatable workspace code; manually added members receive project-named magic-link email delivery. New membership sessions carry the current role and membership revision, so suspension, removal, and role changes invalidate prior sessions. Self-join requires both the current code and an allowed verified email, defaults to Commenter, and returns generic responses for rejected addresses. The last active Owner cannot be removed or demoted. Magic links are single-use, hashed at rest, expire after 15 minutes, preserve validated project-local return paths, and remain public through the optional prototype access proxy.
+
+Owners can configure one synthetic test username/password per persona. AES-256-GCM ciphertext is stored separately from ordinary persona records with a deployment key outside the database. Ordinary state responses expose only `hasCredentials`; Owner/Editor reveal uses a dedicated audited endpoint. The widget banner identifies the selected persona, masks the password until reveal, provides explicit copy actions, and is marked as RevisionLab UI so capture and accessibility scanning exclude it. Commenters cannot reveal credentials, and exports/reports receive no plaintext fields.
+
+Lint, the package TypeScript build, the Next.js production build, whitespace checks, and all 165 package tests pass. Three new server tests cover code/domain joining, generic rejection, magic-link consumption and deep-link return, role-change session invalidation and re-login, manual external-member addition, last-Owner protection, encrypted/redacted persona storage, audited Editor reveal, and Commenter rejection. Existing invitation, local-owner, route-protection, installer, recording, comment, board, and migration tests remain green. Hosted Resend delivery, hosted libSQL concurrency, cross-browser behavior, and a separate-host installation were not exercised; no publication or deployment was performed.
+
 ## Floating whiteboard viewport controls - 28 September 2026
 
 Zoom out, percentage/reset, zoom in, and icon-only Fit moved from the top toolbar into a bounded bottom-right widget. It is anchored to the canvas wrapper, outside the transformed graph and wheel/focus/pan event surface; the existing camera callbacks and limits are unchanged. Paths, cursor visibility, Auto-arrange, and Undo remain above the canvas. Read-only users retain viewport controls without an empty editing toolbar.

@@ -16,6 +16,8 @@ export async function protectRevisionLab(
       `${config.apiPath}/auth/options`,
       `${config.apiPath}/auth/request`,
       `${config.apiPath}/auth/verify`,
+      `${config.apiPath}/auth/magic-request`,
+      `${config.apiPath}/auth/magic-consume`,
       `${config.apiPath}/auth/logout`,
     ];
     if (publicPaths.includes(url.pathname)) return undefined;

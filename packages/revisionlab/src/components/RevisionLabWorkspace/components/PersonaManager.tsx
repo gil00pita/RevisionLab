@@ -10,7 +10,7 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { Archive, Pencil, RotateCcw } from "lucide-react";
+import { Archive, KeyRound, Pencil, RotateCcw } from "lucide-react";
 import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabPersona } from "../../../server/types.js";
 import { PersonaForm } from "./PersonaForm.js";
@@ -19,11 +19,13 @@ export function PersonaManager({
   apiPath,
   personas,
   canEdit,
+  canManageCredentials,
   onRefresh,
 }: {
   apiPath: string;
   personas: RevisionLabPersona[];
   canEdit: boolean;
+  canManageCredentials: boolean;
   onRefresh: () => Promise<void>;
 }) {
   const [editing, setEditing] = useState<RevisionLabPersona | undefined>();
@@ -72,6 +74,7 @@ export function PersonaManager({
           apiPath={apiPath}
           persona={editing}
           onCancel={() => setEditing(undefined)}
+          canManageCredentials={canManageCredentials}
           onSaved={async () => {
             await onRefresh();
             setEditing(undefined);
@@ -116,6 +119,9 @@ export function PersonaManager({
                 {persona.archivedAt && (
                   <Badge colorPalette="gray">Archived</Badge>
                 )}
+                {persona.hasCredentials && (
+                  <Badge colorPalette="blue">Test account configured</Badge>
+                )}
               </Flex>
               {persona.description && (
                 <Text
@@ -144,6 +150,43 @@ export function PersonaManager({
                   </Icon>
                   Edit
                 </Button>
+                {canManageCredentials && persona.hasCredentials && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    colorPalette="red"
+                    disabled={Boolean(busy)}
+                    onClick={() =>
+                      void (async () => {
+                        setBusy(persona.id);
+                        setError("");
+                        setNotice("");
+                        try {
+                          await apiRequest(
+                            apiPath,
+                            `personas/${persona.id}/credentials`,
+                            { method: "DELETE", body: "{}" },
+                          );
+                          await onRefresh();
+                          setNotice("Persona test account removed.");
+                        } catch (cause) {
+                          setError(
+                            cause instanceof Error
+                              ? cause.message
+                              : "Could not remove the test account.",
+                          );
+                        } finally {
+                          setBusy(null);
+                        }
+                      })()
+                    }
+                  >
+                    <Icon>
+                      <KeyRound />
+                    </Icon>
+                    Remove account
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="outline"

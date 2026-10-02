@@ -94,6 +94,12 @@ npm trusted publishing uses no stored npm token. The GitHub `npm` environment is
 
 Configure the server-only settings in [.env.example](.env.example): a Turso/libSQL database, owner email, and Resend delivery credentials. The owner verifies their email at `/revisionlab/access`, then creates invitations from **Review access**. Employees and clients can use any permitted email; no Vercel account or separate registration is required. Invitations expire and can be revoked, including their active sessions. Commenters can review and comment; editors can record and resolve feedback; owners manage access.
 
+### Users and roles security increment
+
+The local build adds **Users & roles** with fixed Owner, Editor, and Commenter roles; workspace self-join through a link plus a revocable code and configurable exact-email/domain policy; manual member addition with a project-named email; and passwordless single-use email links for login. A canonical system URL controls absolute join and login links. Existing invitation records and routes remain supported during migration. This increment is not yet published.
+
+Editors and Owners creating flows choose a saved persona. A persona may optionally hold an encrypted synthetic prototype username/password configured by an Owner. The widget shows an authorized **Test account for {persona}** banner with the password masked until reveal/copy. These credentials are prototype-only, excluded from captures/exports/logs, and never grant RevisionLab permissions. See [PRODUCT.md](PRODUCT.md) for the accepted experience and [PLAN.md](PLAN.md) for the migration and security requirements.
+
 Remote mode stores private screenshot BLOBs in the same database by default. A server-only artifact adapter can use separate object storage. Vercel cannot persist a local SQLite file, and its Deployment Protection sits in front of this application: the review deployment must allow invitees to reach RevisionLab's own email gate. This repository includes that gate in `src/proxy.ts`.
 
 Hosted Turso and Resend paths are implemented but require real deployment credentials to verify. Local development displays verification codes without sending email; this shortcut is disabled in production.

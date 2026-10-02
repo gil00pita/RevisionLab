@@ -56,6 +56,14 @@ export function resolveConfig(
       config.emailFrom?.trim() ||
       process.env.REVISIONLAB_EMAIL_FROM?.trim() ||
       undefined,
+    systemUrl:
+      config.systemUrl?.trim() ||
+      process.env.REVISIONLAB_SYSTEM_URL?.trim() ||
+      undefined,
+    personaEncryptionKey:
+      config.personaEncryptionKey?.trim() ||
+      process.env.REVISIONLAB_PERSONA_ENCRYPTION_KEY?.trim() ||
+      undefined,
     basePath: config.basePath ?? "/revisionlab",
     apiPath: config.apiPath ?? "/api/revisionlab",
     localOwner:

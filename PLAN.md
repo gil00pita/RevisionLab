@@ -1,5 +1,17 @@
 # Build Instructions — RevisionLab Embedded Review
 
+## Current security increment — workspace users, roles, and persona credentials
+
+Confirmed and implemented locally 2 October 2026; not yet published. Durable workspace membership and a **Users & roles** workspace view now absorb the current **Review access** view while preserving legacy invitation routes during migration. Owner, Editor, and Commenter remain the fixed default roles. Owners manage members, role assignments, join-code/email policies, the canonical system URL, and persona credentials. Editors create flows, choose personas, record, and manage non-secret persona details. Commenters review and comment only. Self-join assigns Commenter by default; custom role creation is not in confirmed scope.
+
+Implement two passwordless onboarding paths: (1) a workspace join link plus a separately entered, hashed/revocable/rate-limited code, followed by allowed-email validation and a single-use email verification link; and (2) owner-created pending membership with a chosen role and a project-named notification containing a single-use login link. Store no RevisionLab passwords. Signed-out members request a fresh email link for a new login; authenticated sessions retain bounded expiry and immediate revocation. Support normalized exact-email and domain allow rules for code-based self-join, with deny-by-default and an explicit owner override for manually added external clients.
+
+Add an owner-configured canonical system URL for absolute join, notification, and login links. Require an explicit HTTPS origin in production, allow HTTP only for loopback development, validate any base path, never trust the inbound Host header to construct security links, and restrict return destinations to the installation. Audit URL, policy, membership, role, code, session, and secret-access changes.
+
+Extend Personas with an optional synthetic prototype username/password secret. Store credentials encrypted with a server-side key or in a secret provider, never in plaintext persona rows or ordinary API responses. A dedicated authorized endpoint may return the selected persona's credential only to an Owner/Editor creating a flow. The widget shows **Test account for {persona}**, with username, masked password, and intentional reveal/copy controls. Exclude this UI and secret data from capture, accessibility scans, logs, comments, reports, analytics, backups that promise non-secret portability, and exports; clear client-held values when context or authorization changes. Prototype credentials never grant RevisionLab access.
+
+Delivery order: schema and migration compatibility; role-policy authorization; system URL and email-policy settings; join code and manual-add workflows; magic-link login/session revocation; Users & roles UI; encrypted persona secret storage and audited reveal; widget banner; security/accessibility/browser tests; documentation. Existing invitation/session records require an explicit migration path and must not be silently promoted or discarded.
+
 ## Implementation checkpoint — 22 September 2026
 
 Local login recovery (1 October 2026, implemented locally): expose only the local-owner availability flag through a public auth-options endpoint; add an explicit local access action that awaits the existing logout operation before opening the workspace. Retain invalid-session rejection and all production/hostname/configuration restrictions. All 17 route-handler tests pass, including stale-cookie recovery, proxy access to options, and production/hostname/configuration restrictions. Lint and the production build pass. Chrome checks verify recovery, cookie removal, keyboard retry after a failed logout, hidden unavailable access, and a 390px layout without horizontal overflow. The user confirmed localhost is affected; the exact original error remains unconfirmed. This fixes the reproduced localhost recovery gap.
@@ -195,6 +207,7 @@ Fields should include:
 - name
 - description
 - reviewBasePath
+- canonicalSystemUrl (validated origin and optional supported base path)
 - environmentBaseUrls (local, preview, and explicitly enabled review deployments)
 - repositoryUrl optional
 - createdAt
@@ -204,25 +217,40 @@ Non-secret project settings live in `.revisionlab/config.json`; machine-specific
 
 ---
 
-## ReviewInvitation, ReviewerIdentity, and ReviewSession
+## WorkspaceIdentity, Membership, JoinCode, LoginChallenge, and ReviewSession
 
-`ReviewInvitation` grants a limited capability to a project, review, flow, or prototype version. Store:
+`WorkspaceIdentity` represents a verified human email independently of any one installation. Store a stable provider-independent subject, normalized email, display name, verification timestamps, and audit timestamps. It has no password credential and receives no authority from its domain alone.
 
-- id and projectId
-- scope type and scope id
-- permission: commenter, editor, or owner
-- mode: named emails or open verified email
-- normalized invited-email hashes for named invitations
-- expiresAt, revokedAt, createdBy, createdAt, and lastUsedAt
-- a hash of the high-entropy invitation token; never store or log the raw token
+`WorkspaceMembership` binds an identity or pending normalized email to a `ProjectInstallation`. Store:
 
-`ReviewerIdentity` represents a verified email without creating a conventional product account. Store a stable id, normalized email, display name, verification timestamps, and audit timestamps. Do not infer elevated permissions from its email domain.
+- id, projectId, identityId when activated, and normalized email
+- role: commenter, editor, or owner
+- status: pending, active, suspended, or removed
+- source: code join, manual addition, migrated named invitation, or owner bootstrap
+- invitedBy, createdAt, activatedAt, updatedAt, suspendedAt, and removedAt
+- a revision used for authorization/session invalidation
 
-`ReviewSession` binds an identity to a valid invitation grant. Store a hashed opaque session id, invitation id, identity id, effective scope/permission, expiry, revocation, creation, and last-seen metadata. Send only the opaque value in a secure, HTTP-only, same-site cookie. Rotating or revoking the invitation invalidates its sessions.
+Enforce one current membership per normalized email and installation, at least one active Owner, and server-side role checks for every operation. A role or status change invalidates or refreshes derived sessions immediately. Historical comments continue to point to the stable identity and retain immutable author snapshots.
 
-`EmailChallenge` stores an invitation id, normalized email, hashed single-use code, expiry, attempt count, and consumed timestamp. Generic responses prevent email-enumeration signals. Rate-limit by invitation, email hash, and source; audit repeated failures without logging codes or raw invitation tokens.
+`WorkspaceJoinCode` represents a rotatable self-join capability for one installation. Store a hash only, plus createdBy, createdAt, expiresAt, revokedAt, lastUsedAt, optional usage limit/count, and a policy revision. Possessing the raw code is necessary but never sufficient: joining also requires the email policy and verified email control. Do not place the raw code in logs, analytics, database rows, or automatically generated URLs.
 
-Comments and replies reference `reviewerIdentityId` and retain an immutable author snapshot. Ownership/editor authority comes from the active scoped grant, never from a comment snapshot, display name, prototype persona, or matching domain.
+`AllowedEmailPolicy` stores normalized exact-address and domain rules, deny-by-default behavior, the self-join role (initially fixed to Commenter), revision, author, and audit timestamps. Exact and domain comparisons use a documented normalization strategy. Manual addition outside the policy requires an explicit owner confirmation and audit event; it does not alter the self-join policy.
+
+`LoginChallenge` stores the installation and intended membership/identity, a hash of the single-use email token, a validated project-local return destination, expiry, attempt/send metadata, and consumed/revoked timestamps. Generic request responses prevent email enumeration. Rate-limit by installation, normalized email hash, code/challenge, and source without logging raw tokens.
+
+`ReviewSession` binds an identity to an active membership. Store a hashed opaque session id, membership id and revision, effective role, expiry, revocation, creation, and last-seen metadata. Send only the opaque value in a secure, HTTP-only, same-site cookie. Login rotates the session; membership removal/suspension, sensitive role changes, owner revocation, and security resets invalidate it.
+
+`SystemUrlSetting` stores the validated canonical origin/base path used for outbound access links, plus revision and audit metadata. Prefer server-side environment configuration as the production authority when the deployment cannot safely permit runtime mutation. Never derive outbound security links from an untrusted request Host header.
+
+Existing `ReviewInvitation`, `ReviewerIdentity`, `EmailChallenge`, and invitation-bound session rows remain supported during migration. Migrate verified identities and named grants into identities/memberships without granting a broader role or scope. Open invitation possession never becomes durable membership without the new email-policy and verification checks.
+
+Comments and replies reference the stable identity and retain an immutable author snapshot. Owner/Editor authority comes from the active membership, never from a comment snapshot, display name, prototype persona, allowed domain, join code, or old invitation URL.
+
+## PersonaCredential
+
+`PersonaCredential` is an optional secret attached one-to-one to an active recording persona. Store the username and password as authenticated encrypted ciphertext or provider secret references, with project/persona ids, key version, created/updated/rotated metadata, and last-access audit metadata. Encryption keys remain outside the database. Do not include plaintext values in ordinary persona models, list responses, portable exports, reports, application logs, traces, screenshots, or analytics.
+
+Create/update/delete is Owner-only. A dedicated short-lived reveal response is available to an active Owner or Editor only while creating/recording a flow with that persona; authorize it again server-side and audit access. Do not cache it in persistent browser storage. Persona renaming, archiving, or credential rotation never rewrites historical flow snapshots, and a prototype username/password never authenticates a RevisionLab member.
 
 ---
 
@@ -999,25 +1027,29 @@ Structure reports so that they can later be pushed directly through the Confluen
 
 Prototype review environments may contain client-sensitive material.
 
-Use RevisionLab passwordless invitations as the default reviewer-access system. Reviewers verify any permitted email using a short-lived one-time code and receive a scoped session; they do not create a Vercel account, RevisionLab password, or permanent account profile. This application-level gate must cover the prototype, workspace, APIs, and private artifacts in the dedicated review environment. Vercel Authentication and shareable links are deployment controls, not reviewer identity or comment authorization.
+Use RevisionLab passwordless workspace membership as the default access system. Members either join with a valid workspace code plus an allowed, verified email or are manually added by an Owner and verify the notified address. Login uses short-lived single-use email links; RevisionLab stores no member password. This application-level gate must cover the prototype, workspace, APIs, and private artifacts in the dedicated review environment. Vercel Authentication and shareable links are deployment controls, not member identity or authorization.
 
 Implement:
 
 - authentication
-- expiring and revocable named/open review invitations
-- hashed, single-use email challenges with attempt and send rate limits
-- scoped reviewer sessions using secure HTTP-only cookies
+- active/pending/suspended/removed workspace memberships with fixed Commenter, Editor, and Owner roles
+- rotatable, revocable, hashed workspace join codes that are never sufficient without verified email control
+- configurable exact-email/domain self-join policies with deny-by-default support
+- hashed, single-use email login challenges with expiry plus attempt and send rate limits
+- scoped member sessions using secure HTTP-only cookies and membership-revision invalidation
 - project-level authorization
 - installation-scoped authorization enforced on every review page, API, artifact, and runner request
+- prevention of last-Owner removal/demotion and self-escalation
+- canonical system URL validation for outbound security links
 - review data private by default, including direct links
 - signed artifact URLs if cloud storage is used
 - noindex
 - robots exclusion
 - secure cookies
 - CSRF protection where relevant
-- audit trail for important actions
+- audit trail for login, membership, role, policy, code, system URL, and persona-secret actions
 
-Never store real passwords from recorded prototype sessions.
+Never store real or production passwords from recorded prototype sessions. Persona settings may store only synthetic test-account credentials, encrypted at rest with keys outside the database or referenced through a secret provider. Ordinary persona APIs expose only whether credentials are configured. Plaintext is returned only by a dedicated authorized, audited reveal request and must never enter logs, reports, exports, analytics, screenshots, traces, or persistent browser storage.
 
 Sensitive form values should support masking.
 
@@ -1029,9 +1061,11 @@ Users should be able to mark fields as:
 
 Recorded data should default to synthetic/test data.
 
-Provide an authorization adapter so a host may integrate its own identity system later, while passwordless invitations remain the default. Local-only development can use an explicitly enabled loopback identity. Remote/shared reviews require a valid invitation session. Hiding the widget is not authorization. Enforce access again in every route handler/server action and artifact response; do not expose protected content when the integration is disabled or a visitor knows a direct URL.
+Provide an authorization adapter so a host may integrate its own identity system later, while passwordless membership remains the default. Local-only development can use an explicitly enabled loopback identity. Remote/shared reviews require a valid active-membership session. Hiding the widget is not authorization. Enforce access again in every route handler/server action and artifact response; do not expose protected content when the integration is disabled or a visitor knows a direct URL.
 
-The email verification endpoint is the only anonymous application entry point required for review access. Return generic challenge responses, bind the post-verification redirect to validated project-local destinations, rotate sessions after verification, and revoke all derived sessions when an invitation is revoked. Apply CSRF protection to state-changing requests and use origin checks where appropriate.
+The join/login endpoints are the only anonymous application entry points required for workspace access. Return generic challenge responses, bind post-verification redirects to validated project-local destinations, rotate sessions after verification, and revoke derived sessions when a membership is suspended/removed or its security revision changes. Hash join codes and email tokens with suitable domain separation, compare in constant time where applicable, and rate-limit by installation, normalized email hash, code/token, and source. Apply CSRF protection to state-changing requests and use origin checks where appropriate.
+
+Build outbound security links only from the configured canonical system URL. Require HTTPS in production and allow HTTP only for loopback development. Reject unsupported origins/base paths and open redirects; never substitute an inbound Host header. Treat changes as security events and do not retroactively rewrite or revive issued links.
 
 Validate execution targets against the installation's configured environments. Local execution may target its configured loopback application; hosted workers must not accept arbitrary internal network URLs. Review links do not bypass either workspace access or prototype authentication.
 
@@ -1050,7 +1084,7 @@ Possible strategies:
 - setup action
 - auth bootstrap script
 
-Never expose prototype credentials in the client.
+Never expose prototype credentials in general client state. The one exception is the confirmed widget test-account banner: after a separate Owner/Editor authorization check for the selected persona and active flow-creation context, return the minimum secret to that requesting session, mask the password by default, and clear it when the context closes or changes.
 
 Bind profile authentication to server-side secret references or ephemeral runner state. Only expose profiles the reviewer is authorized to execute, validate that authorization when launching a run, and clean up isolated sessions after use. Selecting **Administrator** as a prototype profile must never confer administrative access to RevisionLab or bypass host authorization.
 
@@ -1064,8 +1098,8 @@ Initialize RevisionLab in an existing Next.js project
 → mount the integration in its layout
 → open the prototype
 → click the widget
-→ create or open a passwordless review invitation
-→ verify an employee or client email with a one-time code
+→ join with a workspace code and allowed verified email, or accept a manual membership email
+→ log in with a single-use email link
 → choose Record prototype and a role/persona
 → record a flow variant
 → capture meaningful steps
@@ -1089,7 +1123,7 @@ Do NOT initially implement:
 - video conferencing
 - advanced permissions
 - enterprise SSO and Vercel-account-based reviewer access
-- permanent reviewer accounts, passwords, profiles, or account administration
+- custom roles, editable permission matrices, member passwords, or general-purpose user profiles
 - Jira integration
 - direct Confluence API writes
 - AI-generated flow inference
@@ -1227,7 +1261,7 @@ Use this layout:
   runtime/
 ```
 
-SQLite/libSQL tables store installations, review invitations, reviewer identities, sessions, email challenges, recording profiles, flows, variants, steps, actions, transitions, canvas layouts, prototype versions, reviews, decisions, comment threads/replies, annotation anchors, executions, artifact/report metadata, and migration history. Use stable IDs, foreign keys, and indexes for common invitation/session and flow/profile/version queries. Flexible locator, viewport, and snapshot payloads may use validated JSON columns. Store local artifact paths relative to `.revisionlab/` and hosted artifact keys without public URLs. Screens, DOM snapshots, traces, and report bodies remain artifacts; do not maintain duplicate live JSON record directories.
+SQLite/libSQL tables store installations, workspace identities and memberships, role assignments, join codes, allowed-email policies, sessions, login challenges, persona credentials, migrated review invitations, recording profiles, flows, variants, steps, actions, transitions, canvas layouts, prototype versions, reviews, decisions, comment threads/replies, annotation anchors, executions, artifact/report metadata, audit events, and migration history. Use stable IDs, foreign keys, and indexes for common membership/session and flow/profile/version queries. Flexible locator, viewport, and snapshot payloads may use validated JSON columns. Keep encryption keys outside this store. Store local artifact paths relative to `.revisionlab/` and hosted artifact keys without public URLs. Screens, DOM snapshots, traces, and report bodies remain artifacts; do not maintain duplicate live JSON record directories.
 
 Provide `ReviewStore` implementations for local SQLite and hosted Turso/libSQL, plus filesystem and private hosted `ArtifactStore` implementations. Keep one logical schema and migration history across local and hosted stores. Select maintained adapters compatible with the supported Node.js/Next.js versions and verify clean installation on supported platforms; do not require the host developer to choose a driver or configure an ORM. Database access runs in the server/runner boundary, never the browser. The widget calls authorized server APIs; the runner submits results through the configured store. Never expose a database or artifact root as public static files. Validate artifact paths and reject traversal or symlinks escaping the local storage root.
 
@@ -1286,22 +1320,22 @@ These are verification requirements for the new refinement, not passing results.
 Critical E2E:
 
 1. Initialize the integration in an existing Next.js fixture and verify repeated initialization is safe.
-2. Create named and open invitations; verify employee and client emails from different domains with one-time codes and preserve the intended deep-link destination.
-3. Reject an unlisted email for a named invitation, expired/consumed codes, invalid attempts beyond the limit, expired sessions, and revoked invitations without leaking access details.
+2. Configure a system URL and company-email policy; join with the current workspace code and an allowed verified address, then manually add an external client and preserve each intended deep-link destination through single-use email login.
+3. Reject a disallowed self-join email, wrong/expired/rotated join codes, expired/consumed login links, invalid attempts beyond the limit, expired sessions, and suspended/removed memberships without leaking access details.
 4. Load a protected host page, open the widget, and navigate to the full workspace with the current route/version context under a valid scoped session.
 5. Start recording from the widget for two distinct role/persona profiles as an editor; reject the same operation from a commenter session.
 6. Generate screens without capturing RevisionLab controls and display the canvas.
 7. Create an annotation and threaded comment as one reviewer; reply as another reviewer, reload, and verify attribution and shared-store persistence. Rerun one variant and verify the other's artifacts/comments are unchanged.
 8. Inspect an older version, open a direct comment link under the same access rules, export a report, and return to the original prototype tab.
-9. Verify revocation blocks prototype pages, workspace routes, APIs, and artifact responses, and that disabled environments or another installation expose no data.
+9. Verify membership suspension/removal, role revision, and join-code rotation have their specified effects; protected prototype pages, workspace routes, APIs, and artifact responses remain inaccessible to revoked sessions, disabled environments, or another installation.
 
 Integration checks must cover host styles remaining unchanged, hosts with and without Chakra, server layouts retaining their boundaries, mobile/keyboard widget behavior, conflicting review routes, configured base paths, and unavailable runners or storage.
 
-Profile checks cover **Default**, missing/unauthorized setup, failed authentication, persona edits after historical runs, and roles sharing routes but showing different controls. Verify secrets are absent from browser responses, screenshots of setup, exported review data, and recorded actions.
+Profile checks cover **Default**, missing/unauthorized setup, failed authentication, persona edits after historical runs, credential add/replace/remove/rotation, and prototype roles sharing routes but showing different controls. Verify only an authorized active flow creator can request a credential reveal; the password is masked by default and secrets are absent from ordinary browser responses, screenshots, accessibility results, exported review data, logs, analytics, and recorded actions.
 
 Storage checks cover fresh automatic database creation, repeat initialization, migration upgrades/rollback on failure, stable identity across restarts, interrupted transactions/artifact writes, simultaneous comment edits, busy handling, foreign-key integrity, missing artifacts, and read-only mode. Test backup/restore with committed data still in WAL, and JSON export/import round trips. Verify clean setup requires no separate database installation or manual migration commands, and the database/journals cannot be fetched as static files.
 
-Invitation checks cover hashed token/code storage, generic request responses, resend/attempt limits, single-use consumption, session rotation, cookie security attributes, scoped authorization, cross-installation isolation, and immediate invitation/session revocation. Test the local SQLite and hosted libSQL adapters against the same contract.
+Membership checks cover hashed join/login-token storage, allowed-email normalization, generic request responses, resend/attempt limits, single-use consumption, manual-add notifications, last-Owner protection, role authorization, session rotation, cookie security attributes, cross-installation isolation, canonical-URL link construction, open-redirect/Host-header rejection, and immediate membership/session revocation. Test the local SQLite and hosted libSQL adapters against the same contract, including migration from existing invitation rows.
 
 ---
 
@@ -1317,7 +1351,7 @@ Include:
 - installer and manual layout integration
 - configuration, environment enablement, and route customization
 - `.revisionlab/` structure, automatic SQLite setup/migrations, backup/restore, and JSON export/import for selective Git tracking
-- Turso/libSQL and private artifact configuration, Resend-compatible email delivery, invitation policies, and read-only snapshots
+- Turso/libSQL and private artifact configuration, Resend-compatible email delivery, workspace codes, allowed-email and role policies, system URL configuration, and read-only snapshots
 - Playwright installation
 - environment variables
 - running app
@@ -1434,11 +1468,13 @@ Build this on the existing screen-capture release before introducing action repl
 - Turso/libSQL shared-store adapter with the same logical schema
 - Private hosted artifact adapter
 - Resend-compatible email delivery adapter
-- Named and open invitations, hashed OTP challenges, reviewer identities, and revocable scoped sessions
-- Commenter/editor/owner authorization enforced in server operations
+- Workspace memberships, hashed join codes, allowed-email policies, single-use magic-link challenges, and revocable scoped sessions
+- Manual member addition with project-named notification email and pending/active states
+- Owner-configured canonical system URL for outbound access links
+- Commenter/Editor/Owner authorization enforced in server operations, including last-Owner protection
 - Folder reopen/restore behavior, hosted publish/import boundaries, and explicit read-only mode
 - ProjectInstallation model
-- ReviewInvitation, ReviewerIdentity, ReviewSession, and EmailChallenge models
+- WorkspaceIdentity, WorkspaceMembership, WorkspaceJoinCode, AllowedEmailPolicy, LoginChallenge, ReviewSession, and PersonaCredential models; migration support for existing invitation records
 - Flow model
 - RecordingProfile and FlowVariant models
 - Step model
@@ -1447,7 +1483,7 @@ Build this on the existing screen-capture release before introducing action repl
 
 ## Phase 2 — Playwright Runner
 
-- Widget-initiated recording with role/persona selection
+- Widget-initiated recording with role/persona selection and an authorized, excluded-from-capture test-account banner when credentials are configured
 - Isolated profile setup, explicit recording state, and finish-to-generation workflow
 - flow execution
 - action execution
@@ -1502,14 +1538,14 @@ Build this on the existing screen-capture release before introducing action repl
 The first useful demonstration should be:
 
 1. A developer initializes RevisionLab inside an existing Next.js project and mounts its integration in the layout.
-2. An owner creates an invitation that permits verified employee and client emails and shares its link.
-3. Two reviewers with different email domains request one-time codes, verify without Vercel or RevisionLab accounts, and reach the intended deep-linked review.
+2. An Owner configures the canonical system URL and allowed company-email policy, creates a workspace join code, and shares its join link.
+3. One employee joins with the code and an allowed verified email; the Owner manually adds one client with a role, and both use single-use email login links to reach the intended deep-linked review without passwords or Vercel accounts.
 4. One reviewer opens the widget and full workspace; the other adds and replies to a screen comment. Both see verified attribution and the persisted thread.
-5. From the widget, an editor selects a role/persona and records a simple three-screen journey, then records another profile as a separate variant.
+5. From the widget, an Editor selects a persona, sees its authorized synthetic test account in the excluded-from-capture banner, and records a simple three-screen journey, then records another profile as a separate variant.
 6. The configured Playwright runner executes the flow and generates screenshots automatically.
 7. Each variant's screen sequence appears on the canvas with role/persona labels; reviewers filter variants and add element-anchored feedback.
 8. The editor generates a Codex-ready prompt, changes the prototype, and reruns one variant; refreshed screenshots appear while prior comment context and the other variant remain intact.
-9. Revoking the invitation removes reviewer access to the prototype, workspace, APIs, and artifacts. Direct URLs do not bypass the gate.
+9. Suspending/removing the membership or rotating its security revision removes access to the prototype, workspace, APIs, and artifacts. Direct URLs and old login links do not bypass the gate.
 10. Local restart reopens `.revisionlab/revisionlab.db`; hosted deployments reopen the configured Turso/libSQL store. Backup/restore preserves the local workspace without manual database setup.
 
 Build this vertical slice before expanding the feature set.
@@ -1518,13 +1554,13 @@ Build this vertical slice before expanding the feature set.
 
 # Definition of Done for MVP
 
-The MVP is complete when a developer can install RevisionLab within an existing Next.js project, invite employees and clients by email, and let them comment through its layout-mounted widget and full-page workspace without Vercel accounts, passwords, or RevisionLab registration.
+The MVP is complete when a developer can install RevisionLab within an existing Next.js project, manage workspace users and fixed roles, onboard allowed employees by workspace code, manually add clients, and let them comment through its layout-mounted widget and full-page workspace without Vercel accounts or stored RevisionLab passwords.
 
-A named or open invitation must support verified emails from different domains, deep-link return after verification, verified comment attribution, scoped commenter/editor/owner permissions, expiry, and immediate revocation. Anonymous visitors and revoked sessions cannot read the prototype, review data, APIs, or artifacts. Reviewers can add and reply to comments with no account-management workflow.
+Code join must require the current join code, an email matching the self-join policy, and verified email control. Manual addition must support an explicitly chosen role and project-named notification, including an owner-confirmed external address outside the self-join policy. Single-use login links preserve validated deep-link return, attribution remains stable, and Commenter/Editor/Owner permissions and immediate membership/session revocation are enforced. Anonymous visitors and revoked sessions cannot read the prototype, review data, APIs, or artifacts.
 
 SQLite is created and migrated automatically inside `.revisionlab/`, storing flows, personas, comments, versions, and history; generated artifacts live alongside it. Everything reopens across restarts, and a consistent backup can be restored without a separate database service. Read-only environments clearly disable writes unless connected to a persistent writer. The host keeps its behavior and styling; disabled environments expose no review capabilities. The workflow must not depend on a centralized project hub.
 
-The widget must support recording for at least two role/persona profiles and opening their generated screens in the workspace. Profiles execute in isolated sessions; screens, comments, and version history remain attributable to the correct variant. Rerunning one variant preserves the other, and profile/setup failures are surfaced without generating misleading success states.
+The widget must support recording for at least two role/persona profiles and opening their generated screens in the workspace. An authorized creator can use a selected persona's encrypted synthetic test account through the masked, audited, excluded-from-capture widget banner; unauthorized users and ordinary APIs cannot retrieve it. Profiles execute in isolated sessions; screens, comments, and version history remain attributable to the correct variant. Rerunning one variant preserves the other, and profile/setup failures are surfaced without generating misleading success states.
 
 The whiteboard increment has its own delivery boundary: generated screen nodes and directional recorded paths, durable owner/editor arrangement and explicit connections, usable pan/zoom/fit and keyboard alternatives, screenshot-relative comment pins, replies, resolution, and preserved existing feedback. Its completion does not imply the broader replay, DOM-anchoring, or visual-diff goals below are implemented.
 
