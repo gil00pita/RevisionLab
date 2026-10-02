@@ -7,11 +7,13 @@ import {
 } from "../../../comment-settings.js";
 
 export function BubbleColorPicker({
+  label = "Bubble color",
   value,
   disabled,
   readOnly,
   onChange,
 }: {
+  label?: string;
   value: CommentBubbleColor;
   disabled: boolean;
   readOnly: boolean;
@@ -19,9 +21,9 @@ export function BubbleColorPicker({
 }) {
   return (
     <Field.Root disabled={disabled}>
-      <Field.Label>Bubble color</Field.Label>
+      <Field.Label>{label}</Field.Label>
       <RadioGroup.Root
-        aria-label="Bubble color"
+        aria-label={label}
         value={value}
         disabled={disabled}
         readOnly={readOnly}

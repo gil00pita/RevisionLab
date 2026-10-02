@@ -39,9 +39,6 @@ export async function readAccessConfiguration(
   client: Client,
   config: ResolvedConfig,
 ): Promise<AccessRow> {
-  await client.execute(
-    "INSERT OR IGNORE INTO workspace_settings (id) VALUES (1)",
-  );
   const result = await client.execute(
     "SELECT system_url, allowed_email_rules, join_code_hash, join_code_created_at FROM workspace_settings WHERE id = 1",
   );

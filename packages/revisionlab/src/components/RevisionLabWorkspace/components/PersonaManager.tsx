@@ -16,12 +16,14 @@ import type { RevisionLabPersona } from "../../../server/types.js";
 import { PersonaForm } from "./PersonaForm.js";
 
 export function PersonaManager({
+  onBusyChange,
   apiPath,
   personas,
   canEdit,
   canManageCredentials,
   onRefresh,
 }: {
+  onBusyChange?: (busy: boolean) => void;
   apiPath: string;
   personas: RevisionLabPersona[];
   canEdit: boolean;
@@ -35,6 +37,7 @@ export function PersonaManager({
   async function archive(persona: RevisionLabPersona) {
     if (busy) return;
     setBusy(persona.id);
+    onBusyChange?.(true);
     setError("");
     setNotice("");
     try {
@@ -56,6 +59,7 @@ export function PersonaManager({
       );
     } finally {
       setBusy(null);
+      onBusyChange?.(false);
     }
   }
   return (
@@ -70,6 +74,7 @@ export function PersonaManager({
       </Flex>
       {canEdit && (
         <PersonaForm
+          onBusyChange={onBusyChange}
           key={editing?.id ?? "new"}
           apiPath={apiPath}
           persona={editing}
@@ -159,6 +164,7 @@ export function PersonaManager({
                     onClick={() =>
                       void (async () => {
                         setBusy(persona.id);
+                        onBusyChange?.(true);
                         setError("");
                         setNotice("");
                         try {
@@ -177,6 +183,7 @@ export function PersonaManager({
                           );
                         } finally {
                           setBusy(null);
+                          onBusyChange?.(false);
                         }
                       })()
                     }

@@ -183,6 +183,7 @@ export interface RevisionLabAccessSettings {
 }
 
 export interface RevisionLabState {
+  setup: import("../setup.js").SetupProgress;
   settings: RevisionLabSettings;
   project: { id: string; name: string };
   actor: RevisionLabActor;

@@ -16,12 +16,14 @@ import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabPersona } from "../../../server/types.js";
 
 export function PersonaForm({
+  onBusyChange,
   apiPath,
   persona,
   onSaved,
   onCancel,
   canManageCredentials,
 }: {
+  onBusyChange?: (busy: boolean) => void;
   apiPath: string;
   persona?: RevisionLabPersona;
   onSaved: () => Promise<void>;
@@ -39,6 +41,7 @@ export function PersonaForm({
     if (!name.trim() || pending.current) return;
     pending.current = true;
     setBusy(true);
+    onBusyChange?.(true);
     setError("");
     try {
       const result = await apiRequest<{ id: string }>(
@@ -68,6 +71,7 @@ export function PersonaForm({
     } finally {
       pending.current = false;
       setBusy(false);
+      onBusyChange?.(false);
     }
   }
   return (

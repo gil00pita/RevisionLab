@@ -21,6 +21,7 @@ export function useRecording(
   route: string,
   enabled: boolean,
   paused = false,
+  auditRecordings = true,
 ) {
   const [recording, setRecording] = useState<ActiveRecording | null>(null);
   const [operation, setOperation] = useState<RecordingOperation>(null);
@@ -75,6 +76,7 @@ export function useRecording(
         try {
           return await captureRecordingScreens({
             apiPath,
+            auditRecordings,
             flowId: target.flowId,
             route,
             title,
@@ -111,7 +113,7 @@ export function useRecording(
       pendingCapture.current = task;
       return task;
     },
-    [apiPath, enabled, route, updateOperation],
+    [apiPath, enabled, route, updateOperation, auditRecordings],
   );
 
   useAutomaticCapture({

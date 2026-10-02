@@ -1,18 +1,9 @@
 import { useRef, useState } from "react";
-import {
-  Badge,
-  Field,
-  Flex,
-  Heading,
-  Separator,
-  Stack,
-  Switch,
-  Text,
-} from "@chakra-ui/react";
+import { Badge, Flex, Heading, Separator, Stack, Text } from "@chakra-ui/react";
 import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabSettings } from "../../../comment-settings.js";
 import type { RevisionLabAccessSettings } from "../../../server/types.js";
-import { BubbleColorPicker } from "./BubbleColorPicker.js";
+import { AppearanceSettings } from "../../AppearanceSettings/index.js";
 import { SystemUrlSettings } from "./SystemUrlSettings.js";
 import { AiSettings } from "./AiSettings.js";
 
@@ -97,36 +88,20 @@ export function WorkspaceSettings({
           <Separator />
         </>
       )}
-      <Heading as="h3" size="md">
-        Live comments
-      </Heading>
-      <Field.Root disabled={!canEdit}>
-        <Switch.Root
-          checked={displayed.showCommentBubbles}
-          disabled={!canEdit}
-          readOnly={busy}
-          onCheckedChange={(event) =>
-            void update({ showCommentBubbles: event.checked })
-          }
-          colorPalette="blue"
-        >
-          <Switch.HiddenInput />
-          <Switch.Control
-            borderWidth="1px"
-            borderColor="gray.500"
-            _checked={{ borderColor: "blue.700" }}
-          >
-            <Switch.Thumb />
-          </Switch.Control>
-          <Switch.Label>Show comment bubbles by default</Switch.Label>
-        </Switch.Root>
-      </Field.Root>
-      <BubbleColorPicker
-        value={displayed.commentBubbleColor}
-        disabled={!canEdit}
-        readOnly={busy}
-        onChange={(color) => void update({ commentBubbleColor: color })}
-      />
+      {(["widget", "comments", "accessibility"] as const).map((section) => (
+        <Stack key={section} gap="5">
+          <Heading as="h3" size="md" textTransform="capitalize">
+            {section === "comments" ? "Live comments" : section}
+          </Heading>
+          <AppearanceSettings
+            section={section}
+            value={displayed}
+            disabled={!canEdit || busy}
+            onChange={(patch) => void update(patch)}
+          />
+          <Separator />
+        </Stack>
+      ))}
       {error && (
         <Text role="alert" color="red.700">
           {error}

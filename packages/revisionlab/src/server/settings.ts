@@ -10,11 +10,15 @@ import { write } from "./database.js";
 import { HttpError, json, readJson } from "./security.js";
 import type { RevisionLabActor } from "./types.js";
 
-const settingsSchema = z
-  .strictObject({
-    showCommentBubbles: z.boolean(),
-    commentBubbleColor: z.enum(commentBubbleColors),
-  });
+const settingsSchema = z.strictObject({
+  widgetColor: z.enum(commentBubbleColors),
+  widgetPosition: z.enum(["bottom-right", "bottom-left"]),
+  showWidget: z.boolean(),
+  auditLivePages: z.boolean(),
+  auditRecordings: z.boolean(),
+  showCommentBubbles: z.boolean(),
+  commentBubbleColor: z.enum(commentBubbleColors),
+});
 const settingsPatch = settingsSchema
   .partial()
   .refine(
@@ -31,6 +35,11 @@ export async function readSettings(
   const row = result.rows[0];
   return row
     ? settingsSchema.parse({
+        widgetColor: row.widget_color,
+        widgetPosition: row.widget_position,
+        showWidget: Number(row.show_widget) === 1,
+        auditLivePages: Number(row.audit_live_pages) === 1,
+        auditRecordings: Number(row.audit_recordings) === 1,
         showCommentBubbles: Number(row.show_comment_bubbles) === 1,
         commentBubbleColor: row.comment_bubble_color,
       })
@@ -50,10 +59,22 @@ export async function handleSettings(
   const settings = await write(client, async (transaction) => {
     const next = { ...(await readSettings(transaction)), ...patch };
     await transaction.execute({
-      sql: `INSERT INTO workspace_settings (id, show_comment_bubbles, comment_bubble_color) VALUES (1, ?, ?)
+      sql: `INSERT INTO workspace_settings (id, show_comment_bubbles, comment_bubble_color,
+        widget_color, widget_position, show_widget, audit_live_pages, audit_recordings)
+        VALUES (1, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET show_comment_bubbles = excluded.show_comment_bubbles,
-        comment_bubble_color = excluded.comment_bubble_color`,
-      args: [next.showCommentBubbles ? 1 : 0, next.commentBubbleColor],
+        comment_bubble_color = excluded.comment_bubble_color, widget_color = excluded.widget_color,
+        widget_position = excluded.widget_position, show_widget = excluded.show_widget,
+        audit_live_pages = excluded.audit_live_pages, audit_recordings = excluded.audit_recordings`,
+      args: [
+        next.showCommentBubbles ? 1 : 0,
+        next.commentBubbleColor,
+        next.widgetColor,
+        next.widgetPosition,
+        next.showWidget ? 1 : 0,
+        next.auditLivePages ? 1 : 0,
+        next.auditRecordings ? 1 : 0,
+      ],
     });
     return next;
   });
