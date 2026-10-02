@@ -72,7 +72,7 @@ export function WorkspaceSettings({
       <Tabs.Root defaultValue="system" colorPalette="blue" variant="line">
         <Tabs.List aria-label="Settings sections" mb="6">
           <Tabs.Trigger value="system" px={{ base: "3", md: "4" }}>
-            System
+            Widget
           </Tabs.Trigger>
           <Tabs.Trigger value="comments" px={{ base: "3", md: "4" }}>
             Comments
