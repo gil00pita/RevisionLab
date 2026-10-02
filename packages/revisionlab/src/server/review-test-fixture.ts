@@ -18,6 +18,8 @@ export async function reviewFixture(t: TestContext) {
     projectName: "Review tests",
     databaseUrl: `file:${join(directory, "review.db")}`,
     artifactsDirectory: join(directory, "artifacts"),
+    aiInstructionsFile: join(directory, "instructions", "ai-instructions.md"),
+    aiProjectDirectory: directory,
   };
   const keys = [
     "NODE_ENV",

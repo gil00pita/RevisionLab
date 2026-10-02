@@ -1,6 +1,7 @@
 import { Badge, Heading, Link, List, Stack, Text } from "@chakra-ui/react";
 import type { AccessibilityReport } from "../../../accessibility.js";
 import { AccessibilityStatus } from "../../AccessibilityStatus/index.js";
+import { ReviewItemActions } from "../../ReviewAutomation/index.js";
 
 export function ScreenAccessibility({
   report,
@@ -94,6 +95,9 @@ export function ScreenAccessibility({
                 >
                   Read more
                 </Link>
+                <ReviewItemActions
+                  target={{ kind: "accessibility", issueId: issue.id }}
+                />
               </Stack>
             ))}
           </Stack>

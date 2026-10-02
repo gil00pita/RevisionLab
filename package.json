@@ -23,7 +23,7 @@
     "next": "16.3.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "revisionlab": "file:packages/revisionlab"
+    "revisionlab": "*"
   },
   "devDependencies": {
     "@types/node": "^26.6.3",

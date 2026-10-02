@@ -1,6 +1,7 @@
 import { Badge, Button, Card, Flex, Icon, Stack, Text } from "@chakra-ui/react";
 import { Check, MapPin, MessageSquare, Undo2 } from "lucide-react";
 import type { RevisionLabComment } from "../../../server/types.js";
+import type { ReactNode } from "react";
 
 export function CommentMessage({
   presentation = "card",
@@ -11,6 +12,7 @@ export function CommentMessage({
   busy = false,
   onResolve,
   onOpen,
+  actions,
 }: {
   presentation?: "card" | "plain";
   comment: RevisionLabComment;
@@ -20,6 +22,7 @@ export function CommentMessage({
   busy?: boolean;
   onResolve?: () => void;
   onOpen?: () => void;
+  actions?: ReactNode;
 }) {
   const isPlain = presentation === "plain";
   const showResolve = canResolve && !comment.parentId;
@@ -86,7 +89,7 @@ export function CommentMessage({
           {comment.body}
         </Text>
       </Card.Body>
-      {(onOpen || showResolve) && (
+      {(onOpen || showResolve || actions) && (
         <Card.Footer
           p={isPlain ? "0" : "3"}
           pt={isPlain ? "2" : undefined}
@@ -95,6 +98,7 @@ export function CommentMessage({
           bg={isPlain ? "white" : "gray.50"}
         >
           <Stack direction="row" gap="2" flexWrap="wrap">
+            {actions}
             {onOpen && (
               <Button size="sm" variant="ghost" onClick={onOpen}>
                 <Icon>

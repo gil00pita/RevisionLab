@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type {
   RevisionLabComment,
   RevisionLabPoint,
@@ -22,4 +23,5 @@ export interface FeedbackThreadProps {
   onCancelAnchor?: () => void;
   onAnchorChange?: (point: RevisionLabPoint) => void;
   onCommentCreated?: (id: string) => void;
+  renderActions?: (comment: RevisionLabComment) => ReactNode;
 }
