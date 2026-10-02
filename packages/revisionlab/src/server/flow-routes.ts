@@ -1,3 +1,4 @@
+import { notifyReviewEvent } from "./notifications/events.js";
 import { createHash, randomUUID } from "node:crypto";
 import type { Client, Transaction } from "@libsql/client";
 import { z } from "zod";
@@ -237,6 +238,12 @@ async function captureStep(
       };
     });
     if (reused) await discardArtifact(artifact, config);
+    if (!reused && input.capture?.accessibility?.violationCount) {
+      await notifyReviewEvent(client, config, {
+        type: "issues", title: "New accessibility issues",
+        detail: `${input.capture.accessibility.violationCount} accessibility issue(s) saved on ${input.title} (${input.route}).`,
+      });
+    }
     return json({ id, ...saved, reused }, 201);
   } catch (error) {
     await discardArtifact(artifact, config).catch(() => undefined);

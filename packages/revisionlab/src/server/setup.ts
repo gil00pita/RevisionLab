@@ -32,7 +32,7 @@ const inputSchema = z.discriminatedUnion("action", [
   }),
   z.strictObject({
     action: z.literal("advance"),
-    step: z.number().int().min(2).max(5),
+    step: z.number().int().min(2).max(6),
   }),
   z.strictObject({ action: z.literal("finish") }),
 ]);
