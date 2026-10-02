@@ -1,4 +1,9 @@
 export const schema = [
+  `CREATE TABLE IF NOT EXISTS notification_settings (
+    id INTEGER PRIMARY KEY CHECK(id = 1), settings_json TEXT NOT NULL,
+    secrets_ciphertext TEXT, secret_names TEXT NOT NULL DEFAULT '[]',
+    revision INTEGER NOT NULL DEFAULT 0, email_status TEXT, slack_status TEXT
+  )`,
   `CREATE TABLE IF NOT EXISTS workspace_history (
     id TEXT PRIMARY KEY, action TEXT NOT NULL, actor_id TEXT NOT NULL,
     actor_name TEXT NOT NULL, snapshot_json TEXT NOT NULL,
@@ -22,7 +27,7 @@ export const schema = [
   `CREATE TABLE IF NOT EXISTS setup_progress (
     id INTEGER PRIMARY KEY CHECK(id = 1), step INTEGER NOT NULL DEFAULT 0,
     completed INTEGER NOT NULL DEFAULT 0, name TEXT NOT NULL DEFAULT '',
-    email TEXT NOT NULL DEFAULT ''
+    email TEXT NOT NULL DEFAULT '', notifications_step_added INTEGER NOT NULL DEFAULT 1
   )`,
   `CREATE TABLE IF NOT EXISTS workspace_settings (
     id INTEGER PRIMARY KEY CHECK(id = 1),

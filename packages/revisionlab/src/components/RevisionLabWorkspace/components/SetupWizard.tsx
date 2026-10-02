@@ -1,3 +1,4 @@
+import { NotificationSettings } from "../../NotificationSettings/index.js";
 import { useState } from "react";
 import {
   Box,
@@ -24,6 +25,7 @@ const titles = [
   "Live comments",
   "Accessibility",
   "Personas",
+  "Notifications",
   "Users & roles",
 ];
 
@@ -79,14 +81,22 @@ export function SetupWizard({
         <Steps.Root
           step={wizard.step}
           count={titles.length}
-          size="sm"
+          size={{ base: "xs", md: "sm" }}
           colorPalette="blue"
         >
-          <Steps.List aria-label="Setup progress">
+          <Steps.List aria-label="Setup progress" gap="1">
             {titles.map((title, index) => (
-              <Steps.Item key={title} index={index} title={title}>
+              <Steps.Item
+                key={title}
+                index={index}
+                title={title}
+                gap="1"
+                minW="0"
+              >
                 <Steps.Indicator />
-                <Steps.Title hideBelow="md">{title}</Steps.Title>
+                <Steps.Title hideBelow="lg" fontSize="xs">
+                  {title}
+                </Steps.Title>
                 <Steps.Separator />
               </Steps.Item>
             ))}
@@ -176,7 +186,15 @@ export function SetupWizard({
                 />
               </Stack>
             )}
-            {wizard.step === 5 && data.accessSettings && (
+            {wizard.step === 5 && (
+              <NotificationSettings
+                apiPath={apiPath}
+                onBusyChange={setSavingDetails}
+                disabled={wizard.busy}
+                onContinue={() => wizard.save()}
+              />
+            )}
+            {wizard.step === 6 && data.accessSettings && (
               <UsersRoleManager
                 onBusyChange={setSavingDetails}
                 apiPath={apiPath}
@@ -215,13 +233,23 @@ export function SetupWizard({
                 colorPalette="blue"
                 loading={wizard.busy}
                 disabled={savingDetails}
-                type={wizard.step === 0 ? "submit" : "button"}
-                form={wizard.step === 0 ? "revisionlab-setup-step" : undefined}
+                type={
+                  wizard.step === 0 || wizard.step === 5 ? "submit" : "button"
+                }
+                form={
+                  wizard.step === 0
+                    ? "revisionlab-setup-step"
+                    : wizard.step === 5
+                      ? "revisionlab-notification-settings"
+                      : undefined
+                }
                 onClick={
-                  wizard.step === 0 ? undefined : () => void wizard.save()
+                  wizard.step === 0 || wizard.step === 5
+                    ? undefined
+                    : () => void wizard.save()
                 }
               >
-                {wizard.step === 5 ? "Finish setup" : "Save and continue"}
+                {wizard.step === 6 ? "Finish setup" : "Save and continue"}
               </Button>
             </Flex>
           </Flex>
