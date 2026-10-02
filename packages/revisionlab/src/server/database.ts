@@ -59,6 +59,28 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
   // One write transaction prevents simultaneous instances from applying an ALTER twice.
   await write(client, async (transaction) => {
     const additions = {
+      workspace_settings: [
+        [
+          "show_widget",
+          "INTEGER NOT NULL DEFAULT 1 CHECK(show_widget IN (0, 1))",
+        ],
+        [
+          "widget_color",
+          "TEXT NOT NULL DEFAULT 'blue' CHECK(widget_color IN ('gray', 'red', 'orange', 'yellow', 'green', 'teal', 'cyan', 'blue', 'purple', 'pink'))",
+        ],
+        [
+          "widget_side",
+          "TEXT NOT NULL DEFAULT 'right' CHECK(widget_side IN ('left', 'right'))",
+        ],
+        [
+          "widget_offset",
+          "INTEGER NOT NULL DEFAULT 24 CHECK(widget_offset BETWEEN 0 AND 1000)",
+        ],
+        [
+          "widget_bottom_offset",
+          "INTEGER NOT NULL DEFAULT 24 CHECK(widget_bottom_offset BETWEEN 0 AND 1000)",
+        ],
+      ],
       steps: [
         ["capture_json", "TEXT"],
         ["capture_key", "TEXT"],

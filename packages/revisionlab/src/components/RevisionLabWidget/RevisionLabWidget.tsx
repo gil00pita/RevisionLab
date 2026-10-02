@@ -68,9 +68,15 @@ function Widget({
   );
   const accessibility = usePageAccessibility(
     route,
-    Boolean(data && !reviewRoute),
+    Boolean(data && !reviewRoute && settings.showWidget),
     open || live.commenting,
   );
+  const showLauncher =
+    !workspace.loading &&
+    (settings.showWidget ||
+      Boolean(recorder.recording) ||
+      live.commenting ||
+      open);
   const ending =
     recorder.operation === "finish" || recorder.operation === "discard";
   const navigation = useRecordingNavigation({
@@ -154,6 +160,7 @@ function Widget({
     <>
       {data && live.picking && (
         <ElementPicker
+          settings={settings}
           showControls={expanded}
           commentsHref={commentsHref}
           showBalloons={live.showBalloons}
@@ -189,36 +196,40 @@ function Widget({
           }}
         />
       )}
-      <WidgetLauncher
-        expanded={expanded}
-        onExpandedChange={setExpanded}
-        onStopAudit={accessibility.stop}
-        recording={Boolean(recorder.recording)}
-        canRecord={Boolean(data && data.actor.role !== "commenter")}
-        authorized={Boolean(data)}
-        commenting={live.commenting}
-        commentCount={
-          pageComments.filter(
-            (comment) => !comment.parentId && comment.status === "open",
-          ).length
-        }
-        busy={ending || recorder.operation === "start"}
-        accessibility={accessibility.result}
-        onRerun={accessibility.rerun}
-        workspaceHref={basePath}
-        onComment={live.commenting ? stopCommenting : beginCommenting}
-        onRecord={() => {
-          if (recorder.recording) {
-            void stopRecording();
-            return;
+      {showLauncher && (
+        <WidgetLauncher
+          settings={settings}
+          expanded={expanded}
+          onExpandedChange={setExpanded}
+          onStopAudit={accessibility.stop}
+          recording={Boolean(recorder.recording)}
+          canRecord={Boolean(data && data.actor.role !== "commenter")}
+          authorized={Boolean(data)}
+          commenting={live.commenting}
+          commentCount={
+            pageComments.filter(
+              (comment) => !comment.parentId && comment.status === "open",
+            ).length
           }
-          stopCommenting();
-          setTab("record");
-          setOpen(true);
-          void refresh();
-        }}
-      />
+          busy={ending || recorder.operation === "start"}
+          accessibility={accessibility.result}
+          onRerun={accessibility.rerun}
+          workspaceHref={basePath}
+          onComment={live.commenting ? stopCommenting : beginCommenting}
+          onRecord={() => {
+            if (recorder.recording) {
+              void stopRecording();
+              return;
+            }
+            stopCommenting();
+            setTab("record");
+            setOpen(true);
+            void refresh();
+          }}
+        />
+      )}
       <RecordingPopover
+        side={settings.widgetSide}
         open={open && tab === "record"}
         busy={recorder.operation === "start"}
         onClose={() => setOpen(false)}
@@ -304,6 +315,7 @@ function Widget({
       </WidgetDialog>
       {!open && !live.commenting && (
         <WidgetStatus
+          settings={settings}
           recorder={recorder}
           basePath={basePath}
           expanded={expanded}

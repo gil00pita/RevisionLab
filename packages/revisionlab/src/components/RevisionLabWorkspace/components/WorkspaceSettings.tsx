@@ -11,7 +11,8 @@ import {
 } from "@chakra-ui/react";
 import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabSettings } from "../../../comment-settings.js";
-import { BubbleColorPicker } from "./BubbleColorPicker.js";
+import { WidgetSettingsForm } from "./WidgetSettingsForm.js";
+import { SettingsColorPicker } from "./SettingsColorPicker.js";
 
 export function WorkspaceSettings({
   apiPath,
@@ -82,6 +83,13 @@ export function WorkspaceSettings({
         {!canEdit && <Badge>Read only</Badge>}
       </Flex>
       <Separator />
+      <WidgetSettingsForm
+        settings={settings}
+        canEdit={canEdit}
+        busy={busy}
+        onSave={update}
+      />
+      <Separator />
       <Heading as="h3" size="md">
         Live comments
       </Heading>
@@ -106,7 +114,7 @@ export function WorkspaceSettings({
           <Switch.Label>Show comment bubbles by default</Switch.Label>
         </Switch.Root>
       </Field.Root>
-      <BubbleColorPicker
+      <SettingsColorPicker
         value={displayed.commentBubbleColor}
         disabled={!canEdit}
         readOnly={busy}

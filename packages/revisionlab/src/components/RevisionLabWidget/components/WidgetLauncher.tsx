@@ -1,14 +1,19 @@
-import { Collapsible, Flex, Icon, IconButton, Image } from "@chakra-ui/react";
+import { Collapsible, Flex, Icon } from "@chakra-ui/react";
 import { Camera, MessageSquarePlus } from "lucide-react";
 import type { PageAccessibility } from "../hooks/usePageAccessibility.js";
 import { AccessibilityControl } from "./AccessibilityControl.js";
 import { WidgetTool } from "./WidgetTool.js";
 import { WidgetWorkspaceLink } from "./WidgetWorkspaceLink.js";
 
-const markUrl = new URL("../../../../assets/widget-mark.svg", import.meta.url)
-  .href;
+import {
+  widgetColorTokens,
+  widgetPlacement,
+  type WidgetSettings,
+} from "../../../widget-settings.js";
+import { WidgetToggle } from "./WidgetToggle.js";
 
 export function WidgetLauncher({
+  settings,
   expanded,
   onExpandedChange,
   onStopAudit,
@@ -24,6 +29,7 @@ export function WidgetLauncher({
   onComment,
   authorized,
 }: {
+  settings: WidgetSettings;
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
   onStopAudit: () => void;
@@ -49,12 +55,12 @@ export function WidgetLauncher({
       role="group"
       aria-label="RevisionLab toolbar"
       position="fixed"
-      bottom={{ base: "4", md: "6" }}
-      right={{ base: "3", md: "6" }}
+      {...widgetPlacement(settings)}
       zIndex="popover"
       display="flex"
       alignItems="center"
-      bg="blue.600"
+      flexDirection={settings.widgetSide === "left" ? "row-reverse" : "row"}
+      bg={widgetColorTokens(settings.widgetColor).solid}
       color="white"
       borderRadius="full"
       shadow="lg"
@@ -86,7 +92,12 @@ export function WidgetLauncher({
           _motionReduce: { animationName: "none" },
         }}
       >
-        <Flex align="center" pl="1" w="max-content">
+        <Flex
+          align="center"
+          px="0.5"
+          w="max-content"
+          flexDirection={settings.widgetSide === "left" ? "row-reverse" : "row"}
+        >
           <WidgetWorkspaceLink href={workspaceHref} />
           <AccessibilityControl
             result={accessibility}
@@ -132,32 +143,7 @@ export function WidgetLauncher({
       {auditing && (
         <WidgetTool label="Stop auditing" active onClick={onStopAudit} />
       )}
-      <Collapsible.Trigger asChild>
-        <IconButton
-          data-widget-toggle
-          aria-label={
-            expanded
-              ? "Collapse RevisionLab widget"
-              : "Expand RevisionLab widget"
-          }
-          title={
-            expanded
-              ? "Collapse RevisionLab widget"
-              : "Expand RevisionLab widget"
-          }
-          variant="plain"
-          color="white"
-          size="sm"
-          boxSize="9"
-          minW="9"
-          flexShrink="0"
-          borderRadius="full"
-          _hover={{ bg: "blackAlpha.200" }}
-          focusRing="inset"
-        >
-          <Image src={markUrl} alt="" w="16px" h="18px" flexShrink="0" />
-        </IconButton>
-      </Collapsible.Trigger>
+      <WidgetToggle expanded={expanded} accessibility={accessibility} />
     </Collapsible.Root>
   );
 }

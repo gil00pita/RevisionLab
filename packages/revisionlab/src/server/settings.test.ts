@@ -15,6 +15,7 @@ test("workspace settings default to visible blue bubbles and survive a fresh con
   });
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), {
+    ...defaultSettings,
     showCommentBubbles: false,
     commentBubbleColor: "pink",
   });
@@ -37,6 +38,7 @@ test("all standard bubble colors are accepted; malformed settings cannot be stor
       200,
     );
     assert.deepEqual((await f.state()).settings, {
+      ...defaultSettings,
       showCommentBubbles: true,
       commentBubbleColor: color,
     });
@@ -82,6 +84,7 @@ test("owners and editors edit settings; commenters read but cannot change them",
   const state = await f.call("state", "GET", undefined, commenter);
   assert.equal(state.status, 200);
   assert.deepEqual((await state.json()).settings, {
+    ...defaultSettings,
     showCommentBubbles: true,
     commentBubbleColor: "teal",
   });
@@ -113,9 +116,105 @@ test("concurrent partial settings updates preserve both fields and existing revi
   assert.ok(responses.every((response) => response.status === 200));
   const after = await f.state();
   assert.deepEqual(after.settings, {
+    ...defaultSettings,
     showCommentBubbles: false,
     commentBubbleColor: "orange",
   });
   assert.deepEqual(after.flows, before.flows);
   assert.deepEqual(after.comments, before.comments);
+});
+
+test("widget settings persist independently of comments and accept all named colors", async (t) => {
+  const f = await reviewFixture(t);
+  const widget = {
+    showWidget: false,
+    widgetColor: "purple",
+    widgetSide: "left",
+    widgetOffset: 0,
+    widgetBottomOffset: 1000,
+  };
+  assert.equal((await f.call("settings", "PATCH", widget)).status, 200);
+  assert.deepEqual((await f.state()).settings, {
+    ...defaultSettings,
+    ...widget,
+  });
+  const second = await getDatabase({
+    ...f.config,
+    databaseAuthToken: "widget-restart",
+  });
+  try {
+    assert.deepEqual(await readSettings(second), {
+      ...defaultSettings,
+      ...widget,
+    });
+  } finally {
+    second.close();
+  }
+  for (const widgetColor of commentBubbleColors) {
+    assert.equal(
+      (await f.call("settings", "PATCH", { widgetColor })).status,
+      200,
+    );
+    assert.deepEqual((await f.state()).settings, {
+      ...defaultSettings,
+      ...widget,
+      widgetColor,
+    });
+  }
+  const responses = await Promise.all([
+    f.call("settings", "PATCH", { showWidget: true }),
+    f.call("settings", "PATCH", { widgetOffset: 42, widgetBottomOffset: 64 }),
+    f.call("settings", "PATCH", { commentBubbleColor: "teal" }),
+  ]);
+  assert.ok(responses.every((response) => response.status === 200));
+  assert.deepEqual((await f.state()).settings, {
+    ...defaultSettings,
+    ...widget,
+    widgetColor: "pink",
+    showWidget: true,
+    widgetOffset: 42,
+    widgetBottomOffset: 64,
+    commentBubbleColor: "teal",
+  });
+});
+
+test("invalid widget configuration and commenter writes leave saved settings unchanged", async (t) => {
+  const f = await reviewFixture(t);
+  const before = (await f.state()).settings;
+  for (const input of [
+    { showWidget: "false" },
+    { widgetColor: "#123456" },
+    { widgetSide: "top" },
+    { widgetOffset: -1 },
+    { widgetOffset: 1001 },
+    { widgetOffset: 1.5 },
+    { widgetOffset: "24" },
+    { widgetBottomOffset: null },
+    { widgetBottomOffset: -1 },
+    { widgetBottomOffset: 1001 },
+    { widgetBottomOffset: 2.5 },
+    { showWidget: false, widgetSide: "left", widgetBottomOffset: -5 },
+  ]) {
+    assert.equal((await f.call("settings", "PATCH", input)).status, 400);
+    assert.deepEqual((await f.state()).settings, before);
+  }
+  const commenter = await f.login("commenter");
+  assert.equal(
+    (await f.call("settings", "PATCH", { showWidget: false }, commenter))
+      .status,
+    403,
+  );
+  assert.deepEqual((await f.state()).settings, before);
+  const editor = await f.login("editor");
+  assert.equal(
+    (
+      await f.call(
+        "settings",
+        "PATCH",
+        { showWidget: false, widgetSide: "left" },
+        editor,
+      )
+    ).status,
+    200,
+  );
 });

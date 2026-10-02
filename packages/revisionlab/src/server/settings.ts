@@ -6,6 +6,7 @@ import {
   type RevisionLabSettings,
 } from "../comment-settings.js";
 import { requireRole } from "./authentication.js";
+import { maxWidgetOffset } from "../widget-settings.js";
 import { write } from "./database.js";
 import { HttpError, json, readJson } from "./security.js";
 import type { RevisionLabActor } from "./types.js";
@@ -14,6 +15,11 @@ const settingsSchema = z
   .object({
     showCommentBubbles: z.boolean(),
     commentBubbleColor: z.enum(commentBubbleColors),
+    showWidget: z.boolean(),
+    widgetColor: z.enum(commentBubbleColors),
+    widgetSide: z.enum(["left", "right"]),
+    widgetOffset: z.number().int().min(0).max(maxWidgetOffset),
+    widgetBottomOffset: z.number().int().min(0).max(maxWidgetOffset),
   })
   .strict();
 const settingsPatch = settingsSchema
@@ -34,6 +40,11 @@ export async function readSettings(
     ? settingsSchema.parse({
         showCommentBubbles: Number(row.show_comment_bubbles) === 1,
         commentBubbleColor: row.comment_bubble_color,
+        showWidget: Number(row.show_widget) === 1,
+        widgetColor: row.widget_color,
+        widgetSide: row.widget_side,
+        widgetOffset: Number(row.widget_offset),
+        widgetBottomOffset: Number(row.widget_bottom_offset),
       })
     : { ...defaultSettings };
 }
@@ -51,10 +62,22 @@ export async function handleSettings(
   const settings = await write(client, async (transaction) => {
     const next = { ...(await readSettings(transaction)), ...patch };
     await transaction.execute({
-      sql: `INSERT INTO workspace_settings (id, show_comment_bubbles, comment_bubble_color) VALUES (1, ?, ?)
+      sql: `INSERT INTO workspace_settings (id, show_comment_bubbles, comment_bubble_color,
+        show_widget, widget_color, widget_side, widget_offset, widget_bottom_offset)
+        VALUES (1, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET show_comment_bubbles = excluded.show_comment_bubbles,
-        comment_bubble_color = excluded.comment_bubble_color`,
-      args: [next.showCommentBubbles ? 1 : 0, next.commentBubbleColor],
+        comment_bubble_color = excluded.comment_bubble_color, show_widget = excluded.show_widget,
+        widget_color = excluded.widget_color, widget_side = excluded.widget_side,
+        widget_offset = excluded.widget_offset, widget_bottom_offset = excluded.widget_bottom_offset`,
+      args: [
+        next.showCommentBubbles ? 1 : 0,
+        next.commentBubbleColor,
+        next.showWidget ? 1 : 0,
+        next.widgetColor,
+        next.widgetSide,
+        next.widgetOffset,
+        next.widgetBottomOffset,
+      ],
     });
     return next;
   });

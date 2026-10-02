@@ -1,3 +1,7 @@
+import {
+  widgetPlacement,
+  type WidgetSettings,
+} from "../../../widget-settings.js";
 import { Box, Link, Portal, Stack, Switch, Text } from "@chakra-ui/react";
 import { useEffect, useRef } from "react";
 import type { RevisionLabElementAnchor } from "../../../server/types.js";
@@ -5,6 +9,7 @@ import { useElementPicker } from "../hooks/useElementPicker.js";
 import { useElementBounds } from "../hooks/useElementBounds.js";
 
 export function ElementPicker({
+  settings,
   showControls,
   onSelect,
   onCancel,
@@ -12,6 +17,7 @@ export function ElementPicker({
   showBalloons,
   onShowBalloonsChange,
 }: {
+  settings: WidgetSettings;
   showControls: boolean;
   onSelect: (anchor: RevisionLabElementAnchor) => void;
   onCancel: () => void;
@@ -62,8 +68,7 @@ export function ElementPicker({
         <Stack
           data-revisionlab-ui
           position="fixed"
-          bottom="24"
-          right={{ base: "3", md: "6" }}
+          {...widgetPlacement(settings, true)}
           zIndex="popover"
           maxW="calc(100vw - 1.5rem)"
           px="4"

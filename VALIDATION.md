@@ -1,5 +1,11 @@
 # Release validation
 
+## Widget settings and accessibility badges - 2 October 2026
+
+Workspace Settings now persists widget visibility, ten named colors, left/right side, and whole-pixel horizontal/bottom offsets (0–1000). Existing installations migrate to visible/blue/right/24px defaults without losing comment settings. Idle hidden launchers stop live-page scans; active sessions retain their controls. Associated panels follow placement, and rendered offsets are constrained to keep controls onscreen. The minimal logo shows the supplied issue artwork for current findings or a spinner while checking.
+
+Validation: lint, production build, and all 164 package tests pass, including saved/reopened settings, named colors, invalid input, concurrent partial updates, permissions, and legacy settings migration. Chromium checks verified UI save/focus retention, purple/left placement at 32px horizontal and 48px bottom, inward expansion, aligned recording setup, issue/spinner badges, badge removal on audit stop, hide/reload/direct-settings recovery, invalid numeric input, and extreme offsets at 320px without overflow. Hiding during commenting retained Stop commenting and hid the launcher afterward. Original local settings were restored after testing. Browser error output was empty. Evidence is in `.context/widget-settings-tests.log` and `.context/widget-settings-*.png`, `.context/widget-issues-badge.png`, and `.context/widget-scanning-badge.png`.
+
 ## Widget motion and 36px controls - 2 October 2026
 
 The logo and toolbar controls now measure 36 × 36px. Tools expand horizontally with a 200ms fade and retract with a 150ms fade; reduced motion skips both animations. Closing tools become inert immediately while their exit finishes. PRODUCT.md, PLAN.md, and both READMEs reflect the refinement.

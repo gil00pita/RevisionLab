@@ -6,22 +6,30 @@ import {
   type CommentBubbleColor,
 } from "../../../comment-settings.js";
 
-export function BubbleColorPicker({
+export function SettingsColorPicker({
   value,
+  label = "Bubble color",
+  tokens = commentBubbleTokens,
   disabled,
   readOnly,
   onChange,
 }: {
   value: CommentBubbleColor;
+  label?: string;
+  tokens?: (color: CommentBubbleColor) => {
+    solid: string;
+    contrast: string;
+    outline: string;
+  };
   disabled: boolean;
   readOnly: boolean;
   onChange: (color: CommentBubbleColor) => void;
 }) {
   return (
     <Field.Root disabled={disabled}>
-      <Field.Label>Bubble color</Field.Label>
+      <Field.Label>{label}</Field.Label>
       <RadioGroup.Root
-        aria-label="Bubble color"
+        aria-label={label}
         value={value}
         disabled={disabled}
         readOnly={readOnly}
@@ -49,10 +57,10 @@ export function BubbleColorPicker({
                 h="10"
                 flexShrink="0"
                 borderRadius="full"
-                bg={commentBubbleTokens(color).solid}
-                color={commentBubbleTokens(color).contrast}
+                bg={tokens(color).solid}
+                color={tokens(color).contrast}
                 borderWidth="2px"
-                borderColor={commentBubbleTokens(color).outline}
+                borderColor={tokens(color).outline}
                 _checked={{
                   outlineWidth: "2px",
                   outlineStyle: "solid",
