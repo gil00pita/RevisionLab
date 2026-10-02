@@ -35,8 +35,8 @@ export function WorkspaceSidebar({
   const flows = useRef<HTMLButtonElement>(null);
   async function navigate(next: WorkspaceView) {
     if (!(await onViewChange(next))) return;
+    setShowFlows(next === "flows");
     if (next === "flows") {
-      setShowFlows(true);
       requestAnimationFrame(() => back.current?.focus());
     }
   }
@@ -57,7 +57,7 @@ export function WorkspaceSidebar({
       bg="blue.950"
       color="white"
     >
-      <WorkspaceSidebarHeader projectName={data.project.name} />
+      <WorkspaceSidebarHeader />
       <Box
         position="relative"
         flex={{ base: "none", lg: "1" }}
@@ -133,7 +133,12 @@ export function WorkspaceSidebar({
           />
         </Flex>
       </Box>
-      <WorkspaceSidebarFooter actor={data.actor} />
+      <WorkspaceSidebarFooter
+        actor={data.actor}
+        settingsActive={view === "settings"}
+        onSettings={() => void navigate("settings")}
+        disabled={disabled}
+      />
     </Flex>
   );
 }

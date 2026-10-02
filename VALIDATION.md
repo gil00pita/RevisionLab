@@ -1,5 +1,11 @@
 # Release validation
 
+## Sidebar navigation hierarchy - 2 October 2026
+
+Back to prototype is the first, primary main-menu link; Settings now occupies the persistent footer and remains available on mobile and inside Your flows. The repeated project title and description below the logo are removed. Settings retains its active state and guarded view changes, and the prototype link preserves native navigation for pending-save unload warnings. PRODUCT.md, PLAN.md, and both READMEs reflect the hierarchy.
+
+Lint, production build, and whitespace checks pass. Chromium verified the first link and its destination, a single active Settings action, removal of the repeated description, and Settings returning from Your flows to the main menu. Desktop and 320px screenshots show accessible controls without horizontal overflow; browser error output was empty. Evidence: `.context/sidebar-hierarchy-desktop.png`, `.context/sidebar-hierarchy-mobile.png`, and `.context/sidebar-hierarchy-build.log`. The existing pending-save warning was preserved structurally, not separately exercised with a dirty board for this layout change.
+
 ## Settings tabs and single page title - 2 October 2026
 
 Removed the duplicate in-content Settings heading, retaining the workspace page title. System contains widget configuration, Comments contains bubble preferences, and Audit explains existing checks and where to stop/rerun them; no persisted audit options were added. Tab panels remain mounted to preserve unsaved widget drafts, and read-only/save/error behavior is retained. PRODUCT.md, PLAN.md, and both READMEs describe the new organization.

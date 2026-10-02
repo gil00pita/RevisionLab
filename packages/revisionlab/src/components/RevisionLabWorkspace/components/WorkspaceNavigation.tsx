@@ -1,16 +1,21 @@
-import { Badge, Button, Icon, Stack } from "@chakra-ui/react";
+import { Badge, Button, Icon, Link, Stack } from "@chakra-ui/react";
 import {
   GitBranch,
   MessageSquare,
   Users,
   ContactRound,
-  Settings,
+  ArrowLeft,
 } from "lucide-react";
 import type { RefObject } from "react";
+import { WorkspaceNavigationButton as NavigationButton } from "./WorkspaceNavigationButton.js";
 import type { RevisionLabState } from "../../../server/types.js";
 
 export type WorkspaceView =
-  "flows" | "comments" | "people" | "personas" | "settings";
+  | "flows"
+  | "comments"
+  | "people"
+  | "personas"
+  | "settings";
 
 export function WorkspaceNavigation({
   data,
@@ -33,6 +38,22 @@ export function WorkspaceNavigation({
       pb="4"
       flexWrap="wrap"
     >
+      <Button
+        asChild
+        colorPalette="blue"
+        variant="solid"
+        justifyContent="flex-start"
+        flexBasis={{ base: "100%", lg: "auto" }}
+        mb="2"
+      >
+        {/* Native navigation preserves the board's pending-save unload warning. */}
+        <Link href="/" _hover={{ textDecoration: "none" }}>
+          <Icon>
+            <ArrowLeft />
+          </Icon>
+          Back to prototype
+        </Link>
+      </Button>
       <NavigationButton
         buttonRef={flowsTriggerRef}
         active={view === "flows"}
@@ -71,15 +92,6 @@ export function WorkspaceNavigation({
         </Icon>
         Personas
       </NavigationButton>
-      <NavigationButton
-        active={view === "settings"}
-        onClick={() => onViewChange("settings")}
-      >
-        <Icon>
-          <Settings />
-        </Icon>
-        Settings
-      </NavigationButton>
       {data.actor.role === "owner" && (
         <NavigationButton
           active={view === "people"}
@@ -92,33 +104,5 @@ export function WorkspaceNavigation({
         </NavigationButton>
       )}
     </Stack>
-  );
-}
-
-function NavigationButton({
-  active,
-  onClick,
-  children,
-  buttonRef,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  buttonRef?: RefObject<HTMLButtonElement | null>;
-}) {
-  return (
-    <Button
-      ref={buttonRef}
-      variant="ghost"
-      justifyContent="flex-start"
-      bg={active ? "whiteAlpha.200" : "transparent"}
-      color="white"
-      _hover={{ bg: "whiteAlpha.300" }}
-      aria-current={active ? "page" : undefined}
-      fontWeight={active ? "semibold" : "normal"}
-      onClick={onClick}
-    >
-      {children}
-    </Button>
   );
 }
