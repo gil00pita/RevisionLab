@@ -8,11 +8,11 @@ The repository contains `.github/workflows/publish.yml`. After this change is me
 
 Initial publication is complete. The steps below are retained as setup reference; do not repeat publication of an existing version. The GitHub `npm` environment was checked on 29 September 2026 and has no approval or branch restrictions. npm trusted-publisher settings and live OIDC publication have not been independently verified. For routine releases, use the automatic-main workflow below.
 
-1. Sign in to npm as `gil00pita`, with a verified email and two-factor authentication. Use Node.js 24 for the release tooling; GitHub runs Node 24 and npm 11.19.1. Do not paste tokens or recovery codes into Git or chat.
+1. Sign in to npm as `gil00pita`, with a verified email and two-factor authentication. Use Node.js 24 for the release tooling; GitHub runs Node 24, Yarn Classic 1.22.22 for dependency installation, and npm 11.19.1 for packing and trusted publication. Do not paste tokens or recovery codes into Git or chat.
 2. From the repository root, validate and prepare the first package:
 
    ```bash
-   npm ci
+   yarn install --frozen-lockfile --non-interactive
    npm run release:check
    npm run test:release
    npm run lint
@@ -51,7 +51,7 @@ After a successful automated release, npm recommends restricting traditional tok
 
 1. Merge the intended code into `main`. No manual version bump or GitHub Release is required; direct pushes also trigger publication.
 2. The workflow reads npm's full package metadata and selects one patch above the highest stable version (currently `0.1.1` → `0.1.2`). It ignores prereleases and does not rely on the mutable `latest` tag for version ordering. Registry errors fail the run.
-3. Before installation/build, it updates `packages/revisionlab/package.json` and the matching `package-lock.json` entry in the CI checkout, and records the source SHA as `gitHead`. The private example version stays unchanged. These changes are not committed back to Git; checked-in versions remain local-development baselines.
+3. Before installation/build, it updates `packages/revisionlab/package.json` in the CI checkout, and records the source SHA as `gitHead`. The private example version and `yarn.lock` stay unchanged: Yarn Classic does not lock the local workspace version, and the example links it through `revisionlab: "*"`. Dependencies install with `yarn install --frozen-lockfile --non-interactive`; no npm lockfile is required. These changes are not committed back to Git; checked-in versions remain local-development baselines.
 4. Metadata checks, release tests, lint, production build, package tests, and packed CLI smoke checks must all pass. The publication job downloads and publishes that exact artifact to npm under `latest` with trusted publishing.
 5. Check the workflow's **Publish the verified tarball to npm** job and step summary, then run `npm view revisionlab version dist-tags --json`. A green validation job alone does not mean publication succeeded.
 
@@ -61,9 +61,9 @@ For failed checks, fix the code and merge again. For transient registry/authenti
 
 ## Explicit versioned releases
 
-For an intentional stable version or prerelease, prepare a commit with the desired workspace version and matching lockfile, then publish a GitHub Release at that commit with tag `v<version>`. Do not merge a prerelease into `main` expecting `next`: main pushes always receive an automatic stable patch. Use a separate release branch for explicit prereleases.
+For an intentional stable version or prerelease, prepare a commit with the desired workspace version and an up-to-date `yarn.lock` for external dependencies, then publish a GitHub Release at that commit with tag `v<version>`. Do not merge a prerelease into `main` expecting `next`: main pushes always receive an automatic stable patch. Use a separate release branch for explicit prereleases.
 
-Stable GitHub Releases publish to `latest`; versions such as `0.2.0-beta.1` require the **pre-release** checkbox and publish to `next`. Tag/version/lockfile mismatches fail. The explicit version must not already exist on npm. Published versions cannot be overwritten. The existing `0.1.0` and `0.1.1` must not be republished.
+Stable GitHub Releases publish to `latest`; versions such as `0.2.0-beta.1` require the **pre-release** checkbox and publish to `next`. Tag/version mismatches and invalid dependency installations fail. The explicit version must not already exist on npm. Published versions cannot be overwritten. The existing `0.1.0` and `0.1.1` must not be republished.
 
 ## Why GitHub showed no publication
 
@@ -83,8 +83,8 @@ The installer adds the exact version executing the command, including prerelease
 
 ## What the workflow verifies
 
-- Automatic version selection, source-event restrictions, duplicate-commit skips, registry failure handling, and consistent workspace/lockfile/packed versions.
-- Release metadata, matching lockfile, allowed registry/repository, and stable/prerelease channel; explicit GitHub Releases also require a matching `v<version>` tag.
+- Automatic version selection, source-event restrictions, duplicate-commit skips, registry failure handling, and consistent workspace/packed versions with an unchanged Yarn dependency lockfile.
+- Release metadata, local workspace linkage, allowed registry/repository, and stable/prerelease channel; explicit GitHub Releases also require a matching `v<version>` tag.
 - Release-tool tests, ESLint, the package plus example production build, and all package tests.
 - An actual packed tarball: package entrypoints, types, logo, license, executable CLI, and exclusion of private runtime/configuration files.
 - Clean-build CLI permissions: the package build marks `dist/cli/index.js` executable before CI packs with `--ignore-scripts`. The release tests exercise a fresh output directory so a previously installed local CLI cannot hide missing permissions.

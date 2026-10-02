@@ -1,5 +1,11 @@
 # Release validation
 
+## Yarn CI build repair — 2 October 2026
+
+PR #5 failed during release preparation because the Yarn migration removed `package-lock.json` while release scripts still read it and CI still used `npm ci`. Release metadata now checks local workspace linkage; automatic preparation updates only the publishable manifest, preserving the Yarn dependency lock. CI pins Yarn Classic 1.22.22 and installs with `--frozen-lockfile --non-interactive`; npm still packs and publishes the verified archive. Release regression fixtures have no npm lockfile and verify prepared/packed versions, source identity, unchanged Yarn locks, duplicate-commit skips, and validation-only events.
+
+A fresh isolated checkout passed frozen Yarn installation, release preparation/metadata validation, all 19 release tests, lint, production build, all 175 package tests, packing with lifecycle scripts disabled, and the exact packed CLI smoke check (739 entries). Verified that `yarn.lock` remained byte-identical, the workspace dependency was symlinked locally, and no npm lockfile was created; workflow YAML and whitespace checks also passed. Local checks used macOS/Node 26.3.1; GitHub uses Ubuntu/Node 24 and has not run this commit yet. No registry publication was performed. PRODUCT.md and release documentation now describe Yarn installation and manifest-only release versioning.
+
 ## Persistent workspace navigation — 2 October 2026
 
 Menu section changes now use native history replacement integrated with Next.js search parameters. Before the change, a browser check observed a new `?_rsc=` route request when switching sections. After the change, all five sections updated their URL, active item, and page header with zero route requests, zero sidebar removals, the same sidebar/navigation DOM nodes, and an unchanged history length. Keyboard activation, flow-menu Back focus, Settings reload/deep-link behavior, and a 390px layout with retained menu focus and no horizontal overflow passed. Production build, package compilation, lint, and whitespace checks pass. Board-autosave and permission guards remain in place; failure scenarios and the full package test suite were not rerun for this navigation-only change.

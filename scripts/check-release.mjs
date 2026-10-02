@@ -10,7 +10,6 @@ const versionPattern =
 /** Validate the release contract before giving a separate job publish permission. */
 export function checkRelease({
   manifest,
-  lock,
   root,
   tag,
   prerelease,
@@ -44,9 +43,9 @@ export function checkRelease({
     "Numeric prerelease identifiers cannot have leading zeroes.",
   );
   assert.equal(
-    lock.packages?.["packages/revisionlab"]?.version,
-    manifest.version,
-    "Package and package-lock.json versions must match.",
+    root.dependencies?.revisionlab,
+    "*",
+    "The example must link the local revisionlab workspace across release versions.",
   );
   assert.equal(
     manifest.repository?.url,
@@ -86,7 +85,6 @@ function main() {
     JSON.parse(readFileSync(new URL(file, import.meta.url), "utf8"));
   const result = checkRelease({
     manifest: read("../packages/revisionlab/package.json"),
-    lock: read("../package-lock.json"),
     root: read("../package.json"),
     tag: process.env.RELEASE_TAG,
     prerelease: process.env.RELEASE_PRERELEASE,

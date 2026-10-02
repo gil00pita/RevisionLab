@@ -36,6 +36,8 @@ jobs:
           package-manager-cache: false
       - name: Pin npm with trusted-publishing support
         run: npm install --global npm@11.19.1 --ignore-scripts
+      - name: Pin Yarn Classic
+        run: npm install --global yarn@1.22.22 --ignore-scripts
       - name: Prepare release version
         id: prepare
         run: node scripts/prepare-release.mjs
@@ -48,7 +50,7 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
           RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
-      - run: npm ci
+      - run: yarn install --frozen-lockfile --non-interactive
       - run: npm run test:release
       - run: npm run lint
       - run: npm run build

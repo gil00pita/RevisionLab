@@ -59,10 +59,8 @@ async function main() {
   const manifestPath = resolve(root, "packages/revisionlab/package.json");
   const read = (file) => JSON.parse(readFileSync(resolve(root, file), "utf8"));
   const manifest = read("packages/revisionlab/package.json");
-  const lock = read("package-lock.json");
   checkRelease({
     manifest,
-    lock,
     root: read("package.json"),
     tag: env.RELEASE_TAG,
     prerelease: env.RELEASE_PRERELEASE,
@@ -81,9 +79,8 @@ async function main() {
       // Preserve the source identity in the tarball and npm registry for retries.
       manifest.version = release.version;
       manifest.gitHead = env.GITHUB_SHA;
-      lock.packages["packages/revisionlab"].version = release.version;
+      // Yarn Classic locks external dependencies, not the workspace version.
       writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
-      writeFileSync(resolve(root, "package-lock.json"), `${JSON.stringify(lock, null, 2)}\n`);
       message = `Prepared revisionlab@${release.version} for ${env.GITHUB_SHA}; publication follows successful validation.`;
     } else {
       message = `Commit ${env.GITHUB_SHA} is already published as revisionlab@${release.version}; skipping publication.`;

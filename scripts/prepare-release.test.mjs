@@ -77,7 +77,7 @@ test("registry errors never fall back to a guessed version", async () => {
   }), registry);
 });
 
-test("automatic preparation updates workspace and lockfile before packing, leaving the private root version alone", async (t) => {
+test("Yarn-only releases update the packed workspace without changing the lockfile or private root", async (t) => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "revisionlab-auto-release-"));
   t.after(() => rm(temporary, { recursive: true, force: true }));
   await mkdir(path.join(temporary, "scripts"));
@@ -85,7 +85,7 @@ test("automatic preparation updates workspace and lockfile before packing, leavi
   for (const script of ["prepare-release.mjs", "check-release.mjs"]) {
     await cp(new URL(script, import.meta.url), path.join(temporary, "scripts", script));
   }
-  const root = { name: "release-fixture", version: "0.1.0", private: true, workspaces: ["packages/*"] };
+  const root = { name: "release-fixture", version: "0.1.0", private: true, workspaces: ["packages/*"], dependencies: { revisionlab: "*" } };
   const manifest = {
     name: "revisionlab", version: "0.1.1",
     repository: { url: "git+https://github.com/gil00pita/RevisionLab.git", directory: "packages/revisionlab" },
@@ -94,11 +94,9 @@ test("automatic preparation updates workspace and lockfile before packing, leavi
   for (const [file, data] of Object.entries({
     "package.json": root,
     "packages/revisionlab/package.json": manifest,
-    "package-lock.json": {
-      name: root.name, version: root.version, lockfileVersion: 3, requires: true,
-      packages: { "": root, "packages/revisionlab": manifest },
-    },
   })) await writeFile(path.join(temporary, file), JSON.stringify(data));
+  const yarnLock = "# yarn lockfile v1\n";
+  await writeFile(path.join(temporary, "yarn.lock"), yarnLock);
   await writeFile(path.join(temporary, "registry.mjs"),
     `globalThis.fetch = async () => ({ ok: true, json: async () => (${JSON.stringify(registry)}) });\n`);
   const output = path.join(temporary, "output");
@@ -109,7 +107,8 @@ test("automatic preparation updates workspace and lockfile before packing, leavi
   const read = async (file) => JSON.parse(await readFile(path.join(temporary, file), "utf8"));
   assert.equal((await read("packages/revisionlab/package.json")).version, "0.1.11");
   assert.equal((await read("packages/revisionlab/package.json")).gitHead, commit);
-  assert.equal((await read("package-lock.json")).packages["packages/revisionlab"].version, "0.1.11");
+  assert.equal(await readFile(path.join(temporary, "yarn.lock"), "utf8"), yarnLock);
+  await assert.rejects(readFile(path.join(temporary, "package-lock.json")), { code: "ENOENT" });
   assert.equal((await read("package.json")).version, "0.1.0");
   assert.equal(await readFile(output, "utf8"), "publish=true\n");
   execFileSync(process.execPath, ["scripts/check-release.mjs"], { cwd: temporary, env });
@@ -119,7 +118,6 @@ test("automatic preparation updates workspace and lockfile before packing, leavi
   assert.equal(packed.gitHead, commit);
 
   const beforeManifest = await readFile(path.join(temporary, "packages/revisionlab/package.json"), "utf8");
-  const beforeLock = await readFile(path.join(temporary, "package-lock.json"), "utf8");
   const publishedRegistry = { ...registry, versions: { ...registry.versions, "0.1.11": packed } };
   await writeFile(path.join(temporary, "registry.mjs"),
     `globalThis.fetch = async () => ({ ok: true, json: async () => (${JSON.stringify(publishedRegistry)}) });\n`);
@@ -138,5 +136,6 @@ test("automatic preparation updates workspace and lockfile before packing, leavi
     assert.equal(await readFile(output, "utf8"), "publish=false\n");
   }
   assert.equal(await readFile(path.join(temporary, "packages/revisionlab/package.json"), "utf8"), beforeManifest);
-  assert.equal(await readFile(path.join(temporary, "package-lock.json"), "utf8"), beforeLock);
+  assert.equal(await readFile(path.join(temporary, "yarn.lock"), "utf8"), yarnLock);
+  await assert.rejects(readFile(path.join(temporary, "package-lock.json")), { code: "ENOENT" });
 });
