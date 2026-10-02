@@ -29,6 +29,7 @@ import { EmptyWorkspace } from "./components/EmptyWorkspace.js";
 import { WorkspaceSettings } from "./components/WorkspaceSettings.js";
 import { defaultSettings } from "../../comment-settings.js";
 import { useFlowDeletion } from "./hooks/useFlowDeletion.js";
+import { workspaceViewTitles } from "./constants.js";
 
 export interface RevisionLabWorkspaceProps {
   apiPath?: string;
@@ -59,14 +60,15 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const searchParams = useSearchParams();
   const requestedView = searchParams.get("view");
   const commentRoute = searchParams.get("route");
+  const { data: loadedData, error, loading, refresh } = useRevisionLab(apiPath);
   const view: WorkspaceView =
     requestedView === "comments" ||
     requestedView === "personas" ||
     requestedView === "settings" ||
-    requestedView === "people"
+    (requestedView === "people" &&
+      (!loadedData || loadedData.actor.role === "owner"))
       ? requestedView
       : "flows";
-  const { data: loadedData, error, loading, refresh } = useRevisionLab(apiPath);
   const [flowId, setFlowId] = useState<string | null>(() =>
     searchParams.get("flow"),
   );
@@ -170,7 +172,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
       <Flex minH="100dvh" align="center" justify="center" bg="gray.50" p="6">
         <Stack gap="5" maxW="md" w="full">
           <Heading as="h1" size="2xl">
-            RevisionLab
+            {workspaceViewTitles[view]}
           </Heading>
           {loading ? (
             <Flex gap="3" align="center">
@@ -217,6 +219,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
       <Flex as="main" direction="column" flex="1" minW="0">
         <WorkspaceHeader
           data={data}
+          view={view}
           flow={view === "flows" ? flow : undefined}
           onRefresh={refresh}
           onSignOut={signOut}
