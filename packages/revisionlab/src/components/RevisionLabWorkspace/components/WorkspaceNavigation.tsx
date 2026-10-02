@@ -2,7 +2,6 @@ import { Badge, Button, Icon, Link, Stack } from "@chakra-ui/react";
 import {
   GitBranch,
   MessageSquare,
-  Users,
   ContactRound,
   ArrowLeft,
 } from "lucide-react";
@@ -10,12 +9,7 @@ import type { RefObject } from "react";
 import { WorkspaceNavigationButton as NavigationButton } from "./WorkspaceNavigationButton.js";
 import type { RevisionLabState } from "../../../server/types.js";
 
-export type WorkspaceView =
-  | "flows"
-  | "comments"
-  | "people"
-  | "personas"
-  | "settings";
+export type WorkspaceView = "flows" | "comments" | "personas" | "settings";
 
 export function WorkspaceNavigation({
   data,
@@ -92,17 +86,6 @@ export function WorkspaceNavigation({
         </Icon>
         Personas
       </NavigationButton>
-      {data.actor.role === "owner" && (
-        <NavigationButton
-          active={view === "people"}
-          onClick={() => onViewChange("people")}
-        >
-          <Icon>
-            <Users />
-          </Icon>
-          Review access
-        </NavigationButton>
-      )}
     </Stack>
   );
 }

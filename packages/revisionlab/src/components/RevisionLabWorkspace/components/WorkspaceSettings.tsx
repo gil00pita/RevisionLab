@@ -5,18 +5,27 @@ import type { RevisionLabSettings } from "../../../comment-settings.js";
 import { WidgetSettingsForm } from "./WidgetSettingsForm.js";
 import { CommentSettings } from "./CommentSettings.js";
 import { AuditSettings } from "./AuditSettings.js";
+import { InvitationManager } from "../../InvitationManager/index.js";
+import type { RevisionLabInvitation } from "../../../server/types.js";
 
 export function WorkspaceSettings({
   apiPath,
   settings,
   canEdit,
+  invitations,
+  initialTab = "system",
   onRefresh,
 }: {
   apiPath: string;
   settings: RevisionLabSettings;
   canEdit: boolean;
+  invitations?: RevisionLabInvitation[];
+  initialTab?: "system" | "users";
   onRefresh: () => Promise<void>;
 }) {
+  const [selectedTab, setSelectedTab] = useState<string>(initialTab);
+  const activeTab =
+    selectedTab === "users" && !invitations ? "system" : selectedTab;
   const saving = useRef(false);
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<Partial<RevisionLabSettings> | null>(
@@ -69,8 +78,13 @@ export function WorkspaceSettings({
       aria-busy={busy}
     >
       {!canEdit && <Badge alignSelf="start">Read only</Badge>}
-      <Tabs.Root defaultValue="system" colorPalette="blue" variant="line">
-        <Tabs.List aria-label="Settings sections" mb="6">
+      <Tabs.Root
+        value={activeTab}
+        onValueChange={(event) => setSelectedTab(event.value)}
+        colorPalette="blue"
+        variant="line"
+      >
+        <Tabs.List aria-label="Settings sections" mb="6" flexWrap="wrap">
           <Tabs.Trigger value="system" px={{ base: "3", md: "4" }}>
             Widget
           </Tabs.Trigger>
@@ -80,6 +94,11 @@ export function WorkspaceSettings({
           <Tabs.Trigger value="audit" px={{ base: "3", md: "4" }}>
             Audit
           </Tabs.Trigger>
+          {invitations && (
+            <Tabs.Trigger value="users" px={{ base: "3", md: "4" }}>
+              Users &amp; Roles
+            </Tabs.Trigger>
+          )}
         </Tabs.List>
         <Tabs.Content value="system" p="0">
           <WidgetSettingsForm
@@ -100,6 +119,15 @@ export function WorkspaceSettings({
         <Tabs.Content value="audit" p="0">
           <AuditSettings />
         </Tabs.Content>
+        {invitations && (
+          <Tabs.Content value="users" p="0">
+            <InvitationManager
+              apiPath={apiPath}
+              invitations={invitations}
+              onRefresh={onRefresh}
+            />
+          </Tabs.Content>
+        )}
       </Tabs.Root>
       {error && (
         <Text role="alert" color="red.700">

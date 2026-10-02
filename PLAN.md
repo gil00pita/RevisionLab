@@ -1339,9 +1339,9 @@ docs/review-canvas.md
 
 ## Current increment - Compact widget and automatic evidence
 
-Sidebar hierarchy refinement: make Back to prototype the first primary navigation link, move Settings into the persistent bottom footer (also available on mobile), and remove the redundant project title/description below the brand. Keep Settings view guards and active state, Flows/Back transitions, and role-based access intact.
+Sidebar hierarchy refinement: make Back to prototype the first primary navigation link, move Settings into the persistent bottom footer (also available on mobile), and remove the redundant project title/description below the brand. Keep Settings view guards and active state, Flows/Back transitions, and owner-only access management intact.
 
-Settings layout refinement: keep the top page title only and group content into Widget (widget configuration), Comments (bubble preferences), and Audit (existing-check guidance). Preserve permissions, saving/error feedback, and unsaved drafts across accessible tab changes; verify keyboard navigation and mobile layout.
+Settings layout refinement: keep the top page title only and group content into Widget (widget configuration), Comments (bubble preferences), Audit (existing-check guidance), and owner-only Users & Roles (existing invitations and reviewer permissions). Remove the standalone Review access sidebar entry, retain legacy people links, and preserve invitation drafts across tab changes. Preserve permissions, saving/error feedback, and unsaved drafts across accessible tab changes; verify keyboard navigation and mobile layout.
 
 Widget configuration refinement: extend stored workspace Settings with visibility, named color, left/right side, and horizontal/bottom pixel offsets; preserve active stop/save recovery and clamp placement within the viewport. Add current-issues and scanning badges to the minimal logo. Validate migration, persistence, permissions, invalid/partial updates, panel positioning, badges, and narrow-screen behavior. See PRODUCT.md for confirmed intent and implementation decisions.
 

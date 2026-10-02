@@ -1,5 +1,11 @@
 # Release validation
 
+## Users & Roles Settings tab - 2 October 2026
+
+The owner-only invitation and reviewer-permission interface now lives in Settings → Users & Roles; the standalone Review access sidebar item is removed. Legacy `?view=people` links show Settings and select Users & Roles for owners, with Widget as the fallback for other roles. Tabs wrap on narrow screens and preserve mounted invitation drafts. PRODUCT.md, PLAN.md, and both READMEs describe the move.
+
+Lint, production build, formatting, and whitespace checks pass. Chromium verified the tab and invitation controls, removal of the sidebar entry, draft email retention across tabs, ArrowLeft focus/selection, legacy-link selection and active Settings footer, and no horizontal overflow at 320px. Browser-only state-response overrides verified editors/commenters cannot see the tab or invitation form and fall back to Widget; overrides were removed and owner state restored. No invitations or roles were changed, and browser error output was empty. Evidence: `.context/users-roles-desktop.png`, `.context/users-roles-mobile.png`, and `.context/users-roles-tab-build.log`. Backend invitation behavior and authorization were unchanged and were not retested in this layout increment.
+
 ## Sidebar navigation hierarchy - 2 October 2026
 
 Back to prototype is the first, primary main-menu link; Settings now occupies the persistent footer and remains available on mobile and inside Your flows. The repeated project title and description below the logo are removed. Settings retains its active state and guarded view changes, and the prototype link preserves native navigation for pending-save unload warnings. PRODUCT.md, PLAN.md, and both READMEs reflect the hierarchy.

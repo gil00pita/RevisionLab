@@ -3,7 +3,6 @@
 import { Suspense, useCallback, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  Box,
   Button,
   Flex,
   Heading,
@@ -18,7 +17,6 @@ import { apiRequest, ApiError } from "../../client/api.js";
 import { useRevisionLab } from "../../client/useRevisionLab.js";
 import { WorkspaceHeader } from "./components/WorkspaceHeader.js";
 import { FlowHeaderActions } from "./components/FlowHeaderActions.js";
-import { InvitationManager } from "../InvitationManager/index.js";
 import { RevisionLabProvider } from "../RevisionLabProvider/index.js";
 import type { WorkspaceView } from "./components/WorkspaceNavigation.js";
 import { WorkspaceSidebar } from "./components/WorkspaceSidebar.js";
@@ -58,15 +56,16 @@ export function RevisionLabWorkspace({
 function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const requestedView = searchParams.get("view");
+  const legacyPeopleView = searchParams.get("view") === "people";
+  const requestedView = legacyPeopleView
+    ? "settings"
+    : searchParams.get("view");
   const commentRoute = searchParams.get("route");
   const { data: loadedData, error, loading, refresh } = useRevisionLab(apiPath);
   const view: WorkspaceView =
     requestedView === "comments" ||
     requestedView === "personas" ||
-    requestedView === "settings" ||
-    (requestedView === "people" &&
-      (!loadedData || loadedData.actor.role === "owner"))
+    requestedView === "settings"
       ? requestedView
       : "flows";
   const [flowId, setFlowId] = useState<string | null>(() =>
@@ -261,6 +260,10 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           <WorkspaceSettings
             apiPath={apiPath}
             settings={data.settings ?? defaultSettings}
+            invitations={
+              data.actor.role === "owner" ? data.invitations : undefined
+            }
+            initialTab={legacyPeopleView ? "users" : "system"}
             canEdit={data.actor.role !== "commenter"}
             onRefresh={refresh}
           />
@@ -271,14 +274,6 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             canEdit={data.actor.role !== "commenter"}
             onRefresh={refresh}
           />
-        ) : view === "people" && data.actor.role === "owner" ? (
-          <Box p={{ base: "5", md: "8" }} maxW="5xl">
-            <InvitationManager
-              apiPath={apiPath}
-              invitations={data.invitations}
-              onRefresh={refresh}
-            />
-          </Box>
         ) : view === "comments" ? (
           <AllComments
             key={commentRoute}
