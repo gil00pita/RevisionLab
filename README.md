@@ -10,6 +10,14 @@ RevisionLab is an installable Next.js App Router integration. The floating widge
 
 ## Run locally
 
+In **Screen & comments**, use **Fix with Codex** for all open screen comments and saved accessibility findings, or choose it on an individual comment or rule. The local, signed-in Codex CLI prepares a reviewable before/after proposal using the workspace AI instructions and recorded screenshot when available. **Apply locally**, **Discard fix**, and **Undo local fix** preserve unrelated work and reject stale source files. **Create draft PR** publishes the reviewed fix on a separate GitHub branch, using GitHub CLI, without switching your active branch. Changed files must match the remote default-branch baseline for PR creation. Verify project checks and a fresh accessibility scan before resolving feedback; historical reports/comments are retained.
+
+Run these actions from `localhost` with the development server as an owner/editor. Install and sign in to Codex (`codex login`); draft PRs also need GitHub CLI (`gh auth login`) and a GitHub `origin` remote. The server must find these commands on its PATH. Optional `aiProjectDirectory` selects the local Git checkout; it defaults to the server working directory. Code and screenshots may be sent through your Codex account. [Codex automation documentation](https://learn.chatgpt.com/docs/non-interactive-mode) describes CLI authentication and sandboxing. This increment is implemented locally, not published; Claude and GitHub AI providers remain future work.
+
+**Generate Jira ticket** on any screen comment or saved accessibility issue opens an editable summary and description with evidence, review link, and acceptance criteria. Use **Copy ticket**, **Copy summary**, or **Copy description**, then paste into Jira. This requires no AI/Jira connection and does not create a ticket remotely.
+
+**Workspace → Settings → AI** lets owners and editors save Markdown instructions for their AI tools. Choose **Save AI instructions** to write `.revisionlab/ai-instructions.md` in the host project; the full local path appears beside the editor. Reopening Settings reads the file, including edits made outside the app. Commenters can read it. The file is stored on the machine running the server, requires writable persistent storage, and is gitignored by default. This feature stores guidance; it does not automatically configure or invoke an AI tool. Hosts can override the location with the server-only `aiInstructionsFile` option in `revisionlab.config.ts`.
+
 Recordings now save an accessibility report with each screen. Whiteboard cards show status/counts; open a screen and choose **Accessibility** beside **Comments** to review rule severity, affected-element locations, and documentation links. Reports survive reloads and stay with their original screen/version. Existing captures show **Not checked**; failed, unstable, or unmatched pre-interaction checks show **Check unavailable**, never a pass. Automated checks are not compliance certification. This is part of the local build, not the published package.
 
 In **Flows > Your flows**, owners and editors can use the trash icon in the open flow's header or choose **Select** in the menu to reveal checkboxes and **Delete selected**. **Select all** applies to completed flows in the filtered results; **Select none** clears every selection. **Done** clears selection and hides the bulk controls. Confirmation permanently deletes each selected flow's entire version history, screenshots, boards, and attached comments; there is no Undo. Live-page comments and unrelated flows are kept. Finish or discard unfinished recordings first. This is part of the local build, not the published package.
@@ -23,9 +31,11 @@ The floating toolbar contains the supplied RevisionLab mark, accessibility statu
 Click the comment icon to select components directly on the live page. The crosshair and highlight show the target; clicking opens an anchored speech bubble with a comment field, **Post**, and **Cancel**, without activating the host control. Submission or cancellation returns to selection; **Stop commenting** or Escape ends the mode. Saved comment markers follow the workspace default (initially visible); click a marker (or activate it with the keyboard) to open its details and component highlight. Use **Show comments** in the selection controls to hide or show the markers. Closing details leaves markers visible; showing markers again never opens details automatically. Escape or Stop commenting preserves visibility. The layer temporarily hides while composing and restores markers afterward. Route changes/reload restore the workspace default with details closed. Replies and resolution remain in the workspace, reached through **All comments on this page**. The toolbar badge still counts open page threads, not replies. Keyboard selection uses Up/Down and Enter, without floating navigation buttons. No recording is required. Targets persist across reloads and comments are scoped to the pathname, not a recorded version. Opening comment mode preserves the last accessibility result; actual host changes still invalidate it. Existing deployment enablement and reviewer access still apply.
 
 ```bash
-npm install
-npm run dev
+yarn install
+yarn dev
 ```
+
+The example app links `revisionlab` from `packages/revisionlab` through workspaces. Keep its dependency as `"*"`: Yarn Classic copies `file:` dependencies, which can leave the app without the compiled package. The dev and build scripts compile the linked package before starting Next.js.
 
 Opening a saved live comment bubble highlights its attached component with an outline and subtle tint matching the workspace bubble color. The highlight follows the open preview as the page moves, without blocking clicks. Closing the preview or hiding comments removes it; Escape preserves it when comments remain visible.
 
@@ -84,7 +94,7 @@ See the [package guide](packages/revisionlab/README.md) for all options and manu
 
 ## Automatic npm releases
 
-[The publishing workflow](.github/workflows/publish.yml) now publishes after each merge or direct push to `main`, once all checks pass. It selects the next patch above npm's highest stable version, updates the workspace version and lockfile inside CI, and publishes the exact tested archive to `latest`. No manual version bump or GitHub Release is needed. This change takes effect after it is merged into `main`.
+[The publishing workflow](.github/workflows/publish.yml) now publishes after each merge or direct push to `main`, once all checks pass. It selects the next patch above npm's highest stable version, updates the workspace version inside CI while preserving `yarn.lock`, and publishes the exact tested archive to `latest`. No manual version bump or GitHub Release is needed. This change takes effect after it is merged into `main`.
 
 Release runs queue through version selection and publication. Already-published source commits are skipped on full reruns; registry errors and failed checks stop publication. Checked-in versions remain development baselines, with no bot commits. Pull requests and manual workflow runs validate only. Explicit GitHub Releases still support intentional releases (`latest` for stable versions, `next` for prereleases).
 
@@ -122,6 +132,6 @@ See [PRODUCT.md](PRODUCT.md) for the product vision and [PLAN.md](PLAN.md) for t
 
 ### AI Instructions
 
-Open **Settings → AI Instructions** to edit the included product/UX review prompt. New installations are prefilled with the complete review template. Save changes to keep them for this project; **Copy AI instructions** copies the generated text for your AI agent.
+Open **Settings → AI Instructions** to edit the included product/UX review prompt. New installations are prefilled with the complete review template. Save changes to keep them for this project; **Copy AI instructions** copies the generated text for your AI agent. The base text is saved in the configured local Markdown file (32,000 characters maximum), while design-system choices persist in the workspace database. Local Codex fixes use that file plus the enabled design-system resources; external file edits appear when reopening Settings. A missing file uses the saved fallback or bundled template, while an existing empty file stays empty.
 
 Enable **Add a design system** to select one of 18 frameworks or enter a manual system. The list includes dated GitHub star counts and documentation links. The selected system's GitHub, docs, and available design.md, AI skill, and MCP links are appended without changing the base prompt. Where available, include skill-installation or MCP-setup instructions for the receiving agent. These options do not install or connect services from RevisionLab. Turning the toggle off preserves the selection and excludes the appendix. Owners/editors can save; commenters can view and copy.

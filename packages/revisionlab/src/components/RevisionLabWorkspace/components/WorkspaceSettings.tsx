@@ -122,7 +122,12 @@ export function WorkspaceSettings({
         {busy ? "Saving settings..." : saved ? "Settings saved." : ""}
       </Text>
       <Separator />
-      <AiInstructionsSettings apiPath={apiPath} value={settings.ai} canEdit={canEdit} onRefresh={onRefresh} />
+      <AiInstructionsSettings
+        apiPath={apiPath}
+        value={settings.ai}
+        canEdit={canEdit}
+        onRefresh={onRefresh}
+      />
     </Stack>
   );
 }

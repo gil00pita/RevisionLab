@@ -1,3 +1,4 @@
+import { AI_INSTRUCTIONS_MAX_LENGTH } from "../ai-instructions.js";
 import { z } from "zod";
 import { designSystems } from "../ai-instructions/index.js";
 
@@ -21,7 +22,7 @@ const resourceUrl = z
 
 export const aiSettingsSchema = z
   .object({
-    instructions: z.string().max(60_000),
+    instructions: z.string().max(AI_INSTRUCTIONS_MAX_LENGTH),
     designSystemEnabled: z.boolean(),
     designSystemId: z
       .string()

@@ -1,5 +1,15 @@
 # RevisionLab
 
+## Local Codex fixes and Jira drafts
+
+In **Screen & comments**, **Fix with Codex** runs on all open screen comments/saved accessibility issues or on an individual comment/rule. A signed-in local Codex CLI uses the workspace AI instructions, route and screen evidence, and recorded screenshot when available to return a before/after proposal. Review it before **Apply locally**, **Discard fix**, or **Create draft PR**. **Undo local fix** restores the saved source only when it has not changed since applying. Existing feedback and captured accessibility reports are preserved; run project checks and a fresh scan before resolving them.
+
+Execution requires owner/editor access from localhost in development, a Git checkout, and `codex` on the server PATH with `codex login` completed. The optional server-only `aiProjectDirectory` chooses another local Git checkout. Read-only Codex generation cannot directly apply its proposed replacements; RevisionLab validates existing nonignored source paths, unique replacement matches, and JavaScript/TypeScript syntax. Up to eight source files may change. New files, dependencies, and full automated project validation are outside this increment. Relevant code and screenshots may be sent through the configured Codex account. See [Codex automation](https://learn.chatgpt.com/docs/non-interactive-mode).
+
+**Create draft PR** uses `gh auth login` and the GitHub `origin` remote to push only the reviewed Codex changes from a separate checkout and branch, leaving the active branch untouched. Affected source files must match the fetched default-branch baseline; otherwise the action stops with an explanation. PRs remain drafts and are not merged/deployed. Proposals and undo snapshots stay under `.revisionlab/ai-fixes/`; the browser remembers the latest proposal per screen/scope for the current tab session.
+
+**Generate Jira ticket** on each screen comment/accessibility issue creates an editable summary and description with evidence, screen/version context, a review link, and acceptance criteria. Copy the complete ticket or its fields and paste into Jira. No Jira connection or AI run is needed, and no remote ticket is created. This increment is implemented locally, not yet published. Claude/GitHub AI providers remain future work; GitHub draft PR creation is a separate supported action.
+
 Whiteboard zoom out, percentage/reset, zoom in, and Fit now float in a compact widget at the board's bottom-right corner. The controls stay stationary during pan/zoom and remain within the canvas beside any open connection panel. Paths and editing controls stay above the board.
 
 In the workspace, the selected flow's title and recording/delete actions share the top header. **Whiteboard** and **Screen & comments** are tabs; the history icon beside them opens the version menu with the current version checked. Switching tabs preserves the board camera and pending edits. Version changes, recording, and deletion retain their autosave and permission safeguards. This compact header belongs to the local build, not the previously published package.
@@ -7,6 +17,8 @@ In the workspace, the selected flow's title and recording/delete actions share t
 ## Comment on live elements
 
 **Workspace > Settings > Live comments** controls default bubble visibility and color. Owners and editors can choose from gray, red, orange, yellow, green, teal, cyan, blue, purple, and pink; changes save to the workspace database. Commenters have read-only access. Existing installations retain visible blue markers until changed. The live Show comments switch is a temporary page-level override; new pages use the saved default, with details closed until activation.
+
+**Workspace > Settings > AI Instructions** stores Markdown instructions in `.revisionlab/ai-instructions.md`, relative to the host project's working directory. Owners and editors use **Save AI instructions**; commenters have read-only access. The editor shows the full path and reads the file on reopening, including changes made in an external editor. Saving empty text clears the instructions; the limit is 32,000 characters. Set `aiInstructionsFile` in your server-side RevisionLab config to use another `.md` path. Storage must be writable and persistent on the host server; this does not save to a remote visitor's computer or automatically configure an AI provider. The default path uses RevisionLab's gitignored runtime directory. This increment is implemented locally and is not yet published.
 
 Opening a saved live comment bubble highlights its attached component with an outline and subtle tint matching the workspace bubble color. The highlight follows the open preview during scrolling and resizing without blocking clicks. It disappears when the preview closes, comments are hidden, or the target is unavailable; Escape preserves it when comments remain visible.
 
@@ -183,6 +195,6 @@ The command prepares an existing application; it does not create a new Next.js p
 
 ### AI Instructions
 
-Open **Settings → AI Instructions** to edit the included product/UX review prompt. New installations are prefilled with the complete review template. Save changes to keep them for this project; **Copy AI instructions** copies the generated text for your AI agent.
+Open **Settings → AI Instructions** to edit the included product/UX review prompt. New installations are prefilled with the complete review template. Save changes to keep them for this project; **Copy AI instructions** copies the generated text for your AI agent. The base text is saved in the configured local Markdown file (32,000 characters maximum), while design-system choices persist in the workspace database. Local Codex fixes use that file plus the enabled design-system resources; external file edits appear when reopening Settings. A missing file uses the saved fallback or bundled template, while an existing empty file stays empty.
 
 Enable **Add a design system** to select one of 18 frameworks or enter a manual system. The list includes dated GitHub star counts and documentation links. The selected system's GitHub, docs, and available design.md, AI skill, and MCP links are appended without changing the base prompt. Where available, include skill-installation or MCP-setup instructions for the receiving agent. These options do not install or connect services from RevisionLab. Turning the toggle off preserves the selection and excludes the appendix. Owners/editors can save; commenters can view and copy.

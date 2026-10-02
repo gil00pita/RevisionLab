@@ -1,3 +1,5 @@
+import type { RevisionLabAiInstructions } from "../../../ai-instructions.js";
+import { useAiInstructionDocument } from "./useAiInstructionDocument.js";
 import { useRef, useState } from "react";
 import { apiRequest } from "../../../client/api.js";
 import {
@@ -22,15 +24,22 @@ export function useAiInstructions({
   const saving = useRef(false);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
-  const displayed = draft ?? value;
+  const [needsRetry, setNeedsRetry] = useState(false);
+  const file = useAiInstructionDocument(apiPath);
+  const baseline = {
+    ...value,
+    instructions: file.document?.instructions ?? value.instructions,
+  };
+  const displayed = draft ?? baseline;
   const dirty =
-    draft !== null && JSON.stringify(draft) !== JSON.stringify(value);
+    needsRetry ||
+    (draft !== null && JSON.stringify(draft) !== JSON.stringify(baseline));
   const instructions = composeAiInstructions(displayed);
   const needsSelection =
     displayed.designSystemEnabled &&
     (!displayed.designSystemId ||
       (displayed.designSystemId === "manual" && !displayed.manual.name.trim()));
-  const disabled = !canEdit || busy;
+  const disabled = !canEdit || busy || !file.document;
 
   function update(patch: Partial<AiInstructionSettings>) {
     if (disabled) return;
@@ -45,7 +54,18 @@ export function useAiInstructions({
     setBusy(true);
     setError("");
     setStatus("");
+    let fileSaved = false;
     try {
+      const document = await apiRequest<RevisionLabAiInstructions>(
+        apiPath,
+        "settings/ai",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ instructions: displayed.instructions }),
+        },
+      );
+      fileSaved = true;
+      file.setDocument(document);
       const saved = await apiRequest<RevisionLabSettings>(apiPath, "settings", {
         method: "PATCH",
         body: JSON.stringify({ ai: displayed }),
@@ -54,12 +74,17 @@ export function useAiInstructions({
       setDraft(saved.ai);
       await onRefresh();
       setDraft(null);
+      setNeedsRetry(false);
       setStatus("AI instructions saved.");
     } catch (cause) {
+      setNeedsRetry(fileSaved);
       setError(
-        cause instanceof Error
-          ? cause.message
-          : "Could not save AI instructions.",
+        (fileSaved
+          ? "The Markdown file was saved, but workspace settings could not be confirmed. Retry saving. "
+          : "") +
+          (cause instanceof Error
+            ? cause.message
+            : "Could not save AI instructions."),
       );
     } finally {
       saving.current = false;
@@ -84,6 +109,7 @@ export function useAiInstructions({
   }
 
   function discard() {
+    setNeedsRetry(false);
     setDraft(null);
     setError("");
     setStatus("Changes discarded.");
@@ -91,9 +117,13 @@ export function useAiInstructions({
   return {
     displayed,
     busy,
-    error,
+    error: error || file.error,
+    loading: file.loading,
+    filePath: file.document?.filePath,
+    retry: file.retry,
     status,
     dirty,
+    canSave: dirty || file.document?.exists === false,
     instructions,
     needsSelection,
     disabled,

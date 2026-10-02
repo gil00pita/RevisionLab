@@ -134,7 +134,7 @@ test("AI settings reject malformed and unsafe resources, preserve unrelated sett
   for (const patch of [
     { ...selected, designSystemId: "unknown" },
     { ...selected, designSystemId: "" },
-    { ...selected, instructions: "a".repeat(60_001) },
+    { ...selected, instructions: "a".repeat(32_001) },
     { ...selected, installSkill: "true" },
     { ...selected, designSystemId: "manual" },
     ...[

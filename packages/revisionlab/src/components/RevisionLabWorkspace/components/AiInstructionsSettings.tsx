@@ -1,3 +1,4 @@
+import { AI_INSTRUCTIONS_MAX_LENGTH } from "../../../ai-instructions.js";
 import {
   Box,
   Button,
@@ -27,11 +28,15 @@ export function AiInstructionsSettings({
   onRefresh: () => Promise<void>;
 }) {
   const {
+    loading,
+    filePath,
+    retry,
     displayed,
     busy,
     error,
     status,
     dirty,
+    canSave,
     instructions,
     needsSelection,
     disabled,
@@ -40,6 +45,27 @@ export function AiInstructionsSettings({
     copy,
     discard,
   } = useAiInstructions({ apiPath, value, canEdit, onRefresh });
+
+  if (!filePath)
+    return (
+      <Stack gap="4" aria-busy={loading}>
+        <Heading as="h3" size="md">
+          AI Instructions
+        </Heading>
+        {loading ? (
+          <Text role="status">Loading AI instructions...</Text>
+        ) : (
+          <>
+            <Text role="alert" color="red.700">
+              {error}
+            </Text>
+            <Button variant="outline" alignSelf="start" onClick={retry}>
+              Retry loading instructions
+            </Button>
+          </>
+        )}
+      </Stack>
+    );
 
   return (
     <Box
@@ -63,7 +89,7 @@ export function AiInstructionsSettings({
             value={displayed.instructions}
             readOnly={disabled}
             rows={10}
-            maxLength={60_000}
+            maxLength={AI_INSTRUCTIONS_MAX_LENGTH}
             borderColor="gray.500"
             fontSize="sm"
             onChange={(event) => update({ instructions: event.target.value })}
@@ -73,6 +99,24 @@ export function AiInstructionsSettings({
             Settings.
           </Field.HelperText>
         </Field.Root>
+        <Stack gap="1">
+          <Text fontSize="sm" fontWeight="medium">
+            Local file
+          </Text>
+          <Text
+            fontFamily="mono"
+            fontSize="sm"
+            overflowWrap="anywhere"
+            userSelect="text"
+          >
+            {filePath}
+          </Text>
+          <Text fontSize="sm" color="fg.muted">
+            Base instructions are saved on the machine running this project.
+            Design-system resources are appended when copying or running a local
+            Codex fix.
+          </Text>
+        </Stack>
         <Field.Root disabled={disabled}>
           <Switch.Root
             checked={displayed.designSystemEnabled}
@@ -135,7 +179,7 @@ export function AiInstructionsSettings({
               type="submit"
               colorPalette="blue"
               loading={busy}
-              disabled={!dirty || needsSelection}
+              disabled={!canSave || needsSelection}
             >
               Save AI instructions
             </Button>

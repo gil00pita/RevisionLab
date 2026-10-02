@@ -35,6 +35,7 @@ export function FeedbackThread({
   onCancelAnchor,
   onAnchorChange,
   onCommentCreated,
+  renderActions,
 }: FeedbackThreadProps) {
   const [localSelection, setLocalSelection] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -167,6 +168,7 @@ export function FeedbackThread({
             canResolve={canResolve}
             busy={busy === selected.id}
             onResolve={() => void resolveComment(selected)}
+            actions={renderActions?.(selected)}
           />
           {replies.length > 0 && (
             <Stack gap="3" aria-label="Replies">
@@ -205,6 +207,7 @@ export function FeedbackThread({
                   busy={busy === comment.id}
                   onResolve={() => void resolveComment(comment)}
                   onOpen={() => select(comment.id)}
+                  actions={renderActions?.(comment)}
                 />
               ))}
             </Stack>

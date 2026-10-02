@@ -16,8 +16,7 @@ function release(version = "0.1.0") {
         registry: "https://registry.npmjs.org/",
       },
     },
-    root: { private: true },
-    lock: { packages: { "packages/revisionlab": { version } } },
+    root: { private: true, dependencies: { revisionlab: "*" } },
     tag: `v${version}`,
     prerelease: String(version.includes("-")),
     event: "release",
@@ -72,10 +71,13 @@ test("non-release checks validate the package without publishing or requiring a 
   );
 });
 
-test("lockfile versions cannot drift from the package", () => {
-  const input = release();
-  input.lock.packages["packages/revisionlab"].version = "0.0.9";
-  assert.throws(() => checkRelease(input), /versions must match/);
+test("release versions keep the example linked to the local workspace", () => {
+  for (const dependency of [undefined, "file:packages/revisionlab", "0.1.0"]) {
+    const input = release();
+    input.root.dependencies.revisionlab = dependency;
+    assert.throws(() => checkRelease(input), /link the local revisionlab workspace/);
+  }
+  assert.equal(checkRelease(release("9.0.0")).version, "9.0.0");
 });
 
 test("invalid or unsafe version strings are rejected", () => {
