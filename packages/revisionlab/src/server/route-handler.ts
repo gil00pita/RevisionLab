@@ -13,6 +13,7 @@ import { consumeRateLimit, getDatabase } from "./database.js";
 import { handleFlows } from "./flow-routes.js";
 import { handlePersonas } from "./persona-routes.js";
 import { handleSettings } from "./settings.js";
+import { handleHistory, historyAction, withHistory } from "./history.js";
 import { assertSameOrigin, HttpError, json } from "./security.js";
 import type { RevisionLabConfig, RevisionLabRouteHandler } from "./types.js";
 
@@ -41,6 +42,8 @@ export function createRevisionLabHandler(
         requireRole(actor, "owner");
         return await handleConnections(request, path, client, config);
       }
+      if (path[0] === "history")
+        return await handleHistory(request, path, client, config, actor);
       if (
         request.method === "GET" &&
         path.length === 1 &&
@@ -60,18 +63,42 @@ export function createRevisionLabHandler(
         path[0] === "artifacts" &&
         z.string().uuid().safeParse(path[1]).success
       ) {
-        return await readArtifact(path[1], client, config);
+        return await readArtifact(path[1], client, config, true);
       }
       if (!["POST", "PATCH"].includes(request.method))
         throw new HttpError(404, "Not found.");
       if (path[0] === "flows")
-        return await handleFlows(request, path, client, config, actor);
+        return await withHistory(
+          client,
+          config,
+          actor,
+          historyAction(request.method, path),
+          () => handleFlows(request, path, client, config, actor),
+        );
       if (path[0] === "personas")
-        return await handlePersonas(request, path, client, actor);
+        return await withHistory(
+          client,
+          config,
+          actor,
+          historyAction(request.method, path),
+          () => handlePersonas(request, path, client, actor),
+        );
       if (path[0] === "settings")
-        return await handleSettings(request, path, client, actor);
+        return await withHistory(
+          client,
+          config,
+          actor,
+          historyAction(request.method, path),
+          () => handleSettings(request, path, client, actor),
+        );
       if (path[0] === "comments")
-        return await handleComments(request, path, client, actor);
+        return await withHistory(
+          client,
+          config,
+          actor,
+          historyAction(request.method, path),
+          () => handleComments(request, path, client, actor),
+        );
       if (path[0] === "invitations")
         return await handleInvitations(request, path, client, config, actor);
       throw new HttpError(404, "Not found.");

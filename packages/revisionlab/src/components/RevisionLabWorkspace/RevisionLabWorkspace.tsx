@@ -321,6 +321,8 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             projectName={data.project.name}
             workspaces={data.workspaces}
             settingsWorkspace={data.settingsWorkspace}
+            selection={selection}
+            actorRole={data.actor.role}
             onInstanceRemoved={(id) => {
               if (selection === id) void selectWorkspace("local");
             }}

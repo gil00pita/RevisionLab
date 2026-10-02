@@ -1,5 +1,13 @@
 # Release validation
 
+## Thirty-day workspace history - 2 October 2026
+
+Settings now has a History tab covering flow, capture, recording, whiteboard, comment, persona, and Widget/Comments/Audit mutations for 30 days. Restore is source-specific, permission-limited, point-in-time, and creates its own recoverable entry. Deleted screenshot evidence remains private while referenced by history; expiry cleanup retries external storage failures. Access, keys, invitations, sessions, reviewers, and connection configuration are excluded. PRODUCT.md, PLAN.md, and both READMEs reflect the confirmed scope and restore semantics.
+
+All 177 package tests, lint, production build, formatter, and whitespace checks pass. New integration coverage restores a deleted flow with comments and screenshot access, reverses that restore, rejects commenter restoration, suppresses failed/no-op changes, restores settings/personas/comments to earlier points, cleans expired file artifacts, and restores a connected board through a namespaced proxy history ID. Existing deletion/discard tests verify retained evidence is inaccessible through authenticated artifact routes before expiry and that failed external cleanup retries safely.
+
+Chromium verified History tab rendering, two entry cards, explicit point-in-time confirmation, Cancel, ArrowRight/ArrowLeft tab focus, and zero horizontal overflow at 390px. The entry data was browser-fixtured, while restore behavior is covered against isolated real databases and route handlers; no user workspace content or deployed connected instance was changed. Browser errors were empty. Evidence: `.context/history-tests.log`, `.context/history-lint.log`, `.context/history-build.log`, `.context/workspace-history-desktop.png`, and `.context/workspace-history-mobile.png`.
+
 ## Connected workspace instances - 2 October 2026
 
 Implemented owner-managed General API keys and Workspace Instances connections, a selector at two workspaces, individual/combined review data with source labels, authenticated screenshot proxying, and source-directed edits capped by both the local role and source key. Widget/Comments/Audit settings follow the selected source; administration remains local. Requests enforce same-project/distinct-installation identity, public HTTPS destinations, pinned DNS resolution, no redirects, bounded responses/timeouts/concurrency, scoped federation operations, and key revocation. Generated keys are shown once and hashed at source; receiving credentials remain in the server database. Polling outages retain last-loaded board state and identify unavailable sources. PRODUCT.md, PLAN.md, and both READMEs describe the confirmed behavior and deployment constraints.
@@ -406,9 +414,9 @@ Undo history is local to the mounted flow, not persistent across reloads or vers
 
 ## Independent interface review
 
-| Disposition | Material findings |
-| --- | --- |
-| PASS for the documented first release | None on the reviewed desktop/mobile workspace and access surfaces. |
+| Disposition                                             | Material findings                                                                                  |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| PASS for the documented first release                   | None on the reviewed desktop/mobile workspace and access surfaces.                                 |
 | PASS for the whiteboard and pinned-discussion increment | No material findings on the supplied desktop/mobile board and discussion surfaces or their source. |
 
 Nonblocking observations: historical comment groups could include richer flow/persona/version labels; mobile navigation pushes the captured screen below the first viewport; larger version-selector touch targets would improve mobile use.

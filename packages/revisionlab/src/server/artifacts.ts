@@ -159,9 +159,14 @@ export async function readArtifact(
   id: string,
   client: Client,
   config: ResolvedConfig,
+  requireCurrentReference = false,
 ): Promise<Response> {
   const result = await client.execute({
-    sql: "SELECT * FROM artifacts WHERE id = ?",
+    sql: `SELECT * FROM artifacts WHERE id = ?${
+      requireCurrentReference
+        ? " AND EXISTS (SELECT 1 FROM steps WHERE steps.screenshot = artifacts.id)"
+        : ""
+    }`,
     args: [id],
   });
   const artifact = result.rows[0];

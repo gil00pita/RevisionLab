@@ -79,16 +79,12 @@ Flows, comments, versions, runs, and reports belong to the project where Revisio
 Instead of maintaining:
 
 Prototype
-+
-Miro board
-+
-screenshots
-+
-review comments
-+
-development tickets
-+
-Confluence documentation
+
+- Miro board
+- screenshots
+- review comments
+- development tickets
+- Confluence documentation
 
 as separate artefacts, the prototype becomes the single source of truth.
 
@@ -271,6 +267,14 @@ Confirmed requirement (2 October 2026): add a **Workspace Instances** Settings t
 Confirmed decisions: show the selector as soon as two workspaces are available (including this installation), and allow remote review edits and settings changes within both local reviewer permissions and the source key's granted role. Connections are installation-wide and managed by owners. Widget, Comments, and Audit settings follow the selected workspace (This workspace when All is selected); General/key/invitation/connection management remains local to this installation; remote recordings are started on their own prototype. This is live federation with polling/Refresh, not destructive database merging or background replication: edits go to the source, removal only disconnects, failures are shown per source, and unavailable sources do not look empty. Connection/key management must not expose stored credentials to browsers; generated keys are shown once, hashed at source, and revocable. Only same-project, distinct installations may connect; identifiers are namespaced to prevent collisions, remote artifacts are served through the authenticated local proxy, requests are bounded, and credentials are never forwarded through redirects or to private network addresses.
 
 Acceptance: owners can generate/revoke keys and add/remove/reconnect instances; invalid keys, project mismatch, duplicate/self connections, and invalid URLs produce actionable errors without saving a bad connection. Individual selection filters all review data; All workspaces preserves source labels and distinct IDs even for cloned data, and offline sources leave working sources usable. Selection respects autosave departure guards, keyboard access, mobile layout, and role boundaries. New controls must use Chakra v3 and keep existing widget behavior local. This section records the requested feature and implementation decisions; completion is tracked in VALIDATION.md.
+
+## Thirty-day workspace history
+
+Confirmed requirement (2 October 2026): every workspace keeps a version history for 30 days so an authorized user can undo review-content and workspace-configuration changes. Covered changes include flows and versions, captured screens, recording completion/discard, whiteboard edits, flow deletion, comments and resolution, personas, and Widget/Comments/Audit settings. History is source-specific for connected instances: an undo is executed and retained by the source workspace, requires both the signed-in user's current editor permission and an editor-capable source key, and is unavailable while that source is offline. All workspaces may show entries from each available source with the source named.
+
+Undo uses a point-in-time restore to the state immediately before the selected change and clearly warns that later review-content changes in that same source will also be reverted. A restore creates its own history entry so the restore can itself be undone during its 30-day window. Screenshots referenced only by retained history remain private and recoverable until their final history reference expires, then become eligible for cleanup. Expired versions cannot be restored and are removed during routine history activity. Security and installation administration—sessions, invitations, reviewers, API keys, and connected-instance credentials—are intentionally excluded so a restore cannot reopen access or replace deployment configuration.
+
+Acceptance: History is an accessible Settings tab for every role; commenters can inspect entries but cannot restore them. Each entry identifies the action, actor, source, date, and expiry. Restore requires an explicit confirmation, refreshes the selected/combined workspace after success, preserves relational IDs and screenshots, and returns an actionable conflict if required retained evidence is unavailable. Failed mutations do not create versions. History APIs never expose snapshots or retained credentials, connected IDs remain namespaced through the existing proxy, and desktop/mobile layouts remain keyboard accessible without horizontal overflow.
 
 ## Workspace density refinement
 
@@ -1011,6 +1015,7 @@ The review workspace should be capable of generating formal documentation.
 Example:
 
 # Prototype Review
+
 Customer Onboarding
 
 Version:
@@ -1120,26 +1125,20 @@ The product should not depend on Excalidraw for its canonical domain model.
 Traditional whiteboard:
 
 Screen image
-+
-coordinates
-+
-comments
+
+- coordinates
+- comments
 
 RevisionLab:
 
 Prototype version
-+
-executable journey
-+
-screen state
-+
-DOM element
-+
-annotation
-+
-review decision
-+
-implementation context
+
+- executable journey
+- screen state
+- DOM element
+- annotation
+- review decision
+- implementation context
 
 The review artefact understands what is being reviewed.
 

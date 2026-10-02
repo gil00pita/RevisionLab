@@ -1,6 +1,8 @@
 import type { WorkspaceInstance } from "../../../workspace-instances.js";
+import type { RevisionLabRole } from "../../../server/types.js";
 import { GeneralSettings } from "./GeneralSettings.js";
 import { WorkspaceInstancesSettings } from "./WorkspaceInstancesSettings.js";
+import { WorkspaceHistory } from "./WorkspaceHistory.js";
 import { useRef, useState } from "react";
 import { Badge, Stack, Tabs, Text } from "@chakra-ui/react";
 import { apiRequest } from "../../../client/api.js";
@@ -17,6 +19,8 @@ export function WorkspaceSettings({
   projectName,
   workspaces,
   settingsWorkspace,
+  selection,
+  actorRole,
   onInstanceRemoved,
   settings,
   canEdit,
@@ -29,6 +33,8 @@ export function WorkspaceSettings({
   projectName: string;
   workspaces: WorkspaceInstance[];
   settingsWorkspace?: WorkspaceInstance;
+  selection: string;
+  actorRole: RevisionLabRole;
   onInstanceRemoved: (id: string) => void;
   settings: RevisionLabSettings;
   canEdit: boolean;
@@ -95,7 +101,9 @@ export function WorkspaceSettings({
       <Text fontSize="sm" color="gray.600">
         Widget, Comments, and Audit settings apply to{" "}
         {settingsWorkspace?.name ?? "This workspace"}. General, Users &amp;
-        Roles, and Workspace Instances manage this installation.
+        Roles, and Workspace Instances manage this installation. History follows
+        the selected workspace source, or every available source in All
+        workspaces.
       </Text>
       {!canEdit && <Badge alignSelf="start">Read only</Badge>}
       <Tabs.Root
@@ -118,6 +126,9 @@ export function WorkspaceSettings({
           </Tabs.Trigger>
           <Tabs.Trigger value="audit" px={{ base: "3", md: "4" }}>
             Audit
+          </Tabs.Trigger>
+          <Tabs.Trigger value="history" px={{ base: "3", md: "4" }}>
+            History
           </Tabs.Trigger>
           {invitations && (
             <Tabs.Trigger value="users" px={{ base: "3", md: "4" }}>
@@ -170,6 +181,18 @@ export function WorkspaceSettings({
             canEdit={canEdit}
             busy={busy}
             onSave={update}
+          />
+        </Tabs.Content>
+        <Tabs.Content value="history" p="0">
+          <WorkspaceHistory
+            apiPath={managementApiPath}
+            sources={workspaces.filter((source) =>
+              selection === "all"
+                ? true
+                : source.id === (settingsWorkspace?.id ?? "local"),
+            )}
+            actorRole={actorRole}
+            onRefresh={onRefresh}
           />
         </Tabs.Content>
         {invitations && (

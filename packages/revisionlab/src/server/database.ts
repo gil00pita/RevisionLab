@@ -65,6 +65,7 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
   await write(client, async (transaction) => {
     const additions = {
       installation: [["instance_id", "TEXT"]],
+      workspace_history: [["committed_at", "TEXT"]],
       workspace_settings: [
         [
           "wcag_version",

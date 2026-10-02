@@ -655,12 +655,12 @@ For the current wheel-navigation refinement, handle unmodified wheel input acros
 Example:
 
 ┌──────────────────────────┐
-│ Application Details      │
-│                          │
-│ [generated screen]       │
-│                          │
-│ 3 comments               │
-│ Changed since v14        │
+│ Application Details │
+│ │
+│ [generated screen] │
+│ │
+│ 3 comments │
+│ Changed since v14 │
 └──────────────────────────┘
 
 The current increment must support:
@@ -702,14 +702,14 @@ Support explicit labelled alternative connections between captured screens in th
 Example:
 
 Application Details
-        |
-        v
-     Continue
-      /    \
- Valid    Invalid
-   |         |
-   v         v
-Review    Error State
+|
+v
+Continue
+/ \
+ Valid Invalid
+| |
+v v
+Review Error State
 
 Current increment:
 
@@ -1548,6 +1548,10 @@ Updating the underlying prototype and replaying the flow must refresh the genera
 
 That behaviour is the central product promise.
 
-## Current increment — Connected workspace instances
+## Current increment — Thirty-day workspace history
+
+Record a pre-change workspace snapshot for flows, screens, recording state, boards, comments, personas, and workspace settings, retaining private screenshot evidence for the same 30-day window. Expose source-aware history in Settings for local and connected instances, with commenter visibility, editor-only restore, an explicit later-change warning, and a new history entry for each restore. Expire history and unreferenced artifacts during routine history activity while excluding access and connection credentials. Validate complete deletion/restoration, restore reversal, failed/no-op changes, expiry cleanup and retry, role boundaries, connected ID scoping, and desktop/mobile interaction. PRODUCT.md is authoritative for the confirmed behavior.
+
+## Completed increment — Connected workspace instances
 
 Add owner-managed General API keys and Workspace Instances connections, a workspace/all selector, bounded authenticated federation, namespaced review data/artifacts, source-aware editing, failure feedback, and departure guards. Validate key lifecycle, same-project identity, SSRF boundaries, role restrictions, collision isolation, partial failures, and desktop/mobile workflows with isolated installations. Implemented with the confirmed two-workspace selector threshold and permission-limited remote editing. PRODUCT.md records these decisions; VALIDATION.md records checks and remaining deployment verification.

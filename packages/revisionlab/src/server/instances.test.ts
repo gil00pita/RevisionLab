@@ -229,6 +229,22 @@ test("connected data stays isolated, editable at source, and usable when another
   assert.equal((await update.json()).board.nodes[0].stepId, remote.steps[0].id);
   assert.equal((await f.remote.state()).flows[0].board.nodes[0].x, 400);
   assert.notEqual((await f.local.state()).flows[0].board.nodes[0].x, 400);
+  const history = await (await f.local.call(`${proxy}/history`)).json();
+  const boardChange = history.history.find(
+    (entry: { action: string }) => entry.action === "Edited a flow board",
+  );
+  assert.ok(boardChange.id.startsWith(`${f.connection.id}~`));
+  assert.equal(
+    (
+      await f.local.call(
+        `${proxy}/history/${boardChange.id}/restore`,
+        "POST",
+        {},
+      )
+    ).status,
+    200,
+  );
+  assert.notEqual((await f.remote.state()).flows[0].board.nodes[0].x, 400);
   assert.equal((await f.local.call(`${proxy}/state`)).status, 200);
   const posted = await f.local.call(`${proxy}/comments`, "POST", {
     route: "/checkout",

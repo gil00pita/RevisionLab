@@ -10,6 +10,7 @@ import { handlePersonas } from "../persona-routes.js";
 import { handleSettings } from "../settings.js";
 import { consumeRateLimit } from "../database.js";
 import { HttpError, json } from "../security.js";
+import { handleHistory, historyAction, withHistory } from "../history.js";
 export async function installationId(client: Client) {
   return String(
     (await client.execute("SELECT instance_id FROM installation WHERE id=1"))
@@ -38,13 +39,18 @@ export async function handleFederation(
       ...(await readWorkspaceState(client, config, actor)),
       instanceId: await installationId(client),
     });
+  if (path[0] === "history") {
+    if (request.method !== "GET")
+      await consumeRateLimit(client, `federation:${actor.id}`, 120, 60_000);
+    return handleHistory(request, path, client, config, actor);
+  }
   if (
     request.method === "GET" &&
     path.length === 2 &&
     path[0] === "artifacts" &&
     z.string().uuid().safeParse(path[1]).success
   )
-    return readArtifact(path[1], client, config);
+    return readArtifact(path[1], client, config, true);
   if (!["POST", "PATCH"].includes(request.method))
     throw new HttpError(404, "Not found.");
   await consumeRateLimit(client, `federation:${actor.id}`, 120, 60_000);
@@ -54,13 +60,37 @@ export async function handleFederation(
     ((path.length === 3 && path[2] === "board") ||
       (path.length === 2 && path[1] === "delete"))
   )
-    return handleFlows(request, path, client, config, actor);
+    return withHistory(
+      client,
+      config,
+      actor,
+      historyAction(request.method, path),
+      () => handleFlows(request, path, client, config, actor),
+    );
   if (path[0] === "comments")
-    return handleComments(request, path, client, actor);
+    return withHistory(
+      client,
+      config,
+      actor,
+      historyAction(request.method, path),
+      () => handleComments(request, path, client, actor),
+    );
   if (path[0] === "personas")
-    return handlePersonas(request, path, client, actor);
+    return withHistory(
+      client,
+      config,
+      actor,
+      historyAction(request.method, path),
+      () => handlePersonas(request, path, client, actor),
+    );
   if (path[0] === "settings")
-    return handleSettings(request, path, client, actor);
+    return withHistory(
+      client,
+      config,
+      actor,
+      historyAction(request.method, path),
+      () => handleSettings(request, path, client, actor),
+    );
   throw new HttpError(
     403,
     "This API key cannot perform that workspace operation.",

@@ -163,6 +163,7 @@ export async function proxyInstance(
       "settings",
       "artifacts",
       "state",
+      "history",
     ].includes(resource[0])
   )
     throw new HttpError(

@@ -8,7 +8,6 @@ Whiteboard zoom, percentage/reset, and Fit controls float inside the board's bot
 
 RevisionLab is an installable Next.js App Router integration. The floating widget records real prototype screens and opens a full review workspace. This repository runs the same package that the installer adds to other projects.
 
-
 ## Connected workspace instances
 
 Owners can connect deployed versions of the same project without copying or merging their databases:
@@ -21,12 +20,17 @@ Widget, Comments, and Audit settings follow the selected workspace; All workspac
 
 Both installations must run this unreleased workspace-connections implementation, share a RevisionLab project ID, and have distinct installation databases. Connections use public HTTPS on port 443; private network destinations and API redirects are rejected. URL paths are reduced to the origin, and the separate API path locates RevisionLab. Keys cannot manage invitations, other keys, or connections. Generated keys are hashed on their source; the receiving installation stores the connection credential in its server database for authenticated requests, never in browser state. Protect that database and its backups as credentials. Requests use bounded concurrency, timeouts, and a 16 MiB response limit. This is live access to each installation, not background replication or recursive connections.
 
+## Thirty-day workspace history
+
+Open **Settings → History** to inspect recoverable changes from the last 30 days. RevisionLab records flows, captured screens, recording state, whiteboards, comments, personas, and Widget/Comments/Audit settings. Each entry names the action, actor, workspace source, date, and expiry. Commenters can inspect history; owners and editors can restore when their local role and, for a connected source, its API key both allow editing.
+
+Restore returns that source workspace to immediately before the chosen change, including its flow relationships and retained screenshots. Because this is a point-in-time restore, later content changes in the same source are also reverted; the confirmation calls this out. The restore creates another history entry, so it can itself be undone. Connected history stays on its source and is unavailable while that source is offline. Screenshot artifacts that exist only in history stay private until their final 30-day reference expires, then are cleaned up. Sessions, invitations, reviewers, API keys, and workspace connections are excluded so a restore cannot reopen access or replace installation credentials.
 
 ## Run locally
 
 Recordings now save an accessibility report with each screen. Whiteboard cards show status/counts; open a screen and choose **Accessibility** beside **Comments** to review rule severity, affected-element locations, and documentation links. Reports survive reloads and stay with their original screen/version. Existing captures show **Not checked**; failed, unstable, or unmatched pre-interaction checks show **Check unavailable**, never a pass. Automated checks are not compliance certification. This is part of the local build, not the published package.
 
-In **Flows > Your flows**, owners and editors can use the trash icon in the open flow's header or choose **Select** in the menu to reveal checkboxes and **Delete selected**. **Select all** applies to completed flows in the filtered results; **Select none** clears every selection. **Done** clears selection and hides the bulk controls. Confirmation permanently deletes each selected flow's entire version history, screenshots, boards, and attached comments; there is no Undo. Live-page comments and unrelated flows are kept. Finish or discard unfinished recordings first. This is part of the local build, not the published package.
+In **Flows > Your flows**, owners and editors can use the trash icon in the open flow's header or choose **Select** in the menu to reveal checkboxes and **Delete selected**. **Select all** applies to completed flows in the filtered results; **Select none** clears every selection. **Done** clears selection and hides the bulk controls. Confirmation removes each selected flow family, screenshots, boards, and attached comments from the active workspace. It can be restored for 30 days from **Settings → History**; live-page comments and unrelated flows are kept. Finish or discard unfinished recordings first. This is part of the local build, not the published package.
 
 **Workspace > Settings > Live comments** controls default bubble visibility and color. Owners and editors can choose from gray, red, orange, yellow, green, teal, cyan, blue, purple, and pink; changes save to the workspace database. Commenters have read-only access. The live Show comments switch remains a temporary page-level override. New pages use the saved default; comment details always require activation.
 
@@ -59,7 +63,7 @@ Recording controls have passed local Stop, Stay, Continue, and discard-retry bro
 
 Each recording opens as a **Whiteboard**: unique screen states are connected by observed visits, including returns and branches. Historical recordings retain their captured sequence. Use the mouse wheel over the board or a screen to zoom the full flow around the cursor. Drag the background or use Shift+wheel to pan; zoom buttons, reset to 100%, and **Fit** remain available. Editors choose **Paths** to enter editing without opening a form, then use **Connect** on a source screen and **Connect here** on a target. Select a connection to inspect its recorded click, edit its label, remove it, or discuss that path. Commenters can inspect and discuss saved connections without editing the graph.
 
-Board changes **autosave** after a short pause or a completed drag. **Undo** reverses the last local edit, including a saved edit; a drag or continuous label edit is one operation. **Done editing** and internal navigation wait for pending saves. Failed saves keep your changes with a retry; conflicts never silently overwrite another editor. Undo history is limited to the current flow session, not comments or recordings.
+Board changes **autosave** after a short pause or a completed drag. **Undo** reverses the last local edit, including a saved edit; a drag or continuous label edit is one operation. **Done editing** and internal navigation wait for pending saves. Failed saves keep your changes with a retry; conflicts never silently overwrite another editor. This granular board Undo is limited to the current flow session; the persistent 30-day workspace history covers saved boards, comments, recordings, and other workspace content through point-in-time restore.
 
 **Remove screen** hides it and its adjacent active paths from the board; **Undo** restores them together, while **Restore** brings just the screen back. Captures and feedback are retained. Removed connection threads remain accessible in **All comments**. New paths finish autosaving before receiving comments.
 
