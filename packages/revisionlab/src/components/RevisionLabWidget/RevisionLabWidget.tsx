@@ -1,5 +1,6 @@
 "use client";
 
+import { TestParticipant } from "../TestParticipant/index.js";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Button, Link, Stack, Text } from "@chakra-ui/react";
@@ -37,7 +38,13 @@ export function RevisionLabWidget({
   const pathname = usePathname() ?? "/";
   return (
     <RevisionLabProvider>
-      <Widget apiPath={apiPath} basePath={basePath} route={pathname} />
+      {pathname === basePath || pathname.startsWith(`${basePath}/`) ? (
+        <Widget apiPath={apiPath} basePath={basePath} route={pathname} />
+      ) : (
+        <TestParticipant apiPath={apiPath}>
+          <Widget apiPath={apiPath} basePath={basePath} route={pathname} />
+        </TestParticipant>
+      )}
     </RevisionLabProvider>
   );
 }
@@ -75,9 +82,9 @@ function Widget({
     route,
     Boolean(
       data?.setup.completed &&
-        settings.auditLivePages &&
-        !reviewRoute &&
-        settings.showWidget,
+      settings.auditLivePages &&
+      !reviewRoute &&
+      settings.showWidget,
     ),
     open || live.commenting,
     settings,

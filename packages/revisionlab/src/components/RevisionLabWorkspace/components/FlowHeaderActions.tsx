@@ -95,6 +95,10 @@ export function FlowHeaderActions({
             Open source to record
           </Link>
         </Button>
+      ) : flow.testSessionId && flow.status === "recording" ? (
+        <Button asChild size="sm" variant="outline">
+          <Link href={`${basePath}?view=sessions`}>View live test</Link>
+        </Button>
       ) : (
         <Button
           size="sm"
@@ -107,7 +111,7 @@ export function FlowHeaderActions({
             <Circle />
           </Icon>
           {flow.status === "complete"
-            ? "Record new version"
+            ? "Record new flow"
             : "Continue recording"}
         </Button>
       )}

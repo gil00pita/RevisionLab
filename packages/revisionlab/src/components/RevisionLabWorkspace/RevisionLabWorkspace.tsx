@@ -1,5 +1,6 @@
 "use client";
 
+import { TestSessions } from "../TestSessions/index.js";
 import { Suspense, useCallback, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -71,6 +72,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
     refresh,
   } = useWorkspaceData(apiPath, selection);
   const view: WorkspaceView =
+    requestedView === "sessions" ||
     requestedView === "comments" ||
     requestedView === "personas" ||
     requestedView === "settings"
@@ -79,6 +81,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const [flowId, setFlowId] = useState<string | null>(() =>
     searchParams.get("flow"),
   );
+  const [createTest, setCreateTest] = useState(false);
   const [setupFinished, setSetupFinished] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [startingRecording, setStartingRecording] = useState(false);
@@ -271,7 +274,11 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           data={data}
           view={view}
           flow={view === "flows" ? flow : undefined}
-          onRefresh={refresh}
+          onNewTest={() => {
+            void selectView("sessions").then((selected) => {
+              if (selected) setCreateTest(true);
+            });
+          }}
           onSignOut={signOut}
           signingOut={signingOut}
           actions={
@@ -317,7 +324,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
               color="orange.800"
             >
               {source.name}: {source.error} Showing any last-loaded data; this
-              workspace is unavailable. Use Refresh to retry.
+              workspace is unavailable. Automatic updates will retry.
             </Text>
           ))}
         {completingBoard && (
@@ -325,7 +332,15 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             Finishing board autosave…
           </Text>
         )}
-        {view === "settings" ? (
+        {view === "sessions" ? (
+          <TestSessions
+            key={String(createTest)}
+            apiPath={apiPath}
+            basePath={basePath}
+            data={data}
+            initialCreate={createTest}
+          />
+        ) : view === "settings" ? (
           <WorkspaceSettings
             key={selection}
             apiPath={sourceApiPath(apiPath, data.settingsWorkspace)}

@@ -78,6 +78,17 @@ export async function handleFlows(
   }
   if (path.length < 2 || !z.string().uuid().safeParse(path[1]).success)
     throw new HttpError(404, "Recording not found.");
+  if (
+    (path.length === 2 && request.method === "PATCH") ||
+    ["steps", "discard", "finish"].includes(path[2])
+  ) {
+    const test = await client.execute({
+      sql: "SELECT id FROM test_sessions WHERE flow_id = ?",
+      args: [path[1]],
+    });
+    if (test.rows.length)
+      throw new HttpError(409, "Manage this recording from Test sessions.");
+  }
   if (request.method === "POST" && path.length === 3 && path[2] === "discard") {
     return discardRecording(path[1], client, config, actor);
   }
@@ -163,11 +174,12 @@ export async function handleFlows(
   throw new HttpError(404, "Not found.");
 }
 
-async function captureStep(
+export async function captureStep(
   request: Request,
   flowId: string,
   client: Client,
   config: ResolvedConfig,
+  guard?: (transaction: Transaction) => Promise<unknown>,
 ): Promise<Response> {
   const input = stepSchema.parse(
     await readJson(request, MAX_CAPTURE_BODY_BYTES),
@@ -186,6 +198,7 @@ async function captureStep(
   let reused = false;
   try {
     const saved = await write(client, async (transaction) => {
+      await guard?.(transaction);
       const flow = await requireFlow(transaction, flowId);
       if (flow.status !== "recording")
         throw new HttpError(
@@ -244,7 +257,8 @@ async function captureStep(
     if (reused) await discardArtifact(artifact, config);
     if (!reused && input.capture?.accessibility?.violationCount) {
       await notifyReviewEvent(client, config, {
-        type: "issues", title: "New accessibility issues",
+        type: "issues",
+        title: "New accessibility issues",
         detail: `${input.capture.accessibility.violationCount} accessibility issue(s) saved on ${input.title} (${input.route}).`,
       });
     }
