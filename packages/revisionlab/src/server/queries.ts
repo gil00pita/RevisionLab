@@ -18,7 +18,7 @@ export async function readFlows(
 ): Promise<RevisionLabFlow[]> {
   const [flows, steps, visits] = await client.batch(
     [
-      "SELECT * FROM flows ORDER BY updated_at DESC",
+      "SELECT flows.*, (SELECT id FROM test_sessions WHERE flow_id = flows.id LIMIT 1) AS test_session_id FROM flows ORDER BY updated_at DESC",
       "SELECT * FROM steps ORDER BY flow_id, position",
       "SELECT * FROM recording_visits ORDER BY flow_id, position",
     ],
@@ -43,6 +43,7 @@ export async function readFlows(
     return {
       id: text(row, "id"),
       familyId: text(row, "family_id"),
+      testSessionId: nullable(row, "test_session_id") ?? undefined,
       version: Number(row.version),
       previousVersionId: nullable(row, "previous_version_id"),
       name: text(row, "name"),

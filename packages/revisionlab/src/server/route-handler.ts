@@ -1,3 +1,5 @@
+import { handleTestSessions } from "./test-sessions/routes.js";
+import { handleTestParticipant } from "./test-sessions/participant.js";
 import { handleApiKeys } from "./instances/keys.js";
 import { handleConnections } from "./instances/connections.js";
 import { handleFederation } from "./instances/federation.js";
@@ -35,9 +37,13 @@ export function createRevisionLabHandler(
         return await handleAuth(request, path.slice(1), client, config);
       if (path[0] === "federation")
         return await handleFederation(request, path.slice(1), client, config);
+      if (path[0] === "test-participant")
+        return await handleTestParticipant(request, path, client, config);
       const actor = await authenticate(request, client, config);
       if (request.method !== "GET")
         await consumeRateLimit(client, `mutate:${actor.id}`, 120, 60_000);
+      if (path[0] === "test-sessions")
+        return await handleTestSessions(request, path, client, config, actor);
       if (path[0] === "api-keys")
         return await handleApiKeys(request, path, client, actor);
       if (path[0] === "instances") {
@@ -59,11 +65,7 @@ export function createRevisionLabHandler(
       if (path.length === 2 && path[0] === "settings" && path[1] === "ai") {
         return await handleAiInstructions(request, config, actor);
       }
-      if (
-        request.method === "GET" &&
-        path.length === 1 &&
-        path[0] === "state"
-      )
+      if (request.method === "GET" && path.length === 1 && path[0] === "state")
         return json(await readWorkspaceState(client, config, actor));
       if (
         request.method === "GET" &&

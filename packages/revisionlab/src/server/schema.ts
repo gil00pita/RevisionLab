@@ -1,4 +1,17 @@
 export const schema = [
+  `CREATE TABLE IF NOT EXISTS test_sessions (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL, route TEXT NOT NULL, persona TEXT NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE, recording_hash TEXT UNIQUE,
+    created_by TEXT NOT NULL, participant TEXT, status TEXT NOT NULL,
+    max_minutes INTEGER NOT NULL, created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL,
+    started_at INTEGER, ended_at INTEGER, flow_id TEXT
+  )`,
+  `CREATE TABLE IF NOT EXISTS test_events (
+    session_id TEXT NOT NULL REFERENCES test_sessions(id) ON DELETE CASCADE,
+    id TEXT NOT NULL, t INTEGER NOT NULL, event_json TEXT NOT NULL,
+    PRIMARY KEY(session_id, id)
+  )`,
+  "CREATE INDEX IF NOT EXISTS idx_test_events_time ON test_events(session_id, t)",
   `CREATE TABLE IF NOT EXISTS workspace_history (
     id TEXT PRIMARY KEY, action TEXT NOT NULL, actor_id TEXT NOT NULL,
     actor_name TEXT NOT NULL, snapshot_json TEXT NOT NULL,

@@ -1,6 +1,7 @@
 import { Badge, Button, Icon, Link, Stack } from "@chakra-ui/react";
 import {
   GitBranch,
+  FlaskConical,
   MessageSquare,
   ContactRound,
   ArrowLeft,
@@ -9,7 +10,8 @@ import type { RefObject } from "react";
 import { WorkspaceNavigationButton as NavigationButton } from "./WorkspaceNavigationButton.js";
 import type { RevisionLabState } from "../../../server/types.js";
 
-export type WorkspaceView = "flows" | "comments" | "personas" | "settings";
+export type WorkspaceView =
+  "sessions" | "flows" | "comments" | "personas" | "settings";
 
 export function WorkspaceNavigation({
   data,
@@ -62,6 +64,15 @@ export function WorkspaceNavigation({
         <Badge ml="auto" colorPalette="gray" bg="whiteAlpha.200" color="white">
           {new Set(data.flows.map((flow) => flow.familyId)).size}
         </Badge>
+      </NavigationButton>
+      <NavigationButton
+        active={view === "sessions"}
+        onClick={() => onViewChange("sessions")}
+      >
+        <Icon>
+          <FlaskConical />
+        </Icon>
+        Test sessions
       </NavigationButton>
       <NavigationButton
         active={view === "comments"}

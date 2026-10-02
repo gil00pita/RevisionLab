@@ -325,6 +325,15 @@ async function restoreSnapshot(
           "This version cannot be restored because retained screenshot evidence is unavailable.",
         );
     }
+    const liveTests = await transaction.execute({
+      sql: "SELECT id FROM test_sessions WHERE status = 'live' AND expires_at > ? LIMIT 1",
+      args: [Date.now()],
+    });
+    if (liveTests.rows.length)
+      throw new HttpError(
+        409,
+        "Stop live test sessions before restoring workspace history.",
+      );
     await transaction.execute("DELETE FROM comments");
     await transaction.execute("DELETE FROM board_edges");
     await transaction.execute("DELETE FROM recording_visits");
