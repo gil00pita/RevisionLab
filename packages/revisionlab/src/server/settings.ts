@@ -11,11 +11,10 @@ import { HttpError, json, readJson } from "./security.js";
 import type { RevisionLabActor } from "./types.js";
 
 const settingsSchema = z
-  .object({
+  .strictObject({
     showCommentBubbles: z.boolean(),
     commentBubbleColor: z.enum(commentBubbleColors),
-  })
-  .strict();
+  });
 const settingsPatch = settingsSchema
   .partial()
   .refine(

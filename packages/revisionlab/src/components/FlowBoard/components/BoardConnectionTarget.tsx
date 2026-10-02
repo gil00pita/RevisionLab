@@ -39,7 +39,7 @@ export function BoardConnectionTarget({
           (Math.atan2(next.y - point.y, next.x - point.x) * 180) / Math.PI;
         return (
           <Button
-            key={index}
+            key={`${edge.id}:${point.x}:${point.y}:${next.x}:${next.y}`}
             position="absolute"
             left={`${point.x}px`}
             top={`${point.y - 10}px`}

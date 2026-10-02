@@ -102,7 +102,7 @@ Automatic captures now reuse an identical captured image on the same route withi
 
 The workspace has one drill-down sidebar: choose **Flows** to replace the main menu with **Your flows**, then **Back** to restore the menu. The selected flow and canvas stay mounted during this transition; no second flow-list column consumes canvas width.
 
-Flow metadata and comments persist in `.revisionlab/revisionlab.db`, a local SQLite database initialized automatically; private screenshots are stored in `.revisionlab/artifacts/`. Open `/revisionlab` to review recorded steps and discussions. A loopback development session gets local owner access; this development shortcut is disabled in production. Set `REVISIONLAB_LOCAL_OWNER=false` to test invitation access during development.
+Flow metadata and comments persist in `.revisionlab/revisionlab.db`, a local SQLite database initialized automatically; private screenshots are stored in `.revisionlab/artifacts/`. Open `/revisionlab` to review recorded steps and discussions. A loopback development session gets local owner access; this development shortcut is disabled in production and whenever Vercel deployment markers are present. Set `REVISIONLAB_LOCAL_OWNER=false` to test passwordless membership access during development.
 
 Screenshots capture the rendered DOM. Cross-origin images, embedded frames, video, and canvas content may be unavailable to the browser capture API. Record only prototype data that reviewers may access. A persona is a recording label; it does not impersonate or log in as a host application's user.
 
@@ -165,9 +165,13 @@ REVISIONLAB_DATABASE_AUTH_TOKEN=your-database-token
 REVISIONLAB_OWNER_EMAIL=owner@example.com
 RESEND_API_KEY=your-email-api-key
 REVISIONLAB_EMAIL_FROM=RevisionLab <reviews@your-verified-domain.com>
+REVISIONLAB_SYSTEM_URL=https://reviews.example.com
+REVISIONLAB_PERSONA_ENCRYPTION_KEY=your-32-byte-base64url-secret
 ```
 
-The owner signs in with an email verification code, then creates expiring commenter/editor invitations in the workspace. Reviewers use their own email address; they do not need a Vercel account. Named invitations require the invited address; an open invitation can be used by anyone who holds its link and verifies an email address. Revoking an invitation removes the sessions issued through it.
+The owner opens **Users & roles** to configure the canonical system URL, exact-email/domain self-join policy, and a revocable workspace code. Employees join with the link, code, and verified company email. Owners can also add a member and role directly; RevisionLab sends a project-named single-use login link. RevisionLab stores no member password, and suspending a member or changing their role invalidates existing sessions. Existing invitation records remain supported during migration.
+
+Owners can save an optional synthetic prototype username/password in Persona settings after configuring `REVISIONLAB_PERSONA_ENCRYPTION_KEY`. The credential is encrypted at rest, omitted from ordinary persona responses and exports, and revealed only to an authorized Owner/Editor through the selected persona's widget banner. Do not store production credentials.
 
 Local SQLite and artifact files need persistent writable storage. Use a remote libSQL/Turso database on a serverless host such as Vercel. Remote mode stores screenshots as private database BLOBs by default, so it needs no additional storage service. An optional server configuration `artifactStorage` adapter can provide separate private object storage. Screenshot reads require authentication; uploads accept PNG, JPEG, or WebP up to 3 MB.
 

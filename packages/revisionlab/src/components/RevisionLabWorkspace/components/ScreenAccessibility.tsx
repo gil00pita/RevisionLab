@@ -1,6 +1,7 @@
 import { Badge, Heading, Link, List, Stack, Text } from "@chakra-ui/react";
 import type { AccessibilityReport } from "../../../accessibility.js";
 import { AccessibilityStatus } from "../../AccessibilityStatus/index.js";
+import { formatUtcTimestamp } from "../../../client/date-format.js";
 import { ReviewItemActions } from "../../ReviewAutomation/index.js";
 
 export function ScreenAccessibility({
@@ -29,8 +30,8 @@ export function ScreenAccessibility({
       ) : (
         <>
           <Text fontSize="xs" color="gray.600">
-            {report.checkedAt && new Date(report.checkedAt).toLocaleString()} ·
-            axe {report.engineVersion}
+            {report.checkedAt && formatUtcTimestamp(report.checkedAt)} · axe{" "}
+            {report.engineVersion}
           </Text>
           <Text fontSize="sm" color="gray.600">
             Automated WCAG A/AA checks are not a compliance certification.
@@ -75,9 +76,9 @@ export function ScreenAccessibility({
                   {issue.count === 1 ? "element" : "elements"}
                 </Text>
                 <List.Root ps="4" gap="2">
-                  {issue.targets.map((target, index) => (
+                  {issue.targets.map((target) => (
                     <List.Item
-                      key={index}
+                      key={target}
                       fontFamily="mono"
                       fontSize="xs"
                       overflowWrap="anywhere"

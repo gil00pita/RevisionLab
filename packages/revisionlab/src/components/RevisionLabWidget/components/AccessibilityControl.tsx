@@ -32,15 +32,11 @@ export function AccessibilityControl({
   disabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [topPanel, setTopPanel] = useState(false);
   const label = labels[result.status];
   return (
     <Popover.Root
       open={open}
-      onOpenChange={(event) => {
-        setOpen(event.open);
-        if (!event.open) setTopPanel(false);
-      }}
+      onOpenChange={(event) => setOpen(event.open)}
       onInteractOutside={(event) => {
         if (
           event.detail.target instanceof Element &&
@@ -49,11 +45,8 @@ export function AccessibilityControl({
           event.preventDefault();
       }}
       positioning={{
-        placement: topPanel ? "bottom-end" : "top",
+        placement: "top",
         strategy: "fixed",
-        getAnchorRect: topPanel
-          ? () => ({ x: window.innerWidth - 16, y: 8, width: 0, height: 0 })
-          : undefined,
       }}
       lazyMount
       unmountOnExit
@@ -98,7 +91,6 @@ export function AccessibilityControl({
             label={label}
             onRerun={onRerun}
             disabled={disabled}
-            onPlacementChange={setTopPanel}
           />
         </Portal>
       )}

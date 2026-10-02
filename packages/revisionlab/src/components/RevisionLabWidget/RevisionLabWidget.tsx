@@ -225,6 +225,7 @@ function Widget({
                   recorder={recorder}
                   personas={data.personas ?? []}
                   basePath={basePath}
+                  apiPath={apiPath}
                 />
                 <RecordingActions
                   recorder={recorder}
@@ -238,6 +239,7 @@ function Widget({
                   recorder={recorder}
                   personas={data.personas ?? []}
                   basePath={basePath}
+                  apiPath={apiPath}
                   onStarted={() => setOpen(false)}
                 />
                 {recorder.error && (
@@ -280,6 +282,7 @@ function Widget({
           workspace={workspace}
           recorder={recorder}
           basePath={basePath}
+          apiPath={apiPath}
           tab={tab}
           onTabChange={setTab}
         >

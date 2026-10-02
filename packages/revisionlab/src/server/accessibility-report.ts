@@ -2,7 +2,7 @@ import { z } from "zod";
 import { MAX_ACCESSIBILITY_REPORT_BYTES } from "../accessibility.js";
 
 export const accessibilityReportSchema = z
-  .object({
+  .strictObject({
     status: z.enum(["passed", "issues", "review", "unavailable"]),
     checkedAt: z.string().datetime().optional(),
     engineVersion: z.string().min(1).max(40).optional(),
@@ -12,8 +12,7 @@ export const accessibilityReportSchema = z
     reason: z.enum(["changed", "failed", "not-scanned"]).optional(),
     issues: z
       .array(
-        z
-          .object({
+        z.strictObject({
             id: z.string().min(1).max(100),
             help: z.string().min(1).max(500),
             helpUrl: z
@@ -35,12 +34,10 @@ export const accessibilityReportSchema = z
               .nullable(),
             count: z.number().int().min(1).max(1000000),
             targets: z.array(z.string().min(1).max(256)).max(10),
-          })
-          .strict(),
+          }),
       )
       .max(50),
   })
-  .strict()
   .refine(
     (value) =>
       new TextEncoder().encode(JSON.stringify(value)).byteLength <=

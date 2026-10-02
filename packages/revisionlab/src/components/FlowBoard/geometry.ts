@@ -18,10 +18,11 @@ export function arrangeNodes(stepIds: string[]): BoardNode[] {
 
 export function connectionLanes(nodes: BoardNode[], edges: BoardEdge[]) {
   const lanes = new Map<string, number>();
+  const positions = new Map(nodes.map((node, index) => [node.stepId, index]));
   const bottom = Math.max(0, ...nodes.map((node) => node.y + CARD_HEIGHT));
   for (const edge of edges) {
-    const source = nodes.findIndex((node) => node.stepId === edge.sourceStepId);
-    const target = nodes.findIndex((node) => node.stepId === edge.targetStepId);
+    const source = positions.get(edge.sourceStepId) ?? -1;
+    const target = positions.get(edge.targetStepId) ?? -1;
     if (edge.kind === "manual" || target !== source + 1)
       lanes.set(edge.id, bottom + 40 + lanes.size * 44);
   }

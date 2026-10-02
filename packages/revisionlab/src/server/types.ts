@@ -22,6 +22,8 @@ export interface RevisionLabConfig {
   ownerEmail?: string;
   resendApiKey?: string;
   emailFrom?: string;
+  systemUrl?: string;
+  personaEncryptionKey?: string;
   basePath?: string;
   apiPath?: string;
   localOwner?: boolean;
@@ -154,6 +156,30 @@ export interface RevisionLabPersona {
   archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  hasCredentials: boolean;
+}
+
+export type RevisionLabMembershipStatus =
+  | "pending"
+  | "active"
+  | "suspended"
+  | "removed";
+
+export interface RevisionLabMembership {
+  id: string;
+  email: string;
+  name: string | null;
+  role: RevisionLabRole;
+  status: RevisionLabMembershipStatus;
+  source: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RevisionLabAccessSettings {
+  systemUrl: string;
+  allowedEmails: string[];
+  joinCodeCreatedAt: string | null;
 }
 
 export interface RevisionLabState {
@@ -164,6 +190,8 @@ export interface RevisionLabState {
   comments: RevisionLabComment[];
   invitations: RevisionLabInvitation[];
   personas: RevisionLabPersona[];
+  memberships: RevisionLabMembership[];
+  accessSettings: RevisionLabAccessSettings | null;
 }
 
 export interface RevisionLabRouteContext {

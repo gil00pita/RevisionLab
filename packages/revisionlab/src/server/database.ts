@@ -77,6 +77,16 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
         ["edge_id", "TEXT"],
         ["element_anchor", "TEXT"],
       ],
+      workspace_settings: [
+        ["system_url", "TEXT"],
+        ["allowed_email_rules", "TEXT NOT NULL DEFAULT '[]'"],
+        ["join_code_hash", "TEXT"],
+        ["join_code_created_at", "TEXT"],
+      ],
+      sessions: [
+        ["membership_id", "TEXT"],
+        ["membership_revision", "INTEGER"],
+      ],
     };
     for (const [table, columns] of Object.entries(additions)) {
       const existing = await transaction.execute(`PRAGMA table_info(${table})`);

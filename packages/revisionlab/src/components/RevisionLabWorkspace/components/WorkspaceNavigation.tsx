@@ -10,7 +10,11 @@ import type { RefObject } from "react";
 import type { RevisionLabState } from "../../../server/types.js";
 
 export type WorkspaceView =
-  "flows" | "comments" | "people" | "personas" | "settings";
+  | "flows"
+  | "comments"
+  | "people"
+  | "personas"
+  | "settings";
 
 export function WorkspaceNavigation({
   data,
@@ -88,7 +92,7 @@ export function WorkspaceNavigation({
           <Icon>
             <Users />
           </Icon>
-          Review access
+          Users & roles
         </NavigationButton>
       )}
     </Stack>

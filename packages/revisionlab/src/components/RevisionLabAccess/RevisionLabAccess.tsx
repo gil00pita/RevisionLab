@@ -61,8 +61,8 @@ export function RevisionLabAccess({
                 Join the review
               </Heading>
               <Text color="gray.600" lineHeight="tall">
-                Use your invitation and email to open the prototype, follow its
-                flows, and leave feedback.
+                Use your workspace code or member email to open the prototype,
+                follow its flows, and leave feedback.
               </Text>
             </Stack>
             <Box
@@ -81,7 +81,7 @@ export function RevisionLabAccess({
               </Icon>
               <Text>
                 No password or Vercel account needed. Ask the project owner for
-                an invitation if you do not have one.
+                a workspace code or to add your email.
               </Text>
             </HStack>
             <Link href="/" color="blue.700" fontSize="sm" alignSelf="start">

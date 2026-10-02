@@ -43,11 +43,12 @@ export function useFlowList({
   );
   const eligible = filtered.filter((flow) => !active.has(flow.familyId));
   const selection = checked.filter((id) => latest.has(id) && !active.has(id));
+  const selectedFamilies = new Set(selection);
   const allChecked =
     eligible.length > 0 &&
-    eligible.every((flow) => selection.includes(flow.familyId));
+    eligible.every((flow) => selectedFamilies.has(flow.familyId));
   const someChecked = eligible.some((flow) =>
-    selection.includes(flow.familyId),
+    selectedFamilies.has(flow.familyId),
   );
   function toggleSelection() {
     if (disabled || busy) return;
@@ -65,9 +66,12 @@ export function useFlowList({
     setTargets(
       ids.map((familyId) => {
         const versions = flows.filter((flow) => flow.familyId === familyId);
+        const latestFlow = latest.get(familyId);
+        if (!latestFlow)
+          throw new Error("The selected flow is no longer available.");
         return {
           familyId,
-          name: latest.get(familyId)!.name,
+          name: latestFlow.name,
           versions: versions.length,
           screens: versions.reduce(
             (count, flow) => count + flow.steps.length,

@@ -10,6 +10,7 @@ import {
   usePopoverContext,
 } from "@chakra-ui/react";
 import { ArrowLeft, RefreshCw } from "lucide-react";
+import { formatUtcTimestamp } from "../../../client/date-format.js";
 import { useAccessibilityInspection } from "../hooks/useAccessibilityInspection.js";
 import type { PageAccessibility } from "../hooks/usePageAccessibility.js";
 import { AccessibilityMarkers } from "./AccessibilityMarkers.js";
@@ -23,13 +24,11 @@ export function AccessibilityResults({
   label,
   onRerun,
   disabled,
-  onPlacementChange,
 }: {
   result: PageAccessibility;
   label: string;
   onRerun: () => void;
   disabled: boolean;
-  onPlacementChange: (top: boolean) => void;
 }) {
   const inspection = useAccessibilityInspection(
     result.status === "issues" ? result.issues : [],
@@ -46,17 +45,16 @@ export function AccessibilityResults({
     active &&
     inspection.highlight &&
     inspection.highlight.y + inspection.highlight.height >
-      window.innerHeight / 2,
+      inspection.viewportHeight / 2,
   );
   useEffect(() => {
-    onPlacementChange(topPanel);
     reposition({
       placement: topPanel ? "bottom-end" : "top",
       getAnchorRect: topPanel
         ? () => ({ x: window.innerWidth - 16, y: 8, width: 0, height: 0 })
         : undefined,
     });
-  }, [topPanel, onPlacementChange, reposition]);
+  }, [topPanel, reposition]);
   return (
     <>
       <AccessibilityMarkers inspection={inspection} />
@@ -117,7 +115,7 @@ export function AccessibilityResults({
                 </Text>
                 {result.checkedAt && (
                   <Text fontSize="xs" color="gray.600">
-                    Checked {new Date(result.checkedAt).toLocaleTimeString()}
+                    Checked {formatUtcTimestamp(result.checkedAt)}
                   </Text>
                 )}
                 {result.error && (

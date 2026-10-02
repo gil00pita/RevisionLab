@@ -68,7 +68,7 @@ export function AccessibilityIssue({
         const available =
           current && Boolean(inspectableElement({ issue, index }));
         return (
-          <Box key={index} maxW="full">
+          <Box key={target.label} maxW="full">
             <Button
               variant="plain"
               size="xs"

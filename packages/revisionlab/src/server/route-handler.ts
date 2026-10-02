@@ -9,6 +9,11 @@ import { resolveConfig } from "./config.js";
 import { consumeRateLimit, getDatabase } from "./database.js";
 import { handleFlows } from "./flow-routes.js";
 import { handlePersonas, readPersonas } from "./persona-routes.js";
+import {
+  handleMemberships,
+  readAccessSettings,
+  readMemberships,
+} from "./membership-routes.js";
 import { readComments, readFlows, readInvitations } from "./queries.js";
 import { handleSettings, readSettings } from "./settings.js";
 import { assertSameOrigin, HttpError, json } from "./security.js";
@@ -39,14 +44,23 @@ export function createRevisionLabHandler(
         path.length === 1 &&
         path[0] === "state"
       ) {
-        const [flows, comments, invitations, personas, settings] =
-          await Promise.all([
-            readFlows(client, config.apiPath),
-            readComments(client),
-            actor.role === "owner" ? readInvitations(client) : [],
-            readPersonas(client),
-            readSettings(client),
-          ]);
+        const [
+          flows,
+          comments,
+          invitations,
+          personas,
+          settings,
+          memberships,
+          accessSettings,
+        ] = await Promise.all([
+          readFlows(client, config.apiPath),
+          readComments(client),
+          actor.role === "owner" ? readInvitations(client) : [],
+          readPersonas(client),
+          readSettings(client),
+          actor.role === "owner" ? readMemberships(client) : [],
+          actor.role === "owner" ? readAccessSettings(client, config) : null,
+        ]);
         return json({
           project: { id: config.projectId, name: config.projectName },
           actor,
@@ -55,6 +69,8 @@ export function createRevisionLabHandler(
           invitations,
           personas,
           settings,
+          memberships,
+          accessSettings,
         });
       }
       if (
@@ -65,13 +81,15 @@ export function createRevisionLabHandler(
       ) {
         return await readArtifact(path[1], client, config);
       }
-      if (!["POST", "PATCH"].includes(request.method))
+      if (!["POST", "PATCH", "DELETE"].includes(request.method))
         throw new HttpError(404, "Not found.");
       await consumeRateLimit(client, `mutate:${actor.id}`, 120, 60_000);
       if (path[0] === "flows")
         return await handleFlows(request, path, client, config, actor);
       if (path[0] === "personas")
-        return await handlePersonas(request, path, client, actor);
+        return await handlePersonas(request, path, client, actor, config);
+      if (path[0] === "members" || path[0] === "access")
+        return await handleMemberships(request, path, client, config, actor);
       if (path[0] === "settings")
         return await handleSettings(request, path, client, actor);
       if (path[0] === "comments")

@@ -8,7 +8,7 @@ import { HttpError, json, readJson } from "./security.js";
 import type { RevisionLabActor } from "./types.js";
 
 const deletionSchema = z
-  .object({
+  .strictObject({
     familyIds: z
       .array(z.string().uuid())
       .min(1)
@@ -17,8 +17,7 @@ const deletionSchema = z
         (ids) => new Set(ids).size === ids.length,
         "Choose each flow once.",
       ),
-  })
-  .strict();
+  });
 
 export async function deleteFlows(
   request: Request,

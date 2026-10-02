@@ -1,102 +1,117 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiRequest } from "../../../client/api.js";
-
-interface Challenge {
-  challengeId: string;
-  devCode?: string;
-}
 
 export function useReviewAccess(apiPath: string, basePath: string) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [code, setCode] = useState("");
-  const [challenge, setChallenge] = useState<Challenge | null>(null);
+  const [joinCode, setJoinCode] = useState(() =>
+    typeof window === "undefined"
+      ? ""
+      : (new URLSearchParams(window.location.search).get("code") ?? ""),
+  );
+  const [loginToken] = useState(() =>
+    typeof window === "undefined"
+      ? ""
+      : (new URLSearchParams(window.location.search).get("login") ?? ""),
+  );
+  const [returnTo] = useState(() =>
+    typeof window === "undefined"
+      ? basePath
+      : (new URLSearchParams(window.location.search).get("returnTo") ??
+        basePath),
+  );
+  const [requested, setRequested] = useState(false);
+  const [devLoginUrl, setDevLoginUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const inviteToken = useRef<string | undefined>(undefined);
+  const consuming = useRef(false);
 
-  useEffect(() => {
-    const query = new URLSearchParams(window.location.search);
-    inviteToken.current = query.get("invite") ?? undefined;
-  }, []);
-
-  async function requestCode() {
+  async function requestLink() {
     if (busy) return;
     setBusy(true);
     setError("");
     setNotice("");
     try {
-      const result = await apiRequest<Challenge>(apiPath, "auth/request", {
-        method: "POST",
-        body: JSON.stringify({
-          email: email.trim(),
-          inviteToken: inviteToken.current,
-        }),
-      });
-      setChallenge(result);
-      setCode("");
+      const result = await apiRequest<{ ok: true; devLoginUrl?: string }>(
+        apiPath,
+        "auth/magic-request",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            email: email.trim(),
+            name: name.trim(),
+            joinCode: joinCode.trim() || undefined,
+            returnTo,
+          }),
+        },
+      );
+      setRequested(true);
+      setDevLoginUrl(result.devLoginUrl ?? "");
       setNotice(
-        challenge
-          ? "A new code is ready. Use the latest code to continue."
-          : "",
+        "If this email can access the workspace, a single-use login link has been sent.",
       );
     } catch (cause) {
       setError(
         cause instanceof Error
           ? cause.message
-          : "We could not send your code. Please try again.",
+          : "We could not send your login link.",
       );
     } finally {
       setBusy(false);
     }
   }
 
-  async function verifyCode() {
-    if (!challenge || busy) return;
-    setBusy(true);
-    setError("");
-    try {
-      await apiRequest(apiPath, "auth/verify", {
-        method: "POST",
-        body: JSON.stringify({
-          challengeId: challenge.challengeId,
-          email: email.trim(),
-          code: code.trim(),
-          name: name.trim(),
-        }),
-      });
-      window.location.assign(basePath);
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "We could not verify your code. Please try again.",
-      );
-      setBusy(false);
-    }
-  }
+  const consumeLink = useCallback(
+    async function consumeLink() {
+      if (!loginToken || busy) return;
+      setBusy(true);
+      setError("");
+      try {
+        const result = await apiRequest<{ returnTo: string }>(
+          apiPath,
+          "auth/magic-consume",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              token: loginToken,
+              name: name.trim() || undefined,
+            }),
+          },
+        );
+        window.location.assign(result.returnTo || basePath);
+      } catch (cause) {
+        setError(
+          cause instanceof Error
+            ? cause.message
+            : "We could not use this login link.",
+        );
+        setBusy(false);
+      }
+    },
+    [apiPath, basePath, busy, loginToken, name],
+  );
 
-  function changeEmail() {
-    setChallenge(null);
-    setCode("");
-    setError("");
-    setNotice("");
-  }
+  useEffect(() => {
+    if (!loginToken || consuming.current) return;
+    consuming.current = true;
+    void consumeLink();
+  }, [consumeLink, loginToken]);
 
   return {
     email,
     setEmail,
     name,
     setName,
-    code,
-    setCode,
-    challenge,
+    joinCode,
+    setJoinCode,
+    loginToken,
+    requested,
+    devLoginUrl,
     busy,
     error,
     notice,
-    requestCode,
-    verifyCode,
-    changeEmail,
+    requestLink,
+    consumeLink,
   };
 }

@@ -6,7 +6,7 @@ import { routeSchema } from "./flow-routes.js";
 import { HttpError } from "./security.js";
 
 export const commentSchema = z
-  .object({
+  .strictObject({
     body: z.string().trim().min(1).max(4_000),
     route: routeSchema.optional(),
     flowId: z.string().uuid().nullable().optional(),
@@ -19,16 +19,15 @@ export const commentSchema = z
       .nullable()
       .optional(),
     anchor: z
-      .object({
+      .strictObject({
         x: z.number().finite().min(0).max(1),
         y: z.number().finite().min(0).max(1),
       })
-      .strict()
       .nullable()
       .optional(),
     parentId: z.string().uuid().nullable().optional(),
     elementAnchor: z
-      .object({
+      .strictObject({
         selector: z.string().trim().min(1).max(2000),
         tag: z
           .string()
@@ -36,11 +35,9 @@ export const commentSchema = z
           .max(80),
         label: z.string().trim().min(1).max(160),
       })
-      .strict()
       .nullable()
       .optional(),
-  })
-  .strict();
+  });
 
 export async function commentContext(
   transaction: Transaction,

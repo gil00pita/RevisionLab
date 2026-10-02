@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
         {/* THESIS: captured journeys connect prototype screens with durable feedback.
         OWN-WORLD: white paper, navy tools, blue active states, supplied blue RevisionLab mark.

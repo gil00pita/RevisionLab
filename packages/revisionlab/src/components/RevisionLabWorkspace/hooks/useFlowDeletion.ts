@@ -36,12 +36,13 @@ export function useFlowDeletion({
         body: JSON.stringify({ familyIds }),
       });
       // Keep confirmed deletions hidden even if an older poll finishes later.
+      const removedFamilies = new Set(familyIds);
       setRemoved((previous) => ({
         families: new Set([...previous.families, ...familyIds]),
         versions: new Set([
           ...previous.versions,
           ...(data?.flows
-            .filter((flow) => familyIds.includes(flow.familyId))
+            .filter((flow) => removedFamilies.has(flow.familyId))
             .map((flow) => flow.id) ?? []),
         ]),
       }));
