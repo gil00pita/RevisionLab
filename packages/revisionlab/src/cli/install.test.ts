@@ -328,3 +328,86 @@ test("layout parser preserves directives and ignores body-like text in strings",
     /expected one native/,
   );
 });
+
+test(
+  "CLI preserves integrations after npm fails and prints the exact recovery command",
+  { skip: process.platform === "win32" },
+  async (t) => {
+    const project = await fixture(t);
+    const bin = path.join(project.root, "test-bin");
+    await mkdir(bin);
+    const npm = path.join(bin, "npm");
+    const calls = path.join(project.root, "npm-calls.jsonl");
+    await writeFile(
+      npm,
+      `#!${process.execPath}
+const { appendFileSync } = require("node:fs");
+appendFileSync(${JSON.stringify(calls)}, JSON.stringify(process.argv.slice(2)) + "\\n");
+console.error("npm error code ERESOLVE");
+console.error("npm error peerOptional eslint@^10.0.0 from @eslint/js@10.0.1");
+process.exitCode = 1;
+`,
+    );
+    await chmod(npm, 0o755);
+    const cli = fileURLToPath(new URL("./index.js", import.meta.url));
+    const packageSpec = path.join(project.root, "local team's build.tgz");
+    const result = spawnSync(
+      process.execPath,
+      [cli, "init", "--cwd", project.root, "--package", packageSpec],
+      { encoding: "utf8", env: { ...process.env, PATH: bin } },
+    );
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /npm error code ERESOLVE/);
+    assert.match(result.stderr, /Generated files and backups have been kept/);
+    assert.match(
+      result.stderr,
+      /host project's entire dependency tree, including devDependencies/,
+    );
+    assert.match(result.stderr, /fix the conflicting versions/);
+    const expectedCall = `${JSON.stringify(["install", packageSpec])}\n`;
+    assert.equal(await readFile(calls, "utf8"), expectedCall);
+    assert.equal(
+      await exists(path.join(project.root, "revisionlab.config.ts")),
+      true,
+    );
+    assert.equal(
+      await exists(path.join(project.root, ".revisionlab/installation.json")),
+      true,
+    );
+    assert.equal(
+      await readFile(
+        path.join(project.root, ".revisionlab/backups/src/app/layout.tsx"),
+        "utf8",
+      ),
+      project.layout,
+    );
+    assert.doesNotMatch(result.stdout, /Run your development server/);
+    const rerun = await initialize({ cwd: project.root });
+    assert.deepEqual(rerun.changed, []);
+    // Execute the printed retry against the fake npm to verify shell quoting.
+    const retryCommand = result.stderr
+      .split("\n")
+      .find((line) => line.startsWith("  npm install "));
+    assert.ok(retryCommand, result.stderr);
+    const retry = spawnSync("/bin/sh", ["-c", retryCommand], {
+      encoding: "utf8",
+      env: { ...process.env, PATH: bin },
+    });
+    assert.equal(retry.status, 1, retry.stderr);
+    assert.equal(await readFile(calls, "utf8"), expectedCall.repeat(2));
+  },
+);
+
+test("CLI explains when npm cannot be started and retains generated files", async (t) => {
+  const project = await fixture(t);
+  const cli = fileURLToPath(new URL("./index.js", import.meta.url));
+  const result = spawnSync(
+    process.execPath,
+    [cli, "init", "--cwd", project.root],
+    { encoding: "utf8", env: { ...process.env, PATH: "" } },
+  );
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Could not run npm:/);
+  assert.match(result.stderr, /npm install ["']revisionlab@/);
+  assert.equal(await exists(path.join(project.root, "revisionlab.config.ts")), true);
+});

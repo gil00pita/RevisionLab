@@ -81,8 +81,20 @@ async function main() {
       },
     );
     if (child.error || child.status !== 0) {
+      const quotedSpec =
+        process.platform === "win32"
+          ? JSON.stringify(packageSpec)
+          : `'${packageSpec.replace(/'/g, "'\\''")}'`;
       throw new Error(
-        "Files are ready, but npm install failed. Run npm install with your RevisionLab package spec, then start the app.",
+        [
+          "Files are ready, but npm install failed. Generated files and backups have been kept.",
+          child.error ? `Could not run npm: ${child.error.message}` : "",
+          "npm resolves the host project's entire dependency tree, including devDependencies. If npm reported ERESOLVE, fix the conflicting versions shown above in the host project's package.json first.",
+          `Then retry from ${result.project.root}:\n  npm install ${quotedSpec}`,
+          "After installation succeeds, run your development server and visit /revisionlab. Re-running init is optional; it preserves customized integration files.",
+        ]
+          .filter(Boolean)
+          .join("\n"),
       );
     }
   }

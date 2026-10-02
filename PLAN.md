@@ -1498,6 +1498,7 @@ Build this on the existing screen-capture release before introducing action repl
 
 - Package/CLI structure and a Next.js host fixture
 - Idempotent initialization and layout integration
+- Implemented locally, not yet published: preserve generated files and npm diagnostics after a failed dependency install; explain host-tree ERESOLVE conflicts and print an exact-version/archive retry command. Cover nonzero npm exits and unavailable npm without automatic peer-check bypasses.
 - Floating widget and full-page workspace route
 - Scoped styling, lazy loading, and server/client package boundaries
 - Dedicated review-environment gating and route protection

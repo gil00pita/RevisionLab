@@ -112,6 +112,20 @@ npx revisionlab --help
 
 `--no-install` skips dependency installation but still adapts conventional development/build scripts; install `revisionlab` yourself afterward. The default dependency installation uses npm. In a pnpm/yarn project, use `--no-install` and the project's package manager.
 
+### Recover from a failed npm install
+
+If init reports **Files are ready, but npm install failed**, the generated integration files and `.revisionlab/backups/` remain in place. npm checks the host's entire dependency tree, including development tools, when adding RevisionLab. An `ERESOLVE` error can therefore come from an existing host dependency conflict.
+
+For example, `eslint@9.39.5` conflicts with `@eslint/js@10.0.1`, which requires ESLint 10. To keep ESLint 9, run these commands in the host project:
+
+```bash
+npm install --save-dev @eslint/js@9
+npm install revisionlab@0.1.1
+npm run dev
+```
+
+Replace `revisionlab@0.1.1` with the exact version or local `.tgz` originally used. The local CLI now prints that retry command on failure; this improved guidance is not yet published. You do not need to rerun init. Resolve incompatible versions rather than bypassing peer checks with `--force` or `--legacy-peer-deps`; RevisionLab does not change host lint dependencies.
+
 ## Local recording and feedback
 
 Camera setup opens in a popover immediately above the bottom-right widget, matching accessibility-panel placement. Successful Stop shows **Recording ended and saved** with a **View recording** link to that exact flow/version. The confirmation is dismissible and does not expire automatically. Failed saves show an error and remain retryable, never a success confirmation.
