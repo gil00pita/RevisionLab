@@ -1,5 +1,9 @@
 # Build Instructions — RevisionLab Embedded Review
 
+## Current increment — First-use setup wizard
+
+Implemented locally, not yet published: a persisted owner-led wizard in the embedded workspace: required identity and detected/editable live URL, followed by widget appearance/position/visibility, live comments with inherited color, live and recorded accessibility checks, optional persona recommendations, and existing users/roles management. Widget placement is limited to Bottom Left or Bottom Right, with legacy top placements migrated to the matching bottom side. New installations show a Setup-only launcher, and the wizard has no top Back to prototype link. Save progress with retryable errors, allow skipping after step one, retain normal settings access, and migrate established installations without interruption. Validation covers first-use detection, required-step enforcement, saved preferences, authorization, reload, skip, and responsive keyboard behavior; see VALIDATION.md. PRODUCT.md defines the ordered flow and exact persona recommendations.
+
 ## Current security increment — workspace users, roles, and persona credentials
 
 Confirmed and implemented locally 2 October 2026; not yet published. Durable workspace membership and a **Users & roles** workspace view now absorb the current **Review access** view while preserving legacy invitation routes during migration. Owner, Editor, and Commenter remain the fixed default roles. Owners manage members, role assignments, join-code/email policies, the canonical system URL, and persona credentials. Editors create flows, choose personas, record, and manage non-secret persona details. Commenters review and comment only. Self-join assigns Commenter by default; custom role creation is not in confirmed scope.

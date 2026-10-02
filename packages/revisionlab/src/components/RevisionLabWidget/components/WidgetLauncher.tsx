@@ -9,6 +9,10 @@ import {
   Text,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
+import {
+  commentBubbleTokens,
+  type RevisionLabSettings,
+} from "../../../comment-settings.js";
 import { Camera, MessageSquarePlus, Square } from "lucide-react";
 import type { PageAccessibility } from "../hooks/usePageAccessibility.js";
 import { AccessibilityControl } from "./AccessibilityControl.js";
@@ -18,6 +22,7 @@ const markUrl = new URL("../../../../assets/widget-mark.svg", import.meta.url)
   .href;
 
 export function WidgetLauncher({
+  settings,
   recording,
   canRecord,
   commenting,
@@ -30,6 +35,7 @@ export function WidgetLauncher({
   onComment,
   authorized,
 }: {
+  settings: RevisionLabSettings;
   recording: boolean;
   canRecord: boolean;
   commenting: boolean;
@@ -42,6 +48,8 @@ export function WidgetLauncher({
   onRecord: () => void;
   onComment: () => void;
 }) {
+  const colors = commentBubbleTokens(settings.widgetColor);
+  const left = settings.widgetPosition.endsWith("left");
   const recordLabel = recording ? "Stop recording" : "Record prototype";
   const commentLabel = commenting ? "Stop commenting" : "Comment on an element";
   return (
@@ -51,11 +59,12 @@ export function WidgetLauncher({
       aria-label="RevisionLab toolbar"
       position="fixed"
       bottom={{ base: "4", md: "6" }}
-      right={{ base: "3", md: "6" }}
+      right={left ? undefined : { base: "3", md: "6" }}
+      left={left ? { base: "3", md: "6" } : undefined}
       zIndex="popover"
       align="center"
-      bg="blue.600"
-      color="white"
+      bg={colors.solid}
+      color={colors.contrast}
       borderRadius="full"
       shadow="lg"
       maxW="calc(100vw - 1.5rem)"
@@ -68,7 +77,7 @@ export function WidgetLauncher({
           display="inline-flex"
           alignItems="center"
           flexShrink="0"
-          color="white"
+          color={colors.contrast}
           h="14"
           gap="2"
           px={{ base: "3", md: "5" }}
@@ -89,13 +98,16 @@ export function WidgetLauncher({
           </NextLink>
         </Link>
       </ToolHint>
-      <Box borderLeftWidth="1px" borderColor="whiteAlpha.400">
-        <AccessibilityControl
-          result={accessibility}
-          onRerun={onRerun}
-          disabled={!authorized}
-        />
-      </Box>
+      {settings.auditLivePages && (
+        <Box borderLeftWidth="1px" borderColor="whiteAlpha.400">
+          <AccessibilityControl
+            result={accessibility}
+            onRerun={onRerun}
+            disabled={!authorized}
+            color={colors.contrast}
+          />
+        </Box>
+      )}
       {canRecord && (
         <Box borderLeftWidth="1px" borderColor="whiteAlpha.400">
           <ToolHint label={recordLabel}>
@@ -105,7 +117,7 @@ export function WidgetLauncher({
               onClick={onRecord}
               disabled={busy}
               variant="plain"
-              color="white"
+              color={recording ? "white" : colors.contrast}
               bg={recording ? "red.700" : "transparent"}
               h="14"
               w={{ base: "12", md: "14" }}
@@ -130,7 +142,7 @@ export function WidgetLauncher({
             onClick={onComment}
             disabled={!authorized}
             variant="plain"
-            color="white"
+            color={commenting ? "white" : colors.contrast}
             bg={commenting ? "blue.800" : "transparent"}
             h="14"
             w={{ base: "12", md: "14" }}

@@ -1,3 +1,4 @@
+import { withSetupOwner } from "./owner-identity.js";
 import { randomUUID } from "node:crypto";
 import type { Client } from "@libsql/client";
 import { z } from "zod";
@@ -56,6 +57,7 @@ export async function handleAuth(
   client: Client,
   config: ResolvedConfig,
 ): Promise<Response> {
+  config = await withSetupOwner(client, config);
   if (request.method === "GET" && path.length === 1 && path[0] === "options") {
     return json({
       localOwner: Boolean(config.localOwner && isLoopback(request)),

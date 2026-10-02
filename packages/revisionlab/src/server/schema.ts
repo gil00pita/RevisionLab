@@ -1,4 +1,9 @@
 export const schema = [
+  `CREATE TABLE IF NOT EXISTS setup_progress (
+    id INTEGER PRIMARY KEY CHECK(id = 1), step INTEGER NOT NULL DEFAULT 0,
+    completed INTEGER NOT NULL DEFAULT 0, name TEXT NOT NULL DEFAULT '',
+    email TEXT NOT NULL DEFAULT ''
+  )`,
   `CREATE TABLE IF NOT EXISTS workspace_settings (
     id INTEGER PRIMARY KEY CHECK(id = 1),
     show_comment_bubbles INTEGER NOT NULL DEFAULT 1 CHECK(show_comment_bubbles IN (0, 1)),

@@ -1,3 +1,4 @@
+import { withSetupOwner } from "./owner-identity.js";
 import { randomUUID } from "node:crypto";
 import type { Client } from "@libsql/client";
 import { resolveConfig, type ResolvedConfig } from "./config.js";
@@ -18,6 +19,7 @@ export async function authenticate(
   client: Client,
   config: ResolvedConfig,
 ): Promise<RevisionLabActor> {
+  config = await withSetupOwner(client, config);
   const token = readCookie(request, sessionCookieName(config));
   if (token) {
     if (token.length > 128)
@@ -67,14 +69,28 @@ export async function authenticate(
   }
   if (config.localOwner && isLoopback(request)) {
     const email = config.ownerEmail ?? "owner@localhost";
-    const id = await write(client, async (transaction) => {
+    const existing = await client.execute({
+      sql: `SELECT reviewers.id, reviewers.name FROM reviewers
+        JOIN workspace_memberships ON workspace_memberships.reviewer_id = reviewers.id
+        WHERE reviewers.email = ?`,
+      args: [email],
+    });
+    if (existing.rows[0])
+      return {
+        id: String(existing.rows[0].id),
+        name: String(existing.rows[0].name),
+        email,
+        role: "owner",
+        local: true,
+      };
+    const localActor = await write(client, async (transaction) => {
       const now = new Date().toISOString();
       await transaction.execute({
         sql: "INSERT OR IGNORE INTO reviewers (id, email, name, created_at) VALUES (?, ?, ?, ?)",
         args: [randomUUID(), email, "Local owner", now],
       });
       const result = await transaction.execute({
-        sql: "SELECT id FROM reviewers WHERE email = ?",
+        sql: "SELECT id, name FROM reviewers WHERE email = ?",
         args: [email],
       });
       const reviewerId = String(result.rows[0].id);
@@ -84,9 +100,9 @@ export async function authenticate(
           ON CONFLICT(email) DO NOTHING`,
         args: [randomUUID(), reviewerId, email, now, now, now],
       });
-      return reviewerId;
+      return { id: reviewerId, name: String(result.rows[0].name) };
     });
-    return { id, email, name: "Local owner", role: "owner", local: true };
+    return { ...localActor, email, role: "owner", local: true };
   }
   throw new HttpError(401, "Open a valid review invitation to continue.");
 }

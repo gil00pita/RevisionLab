@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Icon, IconButton, Image, Popover, Portal, Spinner } from "@chakra-ui/react";
+import {
+  Icon,
+  IconButton,
+  Image,
+  Popover,
+  Portal,
+  Spinner,
+} from "@chakra-ui/react";
 import { CircleHelp, CircleAlert } from "lucide-react";
 import type { PageAccessibility } from "../hooks/usePageAccessibility.js";
 import { AccessibilityResults } from "./AccessibilityResults.js";
@@ -23,10 +30,12 @@ const labels: Record<PageAccessibility["status"], string> = {
   error: "Accessibility: check failed",
 };
 export function AccessibilityControl({
+  color = "white",
   result,
   onRerun,
   disabled,
 }: {
+  color?: string;
   result: PageAccessibility;
   onRerun: () => void;
   disabled: boolean;
@@ -59,7 +68,7 @@ export function AccessibilityControl({
           h="14"
           borderRadius="0"
           variant="plain"
-          color="white"
+          color={color}
           _hover={{ bg: "blackAlpha.200" }}
           focusRing="inset"
         >
@@ -75,11 +84,7 @@ export function AccessibilityControl({
             />
           ) : (
             <Icon boxSize="7">
-              {result.status === "error" ? (
-                <CircleAlert />
-              ) : (
-                <CircleHelp />
-              )}
+              {result.status === "error" ? <CircleAlert /> : <CircleHelp />}
             </Icon>
           )}
         </IconButton>

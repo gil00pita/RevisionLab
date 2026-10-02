@@ -13,12 +13,14 @@ import { AddMemberForm } from "./components/AddMemberForm.js";
 import { MembershipList } from "./components/MembershipList.js";
 
 export function UsersRoleManager({
+  onBusyChange,
   apiPath,
   basePath,
   memberships,
   settings,
   onRefresh,
 }: {
+  onBusyChange?: (busy: boolean) => void;
   apiPath: string;
   basePath: string;
   memberships: RevisionLabMembership[];
@@ -44,6 +46,7 @@ export function UsersRoleManager({
   ) {
     if (busy) return;
     setBusy(key);
+    onBusyChange?.(true);
     setError("");
     setNotice("");
     try {
@@ -58,6 +61,7 @@ export function UsersRoleManager({
       );
     } finally {
       setBusy("");
+      onBusyChange?.(false);
     }
   }
 
@@ -162,8 +166,7 @@ export function UsersRoleManager({
               apiRequest(apiPath, `members/${member.id}`, {
                 method: "PATCH",
                 body: JSON.stringify({
-                  status:
-                    member.status === "active" ? "suspended" : "active",
+                  status: member.status === "active" ? "suspended" : "active",
                 }),
               }),
             member.status === "active"

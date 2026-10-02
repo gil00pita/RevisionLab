@@ -1,5 +1,7 @@
 # RevisionLab
 
+First-use wizard (implemented locally; not yet published): on a fresh workspace, the prototype shows **Setup** with a “Let’s set up RevisionLab” introduction. The workspace wizard saves the owner’s name/email and an editable, detected live URL first. Then configure widget color, position and visibility, live comments, accessibility checks, optional personas, and users/roles. You can skip the remaining steps after saving the first step. Progress and preferences persist in the workspace database; existing installations retain their normal interface. All optional settings remain available afterward, even when the widget is hidden. Explicit server owner-email configuration takes precedence; hosted email delivery still needs server configuration.
+
 ## Local Codex fixes and Jira drafts
 
 In **Screen & comments**, **Fix with Codex** runs on all open screen comments/saved accessibility issues or on an individual comment/rule. A signed-in local Codex CLI uses the workspace AI instructions, route and screen evidence, and recorded screenshot when available to return a before/after proposal. Review it before **Apply locally**, **Discard fix**, or **Create draft PR**. **Undo local fix** restores the saved source only when it has not changed since applying. Existing feedback and captured accessibility reports are preserved; run project checks and a fresh scan before resolving them.

@@ -11,6 +11,7 @@ import { LiveCommentBalloons } from "./components/LiveCommentBalloons.js";
 import { useLiveFeedback } from "./hooks/useLiveFeedback.js";
 import { RevisionLabProvider } from "../RevisionLabProvider/index.js";
 import { WidgetPanel } from "./components/WidgetPanel.js";
+import { SetupLauncher } from "./components/SetupLauncher.js";
 import { WidgetLauncher } from "./components/WidgetLauncher.js";
 import { RecordingSetup } from "./components/RecordingSetup.js";
 import { RecordingPopover } from "./components/RecordingPopover.js";
@@ -62,12 +63,15 @@ function Widget({
   const recorder = useRecording(
     apiPath,
     route,
-    Boolean(data && data.actor.role !== "commenter" && !reviewRoute),
+    Boolean(
+      data?.setup.completed && data.actor.role !== "commenter" && !reviewRoute,
+    ),
     open || live.commenting,
+    settings.auditRecordings,
   );
   const accessibility = usePageAccessibility(
     route,
-    Boolean(data && !reviewRoute),
+    Boolean(data?.setup.completed && settings.auditLivePages && !reviewRoute),
     open || live.commenting,
   );
   const ending =
@@ -148,6 +152,25 @@ function Widget({
       </>
     );
 
+  if (workspace.loading) return null;
+  if (data && !data.setup.completed)
+    return (
+      <SetupLauncher basePath={basePath} owner={data.actor.role === "owner"} />
+    );
+  if (data && !settings.showWidget && !recorder.recording && !live.commenting)
+    return (
+      <>
+        {live.showBalloons && (
+          <LiveCommentBalloons
+            key={route}
+            comments={pageComments}
+            color={settings.commentBubbleColor}
+            commentsHref={commentsHref}
+          />
+        )}
+      </>
+    );
+
   return (
     <>
       {data && live.picking && (
@@ -187,6 +210,7 @@ function Widget({
         />
       )}
       <WidgetLauncher
+        settings={settings}
         recording={Boolean(recorder.recording)}
         canRecord={Boolean(data && data.actor.role !== "commenter")}
         authorized={Boolean(data)}

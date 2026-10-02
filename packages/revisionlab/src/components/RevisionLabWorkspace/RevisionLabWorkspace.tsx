@@ -26,6 +26,7 @@ import { AllComments } from "./components/AllComments.js";
 import { FlowReview } from "./components/FlowReview.js";
 import { EmptyWorkspace } from "./components/EmptyWorkspace.js";
 import { WorkspaceSettings } from "./components/WorkspaceSettings.js";
+import { SetupWizard } from "./components/SetupWizard.js";
 import { defaultSettings } from "../../comment-settings.js";
 import { useFlowDeletion } from "./hooks/useFlowDeletion.js";
 import { workspaceViewTitles } from "./constants.js";
@@ -71,6 +72,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const [flowId, setFlowId] = useState<string | null>(() =>
     searchParams.get("flow"),
   );
+  const [setupFinished, setSetupFinished] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [startingRecording, setStartingRecording] = useState(false);
   const [actionError, setActionError] = useState("");
@@ -197,6 +199,17 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           )}
         </Stack>
       </Flex>
+    );
+
+  if (!data.setup.completed && !setupFinished)
+    return (
+      <SetupWizard
+        onComplete={() => setSetupFinished(true)}
+        data={data}
+        apiPath={apiPath}
+        basePath={basePath}
+        onRefresh={refresh}
+      />
     );
 
   return (

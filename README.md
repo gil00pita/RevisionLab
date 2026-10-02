@@ -1,5 +1,7 @@
 # RevisionLab
 
+First-use wizard (implemented locally; not yet published): on a new installation, choose **Setup** on the prototype to open the first-use wizard. Save your identity and live URL first, then configure the widget, comments, accessibility audits, personas, and users/roles. You can skip the remaining steps after the first save and adjust them later in the workspace. Setup progress is stored in the workspace database.
+
 Review prototype flows, comments, and versions from inside each Next.js project.
 
 The selected flow's title, recording action, and delete action live in the top workspace header. Use the **Whiteboard** and **Screen & comments** tabs to switch views, and the history icon beside them to choose a version. Other workspace pages show their own title: **Comments**, **Personas**, **Settings**, or **Review access**; an empty flow workspace shows **Flows**. Each page has a subtitle describing its purpose, while selected flows show persona, status, and screen count. **Export report** and **Refresh** appear on Flows and Comments only. Reports still include the whole workspace. This compact layout is part of the local build.

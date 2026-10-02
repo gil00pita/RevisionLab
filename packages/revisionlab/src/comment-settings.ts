@@ -14,11 +14,21 @@ export const commentBubbleColors = [
 export type CommentBubbleColor = (typeof commentBubbleColors)[number];
 
 export interface RevisionLabSettings {
+  widgetColor: CommentBubbleColor;
+  widgetPosition: "bottom-right" | "bottom-left";
+  showWidget: boolean;
+  auditLivePages: boolean;
+  auditRecordings: boolean;
   showCommentBubbles: boolean;
   commentBubbleColor: CommentBubbleColor;
 }
 
 export const defaultSettings: RevisionLabSettings = {
+  widgetColor: "blue",
+  widgetPosition: "bottom-right",
+  showWidget: true,
+  auditLivePages: true,
+  auditRecordings: true,
   showCommentBubbles: true,
   commentBubbleColor: "blue",
 };

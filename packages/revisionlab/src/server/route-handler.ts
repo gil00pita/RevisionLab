@@ -1,3 +1,4 @@
+import { handleSetup, readSetup } from "./setup.js";
 import { z } from "zod";
 import { authenticate } from "./authentication.js";
 import { handleAiInstructions } from "./ai-instructions.js";
@@ -62,6 +63,7 @@ export function createRevisionLabHandler(
           actor.role === "owner" ? readAccessSettings(client, config) : null,
         ]);
         return json({
+          setup: await readSetup(client),
           project: { id: config.projectId, name: config.projectName },
           actor,
           flows,
@@ -84,6 +86,8 @@ export function createRevisionLabHandler(
       if (!["POST", "PATCH", "DELETE"].includes(request.method))
         throw new HttpError(404, "Not found.");
       await consumeRateLimit(client, `mutate:${actor.id}`, 120, 60_000);
+      if (path[0] === "setup" && path.length === 1)
+        return await handleSetup(request, client, actor, config);
       if (path[0] === "flows")
         return await handleFlows(request, path, client, config, actor);
       if (path[0] === "personas")
