@@ -1,3 +1,5 @@
+import { aiSettingsSchema } from "../ai-settings-schema.js";
+import { defaultAiSettings } from "../../ai-instructions/index.js";
 import { z } from "zod";
 import type { RevisionLabState } from "../types.js";
 import type { WorkspaceOrigin } from "../../workspace-instances.js";
@@ -93,7 +95,9 @@ export const remoteStateSchema = z.object({
     email: text,
     role: z.enum(["owner", "editor", "commenter"]),
   }),
-  settings: settingsSchema,
+  settings: settingsSchema.extend({
+    ai: aiSettingsSchema.default(defaultAiSettings),
+  }),
   flows: z.array(flow),
   comments: z.array(comment),
   invitations: z.array(z.unknown()).transform(() => []),
@@ -109,7 +113,10 @@ export const remoteStateSchema = z.object({
     }),
   ),
   memberships: z.array(z.unknown()).transform(() => []),
-  accessSettings: z.unknown().nullable().transform(() => null),
+  accessSettings: z
+    .unknown()
+    .nullable()
+    .transform(() => null),
 });
 const ids = new Set([
   "id",

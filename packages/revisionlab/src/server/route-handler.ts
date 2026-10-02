@@ -57,7 +57,7 @@ export function createRevisionLabHandler(
       if (path[0] === "ai")
         return await handleAutomation(request, path, client, config, actor);
       if (path.length === 2 && path[0] === "settings" && path[1] === "ai") {
-        return await handleAiInstructions(request, config, actor);
+        return await handleAiInstructions(request, config, actor, client);
       }
       if (
         request.method === "GET" &&

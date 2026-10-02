@@ -18,7 +18,7 @@ import { AuditSettings } from "./AuditSettings.js";
 import { UsersRoleManager } from "../../UsersRoleManager/index.js";
 import { AppearanceSettings } from "../../AppearanceSettings/index.js";
 import { SystemUrlSettings } from "./SystemUrlSettings.js";
-import { AiSettings } from "./AiSettings.js";
+import { AiInstructionsSettings } from "./AiInstructionsSettings.js";
 
 export function WorkspaceSettings({
   apiPath,
@@ -145,9 +145,6 @@ export function WorkspaceSettings({
           <Tabs.Trigger value="history" px={{ base: "3", md: "4" }}>
             History
           </Tabs.Trigger>
-          <Tabs.Trigger value="ai" px={{ base: "3", md: "4" }}>
-            AI
-          </Tabs.Trigger>
           {canManageInstallation && accessSettings && (
             <Tabs.Trigger value="users" px={{ base: "3", md: "4" }}>
               Users &amp; Roles
@@ -218,6 +215,14 @@ export function WorkspaceSettings({
               busy={busy}
               onSave={update}
             />
+            <Separator />
+            <AiInstructionsSettings
+              key={apiPath}
+              apiPath={apiPath}
+              value={settings.ai}
+              canEdit={canEdit}
+              onRefresh={onRefresh}
+            />
           </Stack>
         </Tabs.Content>
         <Tabs.Content value="history" p="0">
@@ -231,9 +236,6 @@ export function WorkspaceSettings({
             actorRole={actorRole}
             onRefresh={onRefresh}
           />
-        </Tabs.Content>
-        <Tabs.Content value="ai" p="0">
-          <AiSettings apiPath={managementApiPath} canEdit={canEdit} />
         </Tabs.Content>
         {canManageInstallation && accessSettings && (
           <Tabs.Content value="users" p="0">

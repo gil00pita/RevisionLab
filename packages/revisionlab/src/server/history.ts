@@ -24,6 +24,7 @@ const snapshotTables = {
     "widget_position",
     "audit_live_pages",
     "audit_recordings",
+    "ai_instructions_json",
   ],
   personas: [
     "id",
@@ -290,7 +291,9 @@ async function insertRows(
   for (const row of rows)
     await transaction.execute({
       sql,
-      args: columns.map((column) => row[column]),
+      args: columns.map((column) =>
+        column === "ai_instructions_json" ? (row[column] ?? null) : row[column],
+      ),
     });
 }
 

@@ -1,3 +1,4 @@
+import { aiSettingsSchema } from "./ai-settings-schema.js";
 import { wcagVersions, wcagLevels } from "../wcag-settings.js";
 import type { Client, Transaction } from "@libsql/client";
 import { z } from "zod";
@@ -14,6 +15,7 @@ import type { RevisionLabActor } from "./types.js";
 
 export const settingsSchema = z
   .object({
+    ai: aiSettingsSchema,
     wcagVersion: z.enum(wcagVersions),
     wcagLevel: z.enum(wcagLevels),
     showCommentBubbles: z.boolean(),
@@ -44,6 +46,10 @@ export async function readSettings(
   const row = result.rows[0];
   return row
     ? settingsSchema.parse({
+        ai:
+          row.ai_instructions_json == null
+            ? defaultSettings.ai
+            : JSON.parse(String(row.ai_instructions_json)),
         wcagVersion: row.wcag_version,
         wcagLevel: row.wcag_level,
         widgetColor: row.widget_color,
@@ -69,21 +75,21 @@ export async function handleSettings(
   requireRole(actor, "editor");
   if (request.method !== "PATCH" || path.length !== 1)
     throw new HttpError(404, "Not found.");
-  const patch = settingsPatch.parse(await readJson(request));
+  const patch = settingsPatch.parse(await readJson(request, 524_288));
   const settings = await write(client, async (transaction) => {
     const next = { ...(await readSettings(transaction)), ...patch };
     await transaction.execute({
       sql: `INSERT INTO workspace_settings (id, show_comment_bubbles, comment_bubble_color,
         show_widget, widget_color, widget_side, widget_offset, widget_bottom_offset, wcag_version, wcag_level,
-        widget_position, audit_live_pages, audit_recordings)
-        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        widget_position, audit_live_pages, audit_recordings, ai_instructions_json)
+        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET show_comment_bubbles = excluded.show_comment_bubbles,
         comment_bubble_color = excluded.comment_bubble_color, show_widget = excluded.show_widget,
         widget_color = excluded.widget_color, widget_side = excluded.widget_side,
         widget_offset = excluded.widget_offset, widget_bottom_offset = excluded.widget_bottom_offset,
         wcag_version = excluded.wcag_version, wcag_level = excluded.wcag_level,
         widget_position = excluded.widget_position, audit_live_pages = excluded.audit_live_pages,
-        audit_recordings = excluded.audit_recordings`,
+        audit_recordings = excluded.audit_recordings, ai_instructions_json = excluded.ai_instructions_json`,
       args: [
         next.showCommentBubbles ? 1 : 0,
         next.commentBubbleColor,
@@ -97,6 +103,7 @@ export async function handleSettings(
         next.widgetPosition,
         next.auditLivePages ? 1 : 0,
         next.auditRecordings ? 1 : 0,
+        JSON.stringify(next.ai),
       ],
     });
     return next;

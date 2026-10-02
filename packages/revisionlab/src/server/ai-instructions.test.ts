@@ -1,162 +1,228 @@
 import assert from "node:assert/strict";
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
 import test from "node:test";
-import { AI_INSTRUCTIONS_MAX_LENGTH } from "../ai-instructions.js";
-import { createRevisionLabHandler } from "./route-handler.js";
+import { createHash } from "node:crypto";
+import {
+  composeAiInstructions,
+  defaultAiSettings,
+  designSystems,
+} from "../ai-instructions/index.js";
 import { reviewFixture } from "./review-test-fixture.js";
+import { getDatabase } from "./database.js";
+import { readSettings } from "./settings.js";
 
-test("AI instructions start empty and preserve Markdown on disk and through a new handler", async (t) => {
+const selected = {
+  ...defaultAiSettings,
+  designSystemEnabled: true,
+  designSystemId: "govuk-chakra",
+  installSkill: true,
+};
+
+test("fresh installs prefill the complete review prompt; saved edits and empty text survive restart", async (t) => {
   const f = await reviewFixture(t);
-  const before = await f.state();
-  const initial = await f.call("settings/ai");
-  assert.equal(initial.status, 200);
-  assert.deepEqual(await initial.json(), {
-    instructions: "",
-    filePath: f.config.aiInstructionsFile,
+  assert.equal(
+    (await f.state()).settings.ai.instructions,
+    defaultAiSettings.instructions,
+  );
+  // Digest of the complete user-supplied attachment, including whitespace.
+  assert.equal(
+    createHash("sha256").update(defaultAiSettings.instructions).digest("hex"),
+    "5ecfeef7cdf91a0fb2aa495ef08cec80625432714fbf68ad8cf48dfcf414cb90",
+  );
+  assert.ok(defaultAiSettings.instructions.startsWith("# ROLE\n"));
+  assert.ok(defaultAiSettings.instructions.includes("# 7. FINAL PRODUCT READ"));
+  assert.ok(
+    defaultAiSettings.instructions.endsWith(
+      "* Stay in senior reviewer mode during follow-up questions.\n",
+    ),
+  );
+  assert.equal(
+    (await f.call("settings", "PATCH", { ai: selected })).status,
+    200,
+  );
+  const second = await getDatabase({
+    ...f.config,
+    databaseAuthToken: "ai-restart",
   });
-  const instructions =
-    "# Project guidance\n\n- Keep accessible controls.\n- Preserve café ☕.\n\n```tsx\nconst x = 1;\n```\n";
-  assert.equal(
-    (await f.call("settings/ai", "PATCH", { instructions })).status,
-    200,
-  );
-  assert.equal(
-    await readFile(f.config.aiInstructionsFile, "utf8"),
-    instructions,
-  );
-  const reopened = await createRevisionLabHandler(f.config)(
-    new Request("http://127.0.0.1:3000/api/revisionlab/settings/ai"),
-    { params: Promise.resolve({ path: ["settings", "ai"] }) },
-  );
-  assert.equal((await reopened.json()).instructions, instructions);
-  await writeFile(f.config.aiInstructionsFile, "# Edited outside the app\n");
-  assert.equal(
-    (await (await f.call("settings/ai")).json()).instructions,
-    "# Edited outside the app\n",
-  );
-  assert.equal(
-    (await f.call("settings/ai", "PATCH", { instructions: "" })).status,
-    200,
-  );
-  assert.equal(await readFile(f.config.aiInstructionsFile, "utf8"), "");
-  assert.deepEqual(await readdir(dirname(f.config.aiInstructionsFile)), [
-    "ai-instructions.md",
-  ]);
-  assert.deepEqual(await f.state(), before);
-});
-
-test("AI instructions reject unauthorized and cross-origin writes without changing the file", async (t) => {
-  const f = await reviewFixture(t);
-  const editor = await f.login("editor");
-  const commenter = await f.login("commenter");
-  assert.equal(
-    (
-      await f.call(
-        "settings/ai",
-        "PATCH",
-        { instructions: "Keep this." },
-        editor,
-      )
-    ).status,
-    200,
-  );
-  const read = await f.call("settings/ai", "GET", undefined, commenter);
-  assert.equal(read.status, 200);
-  assert.equal((await read.json()).instructions, "Keep this.");
-  assert.equal(
-    (
-      await f.call(
-        "settings/ai",
-        "PATCH",
-        { instructions: "Overwrite" },
-        commenter,
-      )
-    ).status,
-    403,
-  );
-  const handler = createRevisionLabHandler(f.config);
-  const forged = await handler(
-    new Request("http://127.0.0.1:3000/api/revisionlab/settings/ai", {
-      method: "PATCH",
-      headers: {
-        Origin: "https://external.example",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ instructions: "Overwrite" }),
-    }),
-    { params: Promise.resolve({ path: ["settings", "ai"] }) },
-  );
-  assert.equal(forged.status, 403);
-  const anonymous = await handler(
-    new Request("https://host.example/api/revisionlab/settings/ai"),
-    {
-      params: Promise.resolve({ path: ["settings", "ai"] }),
-    },
-  );
-  assert.equal(anonymous.status, 401);
-  assert.equal(
-    await readFile(f.config.aiInstructionsFile, "utf8"),
-    "Keep this.",
-  );
-});
-
-test("AI instructions validate content, size, route, and reject client-controlled paths", async (t) => {
-  const f = await reviewFixture(t);
-  const instructions = "a".repeat(AI_INSTRUCTIONS_MAX_LENGTH);
-  assert.equal(
-    (await f.call("settings/ai", "PATCH", { instructions })).status,
-    200,
-  );
-  for (const input of [
-    null,
-    {},
-    { instructions: 1 },
-    { instructions: null },
-    { instructions: "a".repeat(AI_INSTRUCTIONS_MAX_LENGTH + 1) },
-    { instructions: "Overwrite", filePath: "../../AGENTS.md" },
-  ]) {
-    assert.equal((await f.call("settings/ai", "PATCH", input)).status, 400);
+  try {
+    assert.deepEqual((await readSettings(second)).ai, selected);
+  } finally {
+    second.close();
   }
   assert.equal(
     (
-      await f.call("settings/ai", "PATCH", {
-        instructions: "a".repeat(200_000),
+      await f.call("settings", "PATCH", {
+        ai: { ...selected, instructions: "" },
       })
     ).status,
-    413,
+    200,
   );
-  assert.equal(
-    (await f.call("settings/ai", "POST", { instructions: "Overwrite" })).status,
-    404,
-  );
-  assert.equal(
-    (await f.call("settings/ai/extra", "PATCH", { instructions: "Overwrite" }))
-      .status,
-    404,
-  );
-  assert.equal(
-    await readFile(f.config.aiInstructionsFile, "utf8"),
-    instructions,
-  );
+  assert.equal((await f.state()).settings.ai.instructions, "");
+  await f.call("settings", "PATCH", { commentBubbleColor: "teal" });
+  assert.equal((await f.state()).settings.ai.instructions, "");
 });
 
-test("filesystem failures are explicit, leave no temporary files, and allow retry", async (t) => {
-  const f = await reviewFixture(t);
-  // A directory at the destination deterministically makes reads and rename fail.
-  await mkdir(f.config.aiInstructionsFile, { recursive: true });
-  await writeFile(`${f.config.aiInstructionsFile}/keep.txt`, "Unrelated data");
-  assert.equal((await f.call("settings/ai")).status, 503);
-  const response = await f.call("settings/ai", "PATCH", {
-    instructions: "New draft",
-  });
-  assert.equal(response.status, 503);
-  assert.match((await response.json()).error, /Could not save/);
+test("disabled design systems leave base text exact and never duplicate appended resources", () => {
+  const base = "Custom base instructions\n";
   assert.equal(
-    await readFile(`${f.config.aiInstructionsFile}/keep.txt`, "utf8"),
-    "Unrelated data",
+    composeAiInstructions({
+      ...selected,
+      instructions: base,
+      designSystemEnabled: false,
+    }),
+    base,
   );
-  assert.deepEqual(await readdir(dirname(f.config.aiInstructionsFile)), [
-    "ai-instructions.md",
+  const prompt = composeAiInstructions({ ...selected, instructions: base });
+  assert.ok(prompt.startsWith(base));
+  assert.ok(prompt.includes("DESIGN.md"));
+  assert.ok(prompt.includes("Install the AI skill"));
+  assert.equal(prompt.split("# DESIGN SYSTEM").length, 2);
+  assert.equal(
+    composeAiInstructions({ ...selected, instructions: base }),
+    prompt,
+  );
+  const switched = composeAiInstructions({
+    ...selected,
+    designSystemId: "radix",
+    configureMcp: true,
+  });
+  assert.ok(switched.includes("Radix UI Primitives"));
+  assert.ok(!switched.includes("Install the AI skill"));
+  assert.ok(!switched.includes("Configure the MCP"));
+  assert.ok(!switched.includes("govuk-chakra"));
+});
+
+test("every supplied framework has resources and manual systems append optional setup only when requested", () => {
+  assert.equal(designSystems.length, 18);
+  assert.equal(new Set(designSystems.map((system) => system.id)).size, 18);
+  for (const system of designSystems) {
+    const prompt = composeAiInstructions({
+      ...defaultAiSettings,
+      designSystemEnabled: true,
+      designSystemId: system.id,
+    });
+    assert.ok(prompt.includes(system.githubUrl));
+    assert.ok(prompt.includes(system.docsUrl));
+    for (const url of [system.designUrl, system.skillUrl, system.mcpUrl].filter(
+      Boolean,
+    ))
+      assert.ok(prompt.includes(url));
+    assert.ok(!prompt.includes("Install the AI skill"));
+    assert.ok(!prompt.includes("Configure the MCP"));
+  }
+  const manual = {
+    ...selected,
+    designSystemId: "manual",
+    configureMcp: true,
+    manual: {
+      name: "Our system",
+      githubUrl: "",
+      docsUrl: "https://example.com/docs",
+      designUrl: "",
+      skillUrl: "https://example.com/skill",
+      mcpUrl: "https://example.com/mcp",
+    },
+  };
+  const prompt = composeAiInstructions(manual);
+  assert.ok(prompt.includes("Use Our system"));
+  assert.ok(prompt.includes("Install the AI skill"));
+  assert.ok(prompt.includes("Configure the MCP"));
+  assert.ok(!prompt.includes("GitHub:"));
+});
+
+test("AI settings reject malformed and unsafe resources, preserve unrelated settings, and enforce roles", async (t) => {
+  const f = await reviewFixture(t);
+  for (const patch of [
+    { ...selected, designSystemId: "unknown" },
+    { ...selected, designSystemId: "" },
+    { ...selected, instructions: "a".repeat(32_001) },
+    { ...selected, installSkill: "true" },
+    { ...selected, designSystemId: "manual" },
+    ...[
+      "javascript:alert(1)",
+      "file:///etc/passwd",
+      "https://user:secret@example.com",
+      "bad-url",
+    ].map((docsUrl) => ({
+      ...selected,
+      manual: { ...selected.manual, docsUrl },
+    })),
+  ])
+    assert.equal(
+      (await f.call("settings", "PATCH", { ai: patch })).status,
+      400,
+    );
+  const editor = await f.login("editor");
+  const commenter = await f.login("commenter");
+  assert.equal(
+    (await f.call("settings", "PATCH", { ai: selected }, commenter)).status,
+    403,
+  );
+  const results = await Promise.all([
+    f.call("settings", "PATCH", { ai: selected }, editor),
+    f.call("settings", "PATCH", { commentBubbleColor: "pink" }),
   ]);
+  assert.ok(results.every((result) => result.status === 200));
+  const state = await (
+    await f.call("state", "GET", undefined, commenter)
+  ).json();
+  assert.equal(state.settings.commentBubbleColor, "pink");
+  assert.deepEqual(state.settings.ai, selected);
+  assert.equal(
+    (
+      await f.call("settings", "PATCH", {
+        ai: { ...selected, designSystemEnabled: false },
+      })
+    ).status,
+    200,
+  );
+  assert.equal((await f.state()).settings.ai.designSystemId, "govuk-chakra");
+});
+
+test("legacy settings rows get the default instructions without changing comment preferences", async (t) => {
+  const f = await reviewFixture(t);
+  await f.client.execute(
+    "INSERT INTO workspace_settings (id, show_comment_bubbles, comment_bubble_color) VALUES (1, 0, 'purple')",
+  );
+  await f.client.execute(
+    "ALTER TABLE workspace_settings DROP COLUMN ai_instructions_json",
+  );
+  const migrated = await getDatabase({
+    ...f.config,
+    databaseAuthToken: "legacy-ai-migration",
+  });
+  const settings = await readSettings(migrated);
+  migrated.close();
+  assert.deepEqual(settings.ai, defaultAiSettings);
+  assert.equal(settings.showCommentBubbles, false);
+  assert.equal(settings.commentBubbleColor, "purple");
+});
+
+test("AI and accessibility audit settings preserve each other across partial saves", async (t) => {
+  const f = await reviewFixture(t);
+  assert.equal(
+    (
+      await f.call("settings", "PATCH", {
+        wcagVersion: "2.1",
+        wcagLevel: "AAA",
+        auditLivePages: false,
+        widgetColor: "purple",
+      })
+    ).status,
+    200,
+  );
+  assert.equal(
+    (await f.call("settings", "PATCH", { ai: selected })).status,
+    200,
+  );
+  let settings = (await f.state()).settings;
+  assert.equal(settings.wcagVersion, "2.1");
+  assert.equal(settings.wcagLevel, "AAA");
+  assert.equal(settings.auditLivePages, false);
+  assert.equal(settings.widgetColor, "purple");
+  assert.equal(
+    (await f.call("settings", "PATCH", { wcagLevel: "A" })).status,
+    200,
+  );
+  settings = (await f.state()).settings;
+  assert.deepEqual(settings.ai, selected);
 });
