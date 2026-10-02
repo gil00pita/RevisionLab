@@ -137,8 +137,11 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
       !(await canLeaveBoard())
     )
       return false;
-    if (next !== view)
-      router.replace(`${basePath}?view=${next}`, { scroll: false });
+    if (next !== view) {
+      // Sections share this mounted workspace; sync search params without a
+      // server navigation or replacing the sidebar and its local state.
+      window.history.replaceState(null, "", `?view=${next}`);
+    }
     return true;
   }
 

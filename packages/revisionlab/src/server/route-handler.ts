@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { authenticate } from "./authentication.js";
+import { handleAiInstructions } from "./ai-instructions.js";
+import { handleAutomation } from "./automation/routes.js";
 import { handleAuth } from "./auth-routes.js";
 import { readArtifact } from "./artifacts.js";
 import { handleComments, handleInvitations } from "./collaboration-routes.js";
@@ -30,6 +32,13 @@ export function createRevisionLabHandler(
       if (path[0] === "auth")
         return await handleAuth(request, path.slice(1), client, config);
       const actor = await authenticate(request, client, config);
+      if (path[0] === "ai")
+        return await handleAutomation(request, path, client, config, actor);
+      if (path.length === 2 && path[0] === "settings" && path[1] === "ai") {
+        if (request.method === "PATCH")
+          await consumeRateLimit(client, `mutate:${actor.id}`, 120, 60_000);
+        return await handleAiInstructions(request, config, actor);
+      }
       if (
         request.method === "GET" &&
         path.length === 1 &&

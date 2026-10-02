@@ -29,6 +29,10 @@ export interface RevisionLabConfig {
   localOwner?: boolean;
   artifactsDirectory?: string;
   artifactStorage?: RevisionLabArtifactStorage;
+  /** Local Markdown file, relative to the host working directory or absolute. */
+  aiInstructionsFile?: string;
+  /** Local Git project used for Codex proposals. Defaults to the host working directory. */
+  aiProjectDirectory?: string;
 }
 
 export interface RevisionLabActor {

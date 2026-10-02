@@ -20,6 +20,8 @@ export async function reviewFixture(t: TestContext) {
     artifactsDirectory: join(directory, "artifacts"),
     systemUrl: "http://127.0.0.1:3000",
     personaEncryptionKey: Buffer.alloc(32, 7).toString("base64url"),
+    aiInstructionsFile: join(directory, "instructions", "ai-instructions.md"),
+    aiProjectDirectory: directory,
   };
   const keys = [
     "NODE_ENV",
