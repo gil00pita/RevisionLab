@@ -63,9 +63,9 @@ export function AccessibilityControl({
         <IconButton
           aria-label={label}
           title={label}
-          w="10"
-          minW="10"
-          h="14"
+          size="sm"
+          boxSize="9"
+          minW="9"
           borderRadius="0"
           variant="plain"
           color="white"
@@ -78,12 +78,12 @@ export function AccessibilityControl({
             <Image
               src={result.status === "passed" ? passedIconUrl : issuesIconUrl}
               alt=""
-              w="28px"
-              h="28px"
+              w="24px"
+              h="24px"
               flexShrink="0"
             />
           ) : (
-            <Icon boxSize="7">
+            <Icon boxSize="5">
               {result.status === "error" ? (
                 <CircleAlert />
               ) : (

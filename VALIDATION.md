@@ -1,5 +1,11 @@
 # Release validation
 
+## Widget motion and 36px controls - 2 October 2026
+
+The logo and toolbar controls now measure 36 × 36px. Tools expand horizontally with a 200ms fade and retract with a 150ms fade; reduced motion skips both animations. Closing tools become inert immediately while their exit finishes. PRODUCT.md, PLAN.md, and both READMEs reflect the refinement.
+
+Validation: lint and production build pass. Chromium frame sampling confirmed intermediate widths in both directions, constant 36px height, and a stationary logo on desktop and at 320px. Reduced-motion sampling returned no active animation and only the collapsed/expanded widths. Keyboard disclosure, comment auto-collapse, Stop commenting focus return, and no mobile overflow were checked; browser error output was empty. Evidence: `.context/widget-motion-final-frames.json`, `.context/widget-motion-reduced.json`, `.context/widget-motion-expanded-mobile.png`, and `.context/widget-motion-collapsed-mobile.png`.
+
 ## Minimal front-end widget - 2 October 2026
 
 The widget now rests as a logo-only disclosure at bottom right. Expanded tools include a separate workspace link; recording, commenting, and running audits retain their own Stop buttons when collapsed. Recording/comment start collapses the tools; routine recording text and picker help appear only when expanded. Error/save feedback and active composers remain available. Audit cancellation immediately aborts pending publication and pauses automatic scans until rerun; an executing axe call can finish internally but cannot publish its cancelled result. Recording accessibility evidence is independent.

@@ -68,8 +68,25 @@ export function WidgetLauncher({
         }
       }}
     >
-      <Collapsible.Content animation="none">
-        <Flex align="center" pl="1">
+      <Collapsible.Content
+        flexShrink="0"
+        inert={!expanded}
+        animationFillMode="both"
+        _open={{
+          animationName: "expand-width, fade-in",
+          animationDuration: "moderate",
+          animationTimingFunction: "ease-out",
+          _motionReduce: { animationName: "none" },
+        }}
+        _closed={{
+          animationName: "collapse-width, fade-out",
+          animationDuration: "fast",
+          animationTimingFunction: "ease-in",
+          pointerEvents: "none",
+          _motionReduce: { animationName: "none" },
+        }}
+      >
+        <Flex align="center" pl="1" w="max-content">
           <WidgetWorkspaceLink href={workspaceHref} />
           <AccessibilityControl
             result={accessibility}
@@ -82,7 +99,7 @@ export function WidgetLauncher({
               disabled={busy}
               onClick={onRecord}
             >
-              <Icon boxSize="6">
+              <Icon boxSize="5">
                 <Camera />
               </Icon>
             </WidgetTool>
@@ -94,7 +111,7 @@ export function WidgetLauncher({
               onClick={onComment}
               count={commentCount}
             >
-              <Icon boxSize="6">
+              <Icon boxSize="5">
                 <MessageSquarePlus />
               </Icon>
             </WidgetTool>
@@ -130,14 +147,15 @@ export function WidgetLauncher({
           }
           variant="plain"
           color="white"
-          h="14"
-          w="14"
+          size="sm"
+          boxSize="9"
+          minW="9"
           flexShrink="0"
           borderRadius="full"
           _hover={{ bg: "blackAlpha.200" }}
           focusRing="inset"
         >
-          <Image src={markUrl} alt="" w="22px" h="24px" flexShrink="0" />
+          <Image src={markUrl} alt="" w="16px" h="18px" flexShrink="0" />
         </IconButton>
       </Collapsible.Trigger>
     </Collapsible.Root>

@@ -36,9 +36,9 @@ export function WidgetTool({
           variant="plain"
           color="white"
           bg={active ? "red.700" : "transparent"}
-          h="12"
-          w="10"
-          minW="10"
+          size="sm"
+          boxSize="9"
+          minW="9"
           borderRadius="full"
           mx="1"
           _hover={{ bg: active ? "red.800" : "blackAlpha.200" }}
