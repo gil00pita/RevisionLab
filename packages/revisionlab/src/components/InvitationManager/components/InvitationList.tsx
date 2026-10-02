@@ -9,6 +9,7 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
+import { formatUtcTimestamp } from "../../../client/date-format.js";
 import { useEffect, useState } from "react";
 import type { RevisionLabInvitation } from "../../../server/types.js";
 
@@ -79,7 +80,7 @@ export function InvitationList({
                       </Text>
                     </HStack>
                     <Text fontSize="xs" color="gray.600">
-                      Expires {new Date(invitation.expiresAt).toLocaleString()}
+                      Expires {formatUtcTimestamp(invitation.expiresAt)}
                     </Text>
                   </Stack>
                   {status === "Active" && (

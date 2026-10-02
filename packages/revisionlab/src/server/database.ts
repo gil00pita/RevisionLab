@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { chmod, mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { createClient, type Client, type Transaction } from "@libsql/client";
@@ -35,9 +36,15 @@ async function initialize(
     }
     await client.batch(schema, "write");
     await migrateReviewMetadata(client);
+    await client.execute(`INSERT OR IGNORE INTO setup_progress (id, step, completed)
+      SELECT 1, 0, CASE WHEN EXISTS(SELECT 1 FROM installation) OR EXISTS(SELECT 1 FROM flows) OR EXISTS(SELECT 1 FROM comments) OR EXISTS(SELECT 1 FROM personas) THEN 1 ELSE 0 END`);
     await client.execute({
       sql: "INSERT OR IGNORE INTO installation (id, project_id) VALUES (1, ?)",
       args: [config.projectId],
+    });
+    await client.execute({
+      sql: "UPDATE installation SET instance_id = ? WHERE id = 1 AND instance_id IS NULL",
+      args: [randomUUID()],
     });
     const installation = await client.execute(
       "SELECT project_id FROM installation WHERE id = 1",
@@ -59,7 +66,46 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
   // One write transaction prevents simultaneous instances from applying an ALTER twice.
   await write(client, async (transaction) => {
     const additions = {
-      workspace_settings: [["ai_instructions_json", "TEXT"]],
+      installation: [["instance_id", "TEXT"]],
+      workspace_history: [["committed_at", "TEXT"]],
+      workspace_settings: [
+        ["ai_instructions_json", "TEXT"],
+        [
+          "wcag_version",
+          "TEXT NOT NULL DEFAULT '2.2' CHECK(wcag_version IN ('2.0', '2.1', '2.2'))",
+        ],
+        [
+          "wcag_level",
+          "TEXT NOT NULL DEFAULT 'AA' CHECK(wcag_level IN ('A', 'AA', 'AAA'))",
+        ],
+        [
+          "show_widget",
+          "INTEGER NOT NULL DEFAULT 1 CHECK(show_widget IN (0, 1))",
+        ],
+        [
+          "widget_color",
+          "TEXT NOT NULL DEFAULT 'blue' CHECK(widget_color IN ('gray', 'red', 'orange', 'yellow', 'green', 'teal', 'cyan', 'blue', 'purple', 'pink'))",
+        ],
+        [
+          "widget_side",
+          "TEXT NOT NULL DEFAULT 'right' CHECK(widget_side IN ('left', 'right'))",
+        ],
+        [
+          "widget_offset",
+          "INTEGER NOT NULL DEFAULT 24 CHECK(widget_offset BETWEEN 0 AND 1000)",
+        ],
+        [
+          "widget_bottom_offset",
+          "INTEGER NOT NULL DEFAULT 24 CHECK(widget_bottom_offset BETWEEN 0 AND 1000)",
+        ],
+        ["system_url", "TEXT"],
+        ["widget_position", "TEXT NOT NULL DEFAULT 'bottom-right'"],
+        ["audit_live_pages", "INTEGER NOT NULL DEFAULT 1"],
+        ["audit_recordings", "INTEGER NOT NULL DEFAULT 1"],
+        ["allowed_email_rules", "TEXT NOT NULL DEFAULT '[]'"],
+        ["join_code_hash", "TEXT"],
+        ["join_code_created_at", "TEXT"],
+      ],
       steps: [
         ["capture_json", "TEXT"],
         ["capture_key", "TEXT"],
@@ -78,6 +124,10 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
         ["edge_id", "TEXT"],
         ["element_anchor", "TEXT"],
       ],
+      sessions: [
+        ["membership_id", "TEXT"],
+        ["membership_revision", "INTEGER"],
+      ],
     };
     for (const [table, columns] of Object.entries(additions)) {
       const existing = await transaction.execute(`PRAGMA table_info(${table})`);
@@ -91,6 +141,15 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
     }
     await transaction.execute(
       "UPDATE flows SET family_id = id WHERE family_id IS NULL",
+    );
+    await transaction.execute(
+      `UPDATE workspace_settings
+        SET widget_position = CASE
+          WHEN widget_position = 'top-left' THEN 'bottom-left'
+          WHEN widget_position = 'top-right' THEN 'bottom-right'
+          ELSE widget_position
+        END
+        WHERE widget_position IN ('top-left', 'top-right')`,
     );
     await transaction.execute(
       "CREATE UNIQUE INDEX IF NOT EXISTS idx_flow_version ON flows(family_id, version)",

@@ -224,3 +224,45 @@ test("bounded reports fit beside a near-limit screenshot and oversized reports a
     400,
   );
 });
+
+test("saved WCAG targets remain attached to their capture when workspace defaults change", async (t) => {
+  const f = await reviewFixture(t);
+  const id = await f.flow();
+  const evidence = {
+    ...report,
+    standard: { wcagVersion: "2.0", wcagLevel: "AA" },
+  };
+  assert.equal(
+    (await f.call(`flows/${id}/steps`, "POST", payload(evidence))).status,
+    201,
+  );
+  assert.equal(
+    (
+      await f.call("settings", "PATCH", {
+        wcagVersion: "2.2",
+        wcagLevel: "AAA",
+      })
+    ).status,
+    200,
+  );
+  assert.deepEqual(
+    (await f.state()).flows[0].steps[0].capture?.accessibility,
+    evidence,
+  );
+  for (const standard of [
+    { wcagVersion: "3.0", wcagLevel: "AA" },
+    { wcagVersion: "2.0", wcagLevel: "aaaa" },
+    { wcagVersion: "2.0" },
+  ]) {
+    assert.equal(
+      (
+        await f.call(
+          `flows/${id}/steps`,
+          "POST",
+          payload({ ...report, standard }),
+        )
+      ).status,
+      400,
+    );
+  }
+});

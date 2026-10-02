@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useImperativeHandle, useMemo, useState } from "react";
 import { Button, Flex, Grid, Stack, Text } from "@chakra-ui/react";
 import { boardBounds } from "./geometry.js";
 import { useBoardDraft } from "./hooks/useBoardDraft.js";
@@ -25,7 +25,7 @@ export function FlowBoard(props: FlowBoardProps) {
     onOpenScreen,
     apiPath,
     onRefresh,
-    onBeforeLeaveChange,
+    beforeLeaveRef,
   } = props;
   const draft = useBoardDraft(props);
   const bounds = boardBounds(draft.board.nodes, draft.board.edges);
@@ -49,10 +49,7 @@ export function FlowBoard(props: FlowBoardProps) {
   );
   const hiddenScreens = flow.steps.filter((step) => hiddenStepIds.has(step.id));
 
-  useEffect(() => {
-    onBeforeLeaveChange?.(draft.flush);
-    return () => onBeforeLeaveChange?.(null);
-  }, [onBeforeLeaveChange, draft.flush]);
+  useImperativeHandle(beforeLeaveRef, () => draft.flush, [draft.flush]);
 
   function finishEditing() {
     setEditing(false);

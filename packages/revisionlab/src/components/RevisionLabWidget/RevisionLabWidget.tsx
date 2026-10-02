@@ -11,6 +11,7 @@ import { LiveCommentBalloons } from "./components/LiveCommentBalloons.js";
 import { useLiveFeedback } from "./hooks/useLiveFeedback.js";
 import { RevisionLabProvider } from "../RevisionLabProvider/index.js";
 import { WidgetPanel } from "./components/WidgetPanel.js";
+import { SetupLauncher } from "./components/SetupLauncher.js";
 import { WidgetLauncher } from "./components/WidgetLauncher.js";
 import { RecordingSetup } from "./components/RecordingSetup.js";
 import { RecordingPopover } from "./components/RecordingPopover.js";
@@ -46,6 +47,7 @@ function Widget({
   basePath,
   route,
 }: Required<RevisionLabWidgetProps> & { route: string }) {
+  const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"comment" | "record">("comment");
   const workspace = useRevisionLab(apiPath);
@@ -62,14 +64,30 @@ function Widget({
   const recorder = useRecording(
     apiPath,
     route,
-    Boolean(data && data.actor.role !== "commenter" && !reviewRoute),
+    Boolean(
+      data?.setup.completed && data.actor.role !== "commenter" && !reviewRoute,
+    ),
     open || live.commenting,
+    settings,
+    settings.auditRecordings,
   );
   const accessibility = usePageAccessibility(
     route,
-    Boolean(data && !reviewRoute),
+    Boolean(
+      data?.setup.completed &&
+        settings.auditLivePages &&
+        !reviewRoute &&
+        settings.showWidget,
+    ),
     open || live.commenting,
+    settings,
   );
+  const showLauncher =
+    !workspace.loading &&
+    (settings.showWidget ||
+      Boolean(recorder.recording) ||
+      live.commenting ||
+      open);
   const ending =
     recorder.operation === "finish" || recorder.operation === "discard";
   const navigation = useRecordingNavigation({
@@ -90,6 +108,7 @@ function Widget({
     }
   }
   function beginCommenting() {
+    setExpanded(false);
     live.setCommenting(true);
     live.setPicking(true);
     live.setAnchor(null);
@@ -148,10 +167,18 @@ function Widget({
       </>
     );
 
+  if (workspace.loading) return null;
+  if (data && !data.setup.completed)
+    return (
+      <SetupLauncher basePath={basePath} owner={data.actor.role === "owner"} />
+    );
+
   return (
     <>
       {data && live.picking && (
         <ElementPicker
+          settings={settings}
+          showControls={expanded}
           commentsHref={commentsHref}
           showBalloons={live.showBalloons}
           onShowBalloonsChange={live.setShowBalloons}
@@ -186,33 +213,40 @@ function Widget({
           }}
         />
       )}
-      <WidgetLauncher
-        recording={Boolean(recorder.recording)}
-        canRecord={Boolean(data && data.actor.role !== "commenter")}
-        authorized={Boolean(data)}
-        commenting={live.commenting}
-        commentCount={
-          pageComments.filter(
-            (comment) => !comment.parentId && comment.status === "open",
-          ).length
-        }
-        busy={ending || recorder.operation === "start"}
-        accessibility={accessibility.result}
-        onRerun={accessibility.rerun}
-        workspaceHref={basePath}
-        onComment={live.commenting ? stopCommenting : beginCommenting}
-        onRecord={() => {
-          if (recorder.recording) {
-            void stopRecording();
-            return;
+      {showLauncher && (
+        <WidgetLauncher
+          settings={settings}
+          expanded={expanded}
+          onExpandedChange={setExpanded}
+          onStopAudit={accessibility.stop}
+          recording={Boolean(recorder.recording)}
+          canRecord={Boolean(data && data.actor.role !== "commenter")}
+          authorized={Boolean(data)}
+          commenting={live.commenting}
+          commentCount={
+            pageComments.filter(
+              (comment) => !comment.parentId && comment.status === "open",
+            ).length
           }
-          stopCommenting();
-          setTab("record");
-          setOpen(true);
-          void refresh();
-        }}
-      />
+          busy={ending || recorder.operation === "start"}
+          accessibility={accessibility.result}
+          onRerun={accessibility.rerun}
+          workspaceHref={basePath}
+          onComment={live.commenting ? stopCommenting : beginCommenting}
+          onRecord={() => {
+            if (recorder.recording) {
+              void stopRecording();
+              return;
+            }
+            stopCommenting();
+            setTab("record");
+            setOpen(true);
+            void refresh();
+          }}
+        />
+      )}
       <RecordingPopover
+        side={settings.widgetSide}
         open={open && tab === "record"}
         busy={recorder.operation === "start"}
         onClose={() => setOpen(false)}
@@ -225,6 +259,7 @@ function Widget({
                   recorder={recorder}
                   personas={data.personas ?? []}
                   basePath={basePath}
+                  apiPath={apiPath}
                 />
                 <RecordingActions
                   recorder={recorder}
@@ -238,7 +273,11 @@ function Widget({
                   recorder={recorder}
                   personas={data.personas ?? []}
                   basePath={basePath}
-                  onStarted={() => setOpen(false)}
+                  apiPath={apiPath}
+                  onStarted={() => {
+                    setOpen(false);
+                    setExpanded(false);
+                  }}
                 />
                 {recorder.error && (
                   <Text role="alert" color="red.700">
@@ -280,6 +319,7 @@ function Widget({
           workspace={workspace}
           recorder={recorder}
           basePath={basePath}
+          apiPath={apiPath}
           tab={tab}
           onTabChange={setTab}
         >
@@ -294,7 +334,12 @@ function Widget({
         </WidgetPanel>
       </WidgetDialog>
       {!open && !live.commenting && (
-        <WidgetStatus recorder={recorder} basePath={basePath} />
+        <WidgetStatus
+          settings={settings}
+          recorder={recorder}
+          basePath={basePath}
+          expanded={expanded}
+        />
       )}
       {leaveDialog}
     </>

@@ -43,8 +43,8 @@ export function AccessibilityMarkers({
               )}
               position="fixed"
               zIndex="modal"
-              left={`${Math.max(4, Math.min(bounds.x - 12, window.innerWidth - 36))}px`}
-              top={`${Math.max(4, Math.min(bounds.y - 12, window.innerHeight - 36))}px`}
+              left={`clamp(4px, ${bounds.x - 12}px, calc(100vw - 36px))`}
+              top={`clamp(4px, ${bounds.y - 12}px, calc(100dvh - 36px))`}
               boxSize="8"
               minW="8"
               borderRadius="full"

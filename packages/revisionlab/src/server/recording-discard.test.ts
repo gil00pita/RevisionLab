@@ -47,7 +47,7 @@ function memoryStorage() {
   return { files, adapter };
 }
 
-test("discard removes an unfinished recording, comments, screenshots, and artifact access idempotently", async (t) => {
+test("discard removes an unfinished recording and privately retains recoverable screenshots", async (t) => {
   const f = await reviewFixture(t);
   const id = await f.flow();
   const stepId = await f.capture(id);
@@ -90,7 +90,7 @@ test("discard removes an unfinished recording, comments, screenshots, and artifa
   const state = await f.state();
   assert.deepEqual(state.flows, []);
   assert.deepEqual(state.comments, []);
-  assert.deepEqual(await readdir(f.config.artifactsDirectory), []);
+  assert.equal((await readdir(f.config.artifactsDirectory)).length, 2);
   assert.equal(
     (await f.call(screenshot.replace("/api/revisionlab/", ""))).status,
     404,
@@ -100,7 +100,6 @@ test("discard removes an unfinished recording, comments, screenshots, and artifa
     "steps",
     "comments",
     "board_edges",
-    "artifacts",
     "discarded_artifacts",
   ])
     assert.equal(
@@ -109,6 +108,11 @@ test("discard removes an unfinished recording, comments, screenshots, and artifa
       0,
     );
   assert.equal(
+    (await f.client.execute("SELECT COUNT(*) AS count FROM artifacts")).rows[0]
+      .count,
+    2,
+  );
+  assert.equal(
     (await f.call(`flows/${id}/steps`, "POST", captureBody)).status,
     404,
   );
@@ -116,7 +120,7 @@ test("discard removes an unfinished recording, comments, screenshots, and artifa
     (await f.call(`flows/${id}`, "PATCH", { status: "complete" })).status,
     404,
   );
-  assert.deepEqual(await readdir(f.config.artifactsDirectory), []);
+  assert.equal((await readdir(f.config.artifactsDirectory)).length, 2);
 });
 
 test("discard rejects completed recordings without changing their screens or artifacts", async (t) => {
@@ -231,14 +235,14 @@ test("discarding a new version preserves the completed family and allows a repla
     (await f.client.execute("SELECT * FROM board_edges")).rows,
     savedEdges,
   );
-  assert.equal((await readdir(f.config.artifactsDirectory)).length, 2);
+  assert.equal((await readdir(f.config.artifactsDirectory)).length, 4);
   assert.equal(
     (await f.call(`flows/${first}/versions`, "POST", {})).status,
     201,
   );
 });
 
-test("failed custom storage cleanup hides discarded content immediately and retries opaque cleanup keys", async (t) => {
+test("expired custom-storage history remains private and retries cleanup", async (t) => {
   const f = await reviewFixture(t);
   const { adapter, files } = memoryStorage();
   const call = configuredCaller({ ...f.config, artifactStorage: adapter });
@@ -252,28 +256,30 @@ test("failed custom storage cleanup hides discarded content immediately and retr
     throw new Error("Storage offline");
   });
   const failed = await call(`flows/${id}/discard`, "POST");
-  assert.equal(failed.status, 503);
-  assert.match((await failed.json()).error, /cleanup is pending/);
+  assert.equal(failed.status, 200);
   assert.deepEqual((await f.state()).flows, []);
   assert.equal((await call(`artifacts/${artifactId}`)).status, 404);
   assert.equal(files.size, 1);
-  assert.equal(
-    (
-      await f.client.execute(
-        "SELECT COUNT(*) AS count FROM discarded_artifacts",
-      )
-    ).rows[0].count,
-    1,
+  assert.ok(
+    Number(
+      (
+        await f.client.execute(
+          "SELECT COUNT(*) AS count FROM workspace_history_artifacts",
+        )
+      ).rows[0].count,
+    ) > 0,
   );
+  await f.client.execute(
+    "UPDATE workspace_history SET expires_at = '2000-01-01T00:00:00.000Z'",
+  );
+  assert.equal((await call("history")).status, 200);
+  assert.equal(files.size, 1);
   deletion.mock.restore();
-  assert.equal((await call(`flows/${id}/discard`, "POST")).status, 200);
+  assert.equal((await call("history")).status, 200);
   assert.equal(files.size, 0);
   assert.equal(
-    (
-      await f.client.execute(
-        "SELECT COUNT(*) AS count FROM discarded_artifacts",
-      )
-    ).rows[0].count,
+    (await f.client.execute("SELECT COUNT(*) AS count FROM artifacts")).rows[0]
+      .count,
     0,
   );
 });
@@ -330,7 +336,7 @@ test("concurrent completion and discard serialize without deleting a completed r
   }
 });
 
-test("discard deletes private database screenshot bytes without a file or object adapter", async (t) => {
+test("discard retains private database screenshot bytes for history without exposing them", async (t) => {
   const f = await reviewFixture(t);
   const id = await f.flow();
   const actor = (await f.state()).actor;
@@ -372,10 +378,10 @@ test("discard deletes private database screenshot bytes without a file or object
   assert.equal(
     (await f.client.execute("SELECT COUNT(*) AS count FROM artifacts")).rows[0]
       .count,
-    0,
+    1,
   );
   await assert.rejects(
-    readArtifact(String(artifact.id), f.client, config),
+    readArtifact(String(artifact.id), f.client, config, true),
     (error) => error instanceof HttpError && error.status === 404,
   );
 });

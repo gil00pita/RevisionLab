@@ -49,7 +49,7 @@ export function AiInstructionsSettings({
   if (!filePath)
     return (
       <Stack gap="4" aria-busy={loading}>
-        <Heading as="h3" size="md">
+        <Heading as="h2" size="md">
           AI Instructions
         </Heading>
         {loading ? (
@@ -76,7 +76,7 @@ export function AiInstructionsSettings({
       }}
     >
       <Stack gap="5" aria-busy={busy}>
-        <Heading as="h3" size="md">
+        <Heading as="h2" size="md">
           AI Instructions
         </Heading>
         <Text fontSize="sm" color="fg.muted">

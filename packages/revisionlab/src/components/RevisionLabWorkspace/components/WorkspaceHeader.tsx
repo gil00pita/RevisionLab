@@ -55,6 +55,9 @@ export function WorkspaceHeader({
         </Heading>
         {flow ? (
           <Flex gap="2" mt="2" align="center" flexWrap="wrap">
+            {flow.workspace && (
+              <Badge colorPalette="purple">{flow.workspace.name}</Badge>
+            )}
             <Badge
               colorPalette="blue"
               maxW="full"
@@ -94,7 +97,11 @@ export function WorkspaceHeader({
                 </Icon>
                 Export report
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => void onRefresh()}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => void onRefresh()}
+              >
                 <Icon>
                   <RefreshCw />
                 </Icon>

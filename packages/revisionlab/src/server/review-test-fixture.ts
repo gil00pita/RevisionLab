@@ -18,12 +18,15 @@ export async function reviewFixture(t: TestContext) {
     projectName: "Review tests",
     databaseUrl: `file:${join(directory, "review.db")}`,
     artifactsDirectory: join(directory, "artifacts"),
+    systemUrl: "http://127.0.0.1:3000",
+    personaEncryptionKey: Buffer.alloc(32, 7).toString("base64url"),
     aiInstructionsFile: join(directory, "instructions", "ai-instructions.md"),
     aiProjectDirectory: directory,
   };
   const keys = [
     "NODE_ENV",
     "VERCEL",
+    "VERCEL_ENV",
     "RESEND_API_KEY",
     "REVISIONLAB_LOCAL_OWNER",
     "REVISIONLAB_DATABASE_AUTH_TOKEN",

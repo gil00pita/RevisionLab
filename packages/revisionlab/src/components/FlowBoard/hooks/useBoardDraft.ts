@@ -39,7 +39,14 @@ export function useBoardDraft({
     controller.getSnapshot,
     controller.getSnapshot,
   );
-  const actions = useMemo(() => boardActions(controller), [controller]);
+  const idPrefix =
+    flow.workspace && flow.workspace.id !== "local"
+      ? `${flow.workspace.id}~`
+      : "";
+  const actions = useMemo(
+    () => boardActions(controller, idPrefix),
+    [controller, idPrefix],
+  );
 
   useEffect(() => {
     controller.resume();

@@ -7,6 +7,7 @@ export function downloadReport(data: RevisionLabState) {
     `Exported ${new Date().toISOString()}`,
     ...data.flows.flatMap((flow) => [
       `\n## ${flow.name} · v${flow.version}`,
+      `Workspace: ${flow.workspace?.name ?? "This workspace"}`,
       `Persona: ${flow.persona} · ${flow.status}`,
       ...flow.steps.map(
         (step, index) => `${index + 1}. ${step.title} (${step.route})`,
@@ -35,7 +36,7 @@ export function downloadReport(data: RevisionLabState) {
       const thread = comment.parentId
         ? ` · reply to ${comment.parentId}`
         : ` · thread ${comment.id}`;
-      return `\n- [${comment.status === "resolved" ? "x" : " "}] ${comment.body}\n  ${context}${location}${thread}\n  — ${comment.authorName}, ${comment.route}, ${comment.createdAt}`;
+      return `\n- [${comment.status === "resolved" ? "x" : " "}] ${comment.body}\n  ${comment.workspace ? `${comment.workspace.name} · ` : ""}${context}${location}${thread}\n  — ${comment.authorName}, ${comment.route}, ${comment.createdAt}`;
     }),
   ].join("\n");
   const url = URL.createObjectURL(

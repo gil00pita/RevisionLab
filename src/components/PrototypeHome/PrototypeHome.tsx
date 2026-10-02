@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import NextLink from "next/link";
 import {
   Box,
@@ -16,33 +15,17 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { ArrowRight, ArrowUpRight, Check, GitBranch } from "lucide-react";
-import { RevisionLabLogo } from "revisionlab";
+import { ApiError, RevisionLabLogo, useRevisionLab } from "revisionlab";
 
 export function PrototypeHome() {
-  const [status, setStatus] = useState("Connecting to your workspace…");
-  useEffect(() => {
-    let active = true;
-    fetch("/api/revisionlab/state", { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok)
-          throw new Error(
-            response.status === 401
-              ? "Verify your email to open the review workspace."
-              : "Workspace unavailable. Check the server configuration.",
-          );
-        const data = await response.json();
-        if (active)
-          setStatus(
-            `${data.project.name} is connected · ${data.flows.length} recordings · ${data.comments.length} ${data.comments.length === 1 ? "comment" : "comments"}`,
-          );
-      })
-      .catch((error: Error) => {
-        if (active) setStatus(error.message);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+  const { data, error, loading } = useRevisionLab("/api/revisionlab");
+  const status = loading
+    ? "Connecting to your workspace…"
+    : data
+      ? `${data.project.name} is connected · ${data.flows.length} recordings · ${data.comments.length} ${data.comments.length === 1 ? "comment" : "comments"}`
+      : error instanceof ApiError && error.status === 401
+        ? "Verify your email to open the review workspace."
+        : "Workspace unavailable. Check the server configuration.";
 
   return (
     <Box minH="100dvh" bg="gray.50" color="gray.900">
@@ -129,7 +112,7 @@ export function PrototypeHome() {
             </Heading>
             <List.Root as="ol" gap="4" ps="5" color="gray.700">
               <List.Item>
-                Choose the camera icon in the RevisionLab toolbar.
+                Expand the RevisionLab logo, then choose the camera icon.
               </List.Item>
               <List.Item>
                 Name your recording and select a saved workspace persona.

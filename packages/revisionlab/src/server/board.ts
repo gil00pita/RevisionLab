@@ -5,23 +5,20 @@ import type { RevisionLabBoard } from "./types.js";
 export const MAX_BOARD_BYTES = 512_000;
 const coordinate = z.number().finite().min(0).max(50_000);
 const boardContentSchema = z
-  .object({
+  .strictObject({
     hiddenStepIds: z.array(z.string().uuid()).max(200).default([]),
     nodes: z
       .array(
-        z
-          .object({
+        z.strictObject({
             stepId: z.string().uuid(),
             x: coordinate,
             y: coordinate,
-          })
-          .strict(),
+          }),
       )
       .max(200),
     edges: z
       .array(
-        z
-          .object({
+        z.strictObject({
             id: z
               .string()
               .min(1)
@@ -31,12 +28,10 @@ const boardContentSchema = z
             targetStepId: z.string().uuid(),
             label: z.string().trim().max(120),
             kind: z.enum(["recorded", "manual"]),
-          })
-          .strict(),
+          }),
       )
       .max(1_000),
-  })
-  .strict();
+  });
 
 export const boardInputSchema = boardContentSchema.extend({
   revision: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),

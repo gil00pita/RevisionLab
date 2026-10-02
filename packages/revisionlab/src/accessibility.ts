@@ -1,6 +1,9 @@
+import type { WcagSettings } from "./wcag-settings.js";
+
 export const MAX_ACCESSIBILITY_REPORT_BYTES = 64_000;
 
 export interface AccessibilityReport {
+  standard?: WcagSettings;
   status: "passed" | "issues" | "review" | "unavailable";
   checkedAt?: string;
   engineVersion?: string;

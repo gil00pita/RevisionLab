@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { sourceCanEdit } from "../../../workspace-instances.js";
+import { useState, type Ref } from "react";
 import { useSearchParams } from "next/navigation";
 import { Flex, Icon, Tabs } from "@chakra-ui/react";
 import { Image as ScreenIcon, Workflow } from "lucide-react";
@@ -18,7 +19,7 @@ export function FlowReview({
   basePath,
   onFlowSelect,
   onRefresh,
-  onBeforeLeaveChange,
+  beforeLeaveRef,
   onDirtyChange,
   navigationPending,
 }: {
@@ -28,7 +29,7 @@ export function FlowReview({
   basePath: string;
   onFlowSelect: (id: string) => void;
   onRefresh: () => Promise<void>;
-  onBeforeLeaveChange: (handler: (() => Promise<boolean>) | null) => void;
+  beforeLeaveRef: Ref<() => Promise<boolean>>;
   onDirtyChange: (dirty: boolean) => void;
   navigationPending: boolean;
 }) {
@@ -43,7 +44,7 @@ export function FlowReview({
   const versions = data.flows
     .filter((item) => item.familyId === flow.familyId)
     .sort((a, b) => b.version - a.version);
-  const canRecord = data.actor.role !== "commenter";
+  const canRecord = sourceCanEdit(data.actor.role, flow.workspace);
 
   return (
     <Tabs.Root
@@ -109,7 +110,7 @@ export function FlowReview({
             setView("screen");
           }}
           onRefresh={onRefresh}
-          onBeforeLeaveChange={onBeforeLeaveChange}
+          beforeLeaveRef={beforeLeaveRef}
           onDirtyChange={onDirtyChange}
         />
       </Tabs.Content>

@@ -1,3 +1,5 @@
+import type { WorkspaceInstance } from "../../../workspace-instances.js";
+import { WorkspaceSelector } from "./WorkspaceSelector.js";
 import { useRef, useState } from "react";
 import { Box, Button, Flex, Icon } from "@chakra-ui/react";
 import { ArrowLeft } from "lucide-react";
@@ -15,6 +17,9 @@ import { WorkspaceSidebarFooter } from "./WorkspaceSidebarFooter.js";
 
 export function WorkspaceSidebar({
   data,
+  workspaces,
+  selection,
+  onWorkspaceChange,
   view,
   selectedFlow,
   onViewChange,
@@ -23,6 +28,9 @@ export function WorkspaceSidebar({
   disabled,
 }: {
   data: RevisionLabState;
+  workspaces: WorkspaceInstance[];
+  selection: string;
+  onWorkspaceChange: (value: string) => void;
   view: WorkspaceView;
   selectedFlow?: RevisionLabFlow;
   onViewChange: (view: WorkspaceView) => Promise<boolean>;
@@ -35,8 +43,8 @@ export function WorkspaceSidebar({
   const flows = useRef<HTMLButtonElement>(null);
   async function navigate(next: WorkspaceView) {
     if (!(await onViewChange(next))) return;
+    setShowFlows(next === "flows");
     if (next === "flows") {
-      setShowFlows(true);
       requestAnimationFrame(() => back.current?.focus());
     }
   }
@@ -57,7 +65,13 @@ export function WorkspaceSidebar({
       bg="blue.950"
       color="white"
     >
-      <WorkspaceSidebarHeader projectName={data.project.name} />
+      <WorkspaceSidebarHeader />
+      <WorkspaceSelector
+        workspaces={workspaces}
+        value={selection}
+        disabled={disabled}
+        onChange={onWorkspaceChange}
+      />
       <Box
         position="relative"
         flex={{ base: "none", lg: "1" }}
@@ -81,6 +95,12 @@ export function WorkspaceSidebar({
           overflowY="auto"
         >
           <WorkspaceNavigation
+            prototypeHref={
+              selection !== "local" && selection !== "all"
+                ? (workspaces.find((source) => source.id === selection)?.url ??
+                  "/")
+                : "/"
+            }
             data={data}
             view={view}
             onViewChange={navigate}
@@ -133,7 +153,12 @@ export function WorkspaceSidebar({
           />
         </Flex>
       </Box>
-      <WorkspaceSidebarFooter actor={data.actor} />
+      <WorkspaceSidebarFooter
+        actor={data.actor}
+        settingsActive={view === "settings"}
+        onSettings={() => void navigate("settings")}
+        disabled={disabled}
+      />
     </Flex>
   );
 }

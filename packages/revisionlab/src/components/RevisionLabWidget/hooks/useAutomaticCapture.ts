@@ -1,3 +1,4 @@
+import type { WcagSettings } from "../../../wcag-settings.js";
 import { useEffect, useRef } from "react";
 import {
   captureDimensions,
@@ -14,6 +15,7 @@ import { prepareInteractionSnapshots } from "../../../client/prepare-interaction
 import { recordedClick } from "../../../client/recording-click.js";
 
 export function useAutomaticCapture({
+  standard,
   flowId,
   route,
   enabled,
@@ -21,6 +23,7 @@ export function useAutomaticCapture({
   capture,
   busy,
 }: {
+  standard: WcagSettings;
   flowId?: string;
   route: string;
   enabled: boolean;
@@ -28,6 +31,7 @@ export function useAutomaticCapture({
   capture: (request: AutomaticCaptureRequest) => Promise<boolean>;
   busy: () => boolean;
 }) {
+  const { wcagVersion, wcagLevel } = standard;
   const callbacks = useRef({ capture, busy });
   useEffect(() => {
     callbacks.current = { capture, busy };
@@ -193,6 +197,7 @@ export function useAutomaticCapture({
     const snapshots = prepareInteractionSnapshots(
       () => active() && !before,
       interaction,
+      { wcagVersion, wcagLevel },
     );
     const move = (event: PointerEvent) => {
       if (
@@ -215,5 +220,5 @@ export function useAutomaticCapture({
       window.removeEventListener("click", interaction, true);
       window.removeEventListener("change", interaction, true);
     };
-  }, [flowId, route, enabled, paused]);
+  }, [flowId, route, enabled, paused, wcagVersion, wcagLevel]);
 }

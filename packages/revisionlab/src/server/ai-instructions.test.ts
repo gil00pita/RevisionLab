@@ -196,3 +196,33 @@ test("legacy settings rows get the default instructions without changing comment
   assert.equal(settings.showCommentBubbles, false);
   assert.equal(settings.commentBubbleColor, "purple");
 });
+
+test("AI and accessibility audit settings preserve each other across partial saves", async (t) => {
+  const f = await reviewFixture(t);
+  assert.equal(
+    (
+      await f.call("settings", "PATCH", {
+        wcagVersion: "2.1",
+        wcagLevel: "AAA",
+        auditLivePages: false,
+        widgetColor: "purple",
+      })
+    ).status,
+    200,
+  );
+  assert.equal(
+    (await f.call("settings", "PATCH", { ai: selected })).status,
+    200,
+  );
+  let settings = (await f.state()).settings;
+  assert.equal(settings.wcagVersion, "2.1");
+  assert.equal(settings.wcagLevel, "AAA");
+  assert.equal(settings.auditLivePages, false);
+  assert.equal(settings.widgetColor, "purple");
+  assert.equal(
+    (await f.call("settings", "PATCH", { wcagLevel: "A" })).status,
+    200,
+  );
+  settings = (await f.state()).settings;
+  assert.deepEqual(settings.ai, selected);
+});

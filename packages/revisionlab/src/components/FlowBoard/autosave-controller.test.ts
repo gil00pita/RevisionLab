@@ -480,3 +480,18 @@ test("pause and resume tolerate Strict Mode cleanup without losing history or qu
   assert.equal(f.state().canUndo, true);
   assert.equal(f.state().dirty, false);
 });
+
+test("connected manual edges keep their scoped identity through save and subsequent edits", async () => {
+  const f = fixture();
+  const actions = boardActions(f.controller, "staging~");
+  const id = actions.addEdge("a", "c", "Alternate route");
+  assert.ok(id?.startsWith("staging~"));
+  await f.time.advance(1000);
+  assert.ok(f.saved.edges.some((edge) => edge.id === id));
+  actions.labelEdge(id!, "Updated route");
+  await f.time.advance(1000);
+  assert.equal(
+    f.saved.edges.find((edge) => edge.id === id)?.label,
+    "Updated route",
+  );
+});

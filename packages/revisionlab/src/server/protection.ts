@@ -16,9 +16,14 @@ export async function protectRevisionLab(
       `${config.apiPath}/auth/options`,
       `${config.apiPath}/auth/request`,
       `${config.apiPath}/auth/verify`,
+      `${config.apiPath}/auth/magic-request`,
+      `${config.apiPath}/auth/magic-consume`,
       `${config.apiPath}/auth/logout`,
     ];
     if (publicPaths.includes(url.pathname)) return undefined;
+    // The federation route verifies its scoped API key; it cannot authorize host pages.
+    if (url.pathname.startsWith(`${config.apiPath}/federation/`))
+      return undefined;
     try {
       await authorizeRevisionLabRequest(request, config);
       return undefined;

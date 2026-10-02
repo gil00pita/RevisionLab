@@ -1,3 +1,9 @@
+import {
+  defaultWcagSettings,
+  wcagLabel,
+  wcagTags,
+  type WcagSettings,
+} from "../wcag-settings.js";
 import type { AxeResults } from "axe-core";
 import {
   MAX_ACCESSIBILITY_REPORT_BYTES,
@@ -16,21 +22,33 @@ export const accessibilityExcluded = [
 // The widget and recorder share axe's single document-wide runner.
 let scanQueue: Promise<unknown> = Promise.resolve();
 let saved: { key: string; report: AccessibilityReport } | undefined;
-const cacheKey = (signature: string) =>
-  `${location.href}|${document.documentElement.lang}|${document.title}|${innerHeight}|${signature}`;
+const cacheKey = (signature: string, standard: WcagSettings) =>
+  `${location.href}|${document.documentElement.lang}|${document.title}|${innerHeight}|${wcagLabel(standard)}|${signature}`;
 
 export function rememberAccessibility(
   signature: string,
   report: AccessibilityReport,
 ) {
-  saved = { key: cacheKey(signature), report };
+  saved = {
+    key: cacheKey(signature, report.standard ?? defaultWcagSettings),
+    report,
+  };
 }
 
-export function cachedAccessibility(signature: string) {
-  return saved?.key === cacheKey(signature) ? saved.report : undefined;
+export function cachedAccessibility(
+  signature: string,
+  standard: WcagSettings = defaultWcagSettings,
+) {
+  return saved?.key === cacheKey(signature, standard)
+    ? saved.report
+    : undefined;
 }
 
-export function runAccessibilityScan(cancelled: () => boolean = () => false) {
+export function runAccessibilityScan(
+  cancelled: () => boolean = () => false,
+  standard: WcagSettings = defaultWcagSettings,
+) {
+  const tags = wcagTags(standard);
   const task = scanQueue
     .catch(() => undefined)
     .then(async () => {
@@ -43,7 +61,7 @@ export function runAccessibilityScan(cancelled: () => boolean = () => false) {
           elementRef: true,
           runOnly: {
             type: "tag",
-            values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"],
+            values: tags,
           },
           resultTypes: ["violations", "incomplete"],
         },
@@ -75,8 +93,15 @@ function targetLabel(element?: HTMLElement | null) {
   return parts.join(" > ").slice(0, 256);
 }
 
-export function summarizeAccessibility(scan: AxeResults): AccessibilityReport {
+export function summarizeAccessibility(
+  scan: AxeResults,
+  standard: WcagSettings = defaultWcagSettings,
+): AccessibilityReport {
   const report: AccessibilityReport = {
+    standard: {
+      wcagVersion: standard.wcagVersion,
+      wcagLevel: standard.wcagLevel,
+    },
     status: scan.violations.length
       ? "issues"
       : scan.incomplete.length

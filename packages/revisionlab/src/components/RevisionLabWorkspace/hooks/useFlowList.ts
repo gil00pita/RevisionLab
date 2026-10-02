@@ -39,10 +39,20 @@ export function useFlowList({
       latest.set(flow.familyId, flow);
   }
   const filtered = [...latest.values()].filter((flow) =>
-    `${flow.name} ${flow.persona}`.toLowerCase().includes(search.toLowerCase()),
+    `${flow.name} ${flow.persona} ${flow.workspace?.name ?? ""}`
+      .toLowerCase()
+      .includes(search.toLowerCase()),
   );
-  const eligible = filtered.filter((flow) => !active.has(flow.familyId));
-  const selection = checked.filter((id) => latest.has(id) && !active.has(id));
+  const eligible = filtered.filter(
+    (flow) =>
+      !active.has(flow.familyId) && flow.workspace?.role !== "commenter",
+  );
+  const selection = checked.filter(
+    (id) =>
+      latest.has(id) &&
+      !active.has(id) &&
+      latest.get(id)?.workspace?.role !== "commenter",
+  );
   const allChecked =
     eligible.length > 0 &&
     eligible.every((flow) => selection.includes(flow.familyId));

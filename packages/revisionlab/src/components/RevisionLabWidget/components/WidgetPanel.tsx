@@ -19,6 +19,7 @@ export function WidgetPanel({
   workspace,
   recorder,
   basePath,
+  apiPath,
   tab,
   onTabChange,
   children,
@@ -26,6 +27,7 @@ export function WidgetPanel({
   workspace: ReturnType<typeof useRevisionLab>;
   recorder: ReturnType<typeof useRecording>;
   basePath: string;
+  apiPath: string;
   tab: "comment" | "record";
   onTabChange: (tab: "comment" | "record") => void;
   children: ReactNode;
@@ -91,6 +93,7 @@ export function WidgetPanel({
           recorder={recorder}
           personas={data.personas ?? []}
           basePath={basePath}
+          apiPath={apiPath}
         />
       ) : (
         children

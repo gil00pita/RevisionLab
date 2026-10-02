@@ -1,3 +1,4 @@
+import { withSetupOwner } from "./owner-identity.js";
 import { randomUUID } from "node:crypto";
 import type { Client } from "@libsql/client";
 import { resolveConfig, type ResolvedConfig } from "./config.js";
@@ -18,17 +19,22 @@ export async function authenticate(
   client: Client,
   config: ResolvedConfig,
 ): Promise<RevisionLabActor> {
+  config = await withSetupOwner(client, config);
   const token = readCookie(request, sessionCookieName(config));
   if (token) {
     if (token.length > 128)
       throw new HttpError(401, "Your review session is invalid.");
     const result = await client.execute({
       sql: `SELECT sessions.reviewer_id, sessions.role, sessions.expires_at,
-        sessions.invitation_id, reviewers.email, reviewers.name,
+        sessions.invitation_id, sessions.membership_id, sessions.membership_revision,
+        reviewers.email, reviewers.name,
         invitations.revoked_at, invitations.expires_at AS invitation_expires_at,
-        invitations.role AS invitation_role
+        invitations.role AS invitation_role, workspace_memberships.role AS membership_role,
+        workspace_memberships.status AS membership_status,
+        workspace_memberships.revision AS current_membership_revision
         FROM sessions JOIN reviewers ON reviewers.id = sessions.reviewer_id
         LEFT JOIN invitations ON invitations.id = sessions.invitation_id
+        LEFT JOIN workspace_memberships ON workspace_memberships.id = sessions.membership_id
         WHERE sessions.token_hash = ?`,
       args: [hashValue(token)],
     });
@@ -41,6 +47,10 @@ export async function authenticate(
         (row.revoked_at ||
           !row.invitation_expires_at ||
           String(row.invitation_expires_at) <= now)) ||
+      (row.membership_id &&
+        (row.membership_status !== "active" ||
+          Number(row.membership_revision) !==
+            Number(row.current_membership_revision))) ||
       (row.role === "owner" && row.email !== config.ownerEmail)
     ) {
       throw new HttpError(
@@ -52,23 +62,47 @@ export async function authenticate(
       id: String(row.reviewer_id),
       email: String(row.email),
       name: String(row.name),
-      role: String(row.invitation_role ?? row.role) as RevisionLabRole,
+      role: String(
+        row.membership_role ?? row.invitation_role ?? row.role,
+      ) as RevisionLabRole,
     };
   }
   if (config.localOwner && isLoopback(request)) {
     const email = config.ownerEmail ?? "owner@localhost";
-    const id = await write(client, async (transaction) => {
+    const existing = await client.execute({
+      sql: `SELECT reviewers.id, reviewers.name FROM reviewers
+        JOIN workspace_memberships ON workspace_memberships.reviewer_id = reviewers.id
+        WHERE reviewers.email = ?`,
+      args: [email],
+    });
+    if (existing.rows[0])
+      return {
+        id: String(existing.rows[0].id),
+        name: String(existing.rows[0].name),
+        email,
+        role: "owner",
+        local: true,
+      };
+    const localActor = await write(client, async (transaction) => {
+      const now = new Date().toISOString();
       await transaction.execute({
         sql: "INSERT OR IGNORE INTO reviewers (id, email, name, created_at) VALUES (?, ?, ?, ?)",
-        args: [randomUUID(), email, "Local owner", new Date().toISOString()],
+        args: [randomUUID(), email, "Local owner", now],
       });
       const result = await transaction.execute({
-        sql: "SELECT id FROM reviewers WHERE email = ?",
+        sql: "SELECT id, name FROM reviewers WHERE email = ?",
         args: [email],
       });
-      return String(result.rows[0].id);
+      const reviewerId = String(result.rows[0].id);
+      await transaction.execute({
+        sql: `INSERT INTO workspace_memberships (id, reviewer_id, email, role, status, revision, source, created_at, activated_at, updated_at)
+          VALUES (?, ?, ?, 'owner', 'active', 1, 'owner-bootstrap', ?, ?, ?)
+          ON CONFLICT(email) DO NOTHING`,
+        args: [randomUUID(), reviewerId, email, now, now, now],
+      });
+      return { id: reviewerId, name: String(result.rows[0].name) };
     });
-    return { id, email, name: "Local owner", role: "owner", local: true };
+    return { ...localActor, email, role: "owner", local: true };
   }
   throw new HttpError(401, "Open a valid review invitation to continue.");
 }

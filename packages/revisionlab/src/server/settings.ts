@@ -1,4 +1,5 @@
 import { aiSettingsSchema } from "./ai-settings-schema.js";
+import { wcagVersions, wcagLevels } from "../wcag-settings.js";
 import type { Client, Transaction } from "@libsql/client";
 import { z } from "zod";
 import {
@@ -7,15 +8,26 @@ import {
   type RevisionLabSettings,
 } from "../comment-settings.js";
 import { requireRole } from "./authentication.js";
+import { maxWidgetOffset } from "../widget-settings.js";
 import { write } from "./database.js";
 import { HttpError, json, readJson } from "./security.js";
 import type { RevisionLabActor } from "./types.js";
 
-const settingsSchema = z
+export const settingsSchema = z
   .object({
     ai: aiSettingsSchema,
+    wcagVersion: z.enum(wcagVersions),
+    wcagLevel: z.enum(wcagLevels),
     showCommentBubbles: z.boolean(),
     commentBubbleColor: z.enum(commentBubbleColors),
+    showWidget: z.boolean(),
+    widgetColor: z.enum(commentBubbleColors),
+    widgetSide: z.enum(["left", "right"]),
+    widgetOffset: z.number().int().min(0).max(maxWidgetOffset),
+    widgetBottomOffset: z.number().int().min(0).max(maxWidgetOffset),
+    widgetPosition: z.enum(["bottom-right", "bottom-left"]),
+    auditLivePages: z.boolean(),
+    auditRecordings: z.boolean(),
   })
   .strict();
 const settingsPatch = settingsSchema
@@ -38,8 +50,18 @@ export async function readSettings(
           row.ai_instructions_json == null
             ? defaultSettings.ai
             : JSON.parse(String(row.ai_instructions_json)),
+        wcagVersion: row.wcag_version,
+        wcagLevel: row.wcag_level,
+        widgetColor: row.widget_color,
+        widgetPosition: row.widget_position,
+        auditLivePages: Number(row.audit_live_pages) === 1,
+        auditRecordings: Number(row.audit_recordings) === 1,
         showCommentBubbles: Number(row.show_comment_bubbles) === 1,
         commentBubbleColor: row.comment_bubble_color,
+        showWidget: Number(row.show_widget) === 1,
+        widgetSide: row.widget_side,
+        widgetOffset: Number(row.widget_offset),
+        widgetBottomOffset: Number(row.widget_bottom_offset),
       })
     : { ...defaultSettings };
 }
@@ -57,13 +79,30 @@ export async function handleSettings(
   const settings = await write(client, async (transaction) => {
     const next = { ...(await readSettings(transaction)), ...patch };
     await transaction.execute({
-      sql: `INSERT INTO workspace_settings (id, show_comment_bubbles, comment_bubble_color, ai_instructions_json) VALUES (1, ?, ?, ?)
+      sql: `INSERT INTO workspace_settings (id, show_comment_bubbles, comment_bubble_color,
+        show_widget, widget_color, widget_side, widget_offset, widget_bottom_offset, wcag_version, wcag_level,
+        widget_position, audit_live_pages, audit_recordings, ai_instructions_json)
+        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET show_comment_bubbles = excluded.show_comment_bubbles,
-        comment_bubble_color = excluded.comment_bubble_color,
-        ai_instructions_json = excluded.ai_instructions_json`,
+        comment_bubble_color = excluded.comment_bubble_color, show_widget = excluded.show_widget,
+        widget_color = excluded.widget_color, widget_side = excluded.widget_side,
+        widget_offset = excluded.widget_offset, widget_bottom_offset = excluded.widget_bottom_offset,
+        wcag_version = excluded.wcag_version, wcag_level = excluded.wcag_level,
+        widget_position = excluded.widget_position, audit_live_pages = excluded.audit_live_pages,
+        audit_recordings = excluded.audit_recordings, ai_instructions_json = excluded.ai_instructions_json`,
       args: [
         next.showCommentBubbles ? 1 : 0,
         next.commentBubbleColor,
+        next.showWidget ? 1 : 0,
+        next.widgetColor,
+        next.widgetSide,
+        next.widgetOffset,
+        next.widgetBottomOffset,
+        next.wcagVersion,
+        next.wcagLevel,
+        next.widgetPosition,
+        next.auditLivePages ? 1 : 0,
+        next.auditRecordings ? 1 : 0,
         JSON.stringify(next.ai),
       ],
     });

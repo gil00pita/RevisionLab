@@ -2,11 +2,13 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { CloseButton, Popover, Portal } from "@chakra-ui/react";
 
 export function RecordingPopover({
+  side,
   open,
   busy,
   onClose,
   children,
 }: {
+  side: "left" | "right";
   open: boolean;
   busy: boolean;
   onClose: () => void;
@@ -35,11 +37,11 @@ export function RecordingPopover({
       initialFocusEl={() => content.current?.querySelector("input") ?? null}
       finalFocusEl={() =>
         document.querySelector<HTMLButtonElement>(
-          '[aria-label="Record prototype"], [aria-label="Stop recording"]',
+          '[aria-label="Record prototype"], [aria-label="Stop recording"], [data-widget-toggle]',
         )
       }
       positioning={{
-        placement: "top-end",
+        placement: side === "left" ? "top-start" : "top-end",
         strategy: "fixed",
         gutter: 12,
         getAnchorRect: () =>

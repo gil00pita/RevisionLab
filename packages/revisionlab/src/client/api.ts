@@ -19,13 +19,13 @@ export async function apiRequest<T>(
     cache: "no-store",
     headers: { "Content-Type": "application/json", ...options.headers },
   });
-  const data = await response.json().catch(() => ({}));
   if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
     throw new ApiError(
       response.status,
       data.error ?? `Request failed (${response.status}).`,
       data,
     );
   }
-  return data as T;
+  return (await response.json()) as T;
 }

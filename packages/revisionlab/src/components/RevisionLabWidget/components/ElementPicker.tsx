@@ -1,3 +1,7 @@
+import {
+  widgetPlacement,
+  type WidgetSettings,
+} from "../../../widget-settings.js";
 import { Box, Link, Portal, Stack, Switch, Text } from "@chakra-ui/react";
 import { useEffect, useRef } from "react";
 import type { RevisionLabElementAnchor } from "../../../server/types.js";
@@ -5,12 +9,16 @@ import { useElementPicker } from "../hooks/useElementPicker.js";
 import { useElementBounds } from "../hooks/useElementBounds.js";
 
 export function ElementPicker({
+  settings,
+  showControls,
   onSelect,
   onCancel,
   commentsHref,
   showBalloons,
   onShowBalloonsChange,
 }: {
+  settings: WidgetSettings;
+  showControls: boolean;
   onSelect: (anchor: RevisionLabElementAnchor) => void;
   onCancel: () => void;
   commentsHref: string;
@@ -56,43 +64,44 @@ export function ElementPicker({
           bg="blue.500/10"
         />
       )}
-      <Stack
-        data-revisionlab-ui
-        position="fixed"
-        bottom="24"
-        right={{ base: "3", md: "6" }}
-        zIndex="popover"
-        maxW="calc(100vw - 1.5rem)"
-        px="4"
-        py="3"
-        gap="1"
-        bg="white"
-        color="gray.900"
-        borderWidth="1px"
-        borderColor="gray.200"
-        borderRadius="lg"
-        shadow="sm"
-      >
-        <Switch.Root
-          size="sm"
-          colorPalette="blue"
-          checked={showBalloons}
-          onCheckedChange={(event) => onShowBalloonsChange(event.checked)}
-          mb="2"
+      {showControls && (
+        <Stack
+          data-revisionlab-ui
+          position="fixed"
+          {...widgetPlacement(settings, true)}
+          zIndex="popover"
+          maxW="calc(100vw - 1.5rem)"
+          px="4"
+          py="3"
+          gap="1"
+          bg="white"
+          color="gray.900"
+          borderWidth="1px"
+          borderColor="gray.200"
+          borderRadius="lg"
+          shadow="sm"
         >
-          <Switch.HiddenInput />
-          <Switch.Control>
-            <Switch.Thumb />
-          </Switch.Control>
-          <Switch.Label>Show comments notes</Switch.Label>
-        </Switch.Root>
-        <Link href={commentsHref} color="blue.700" fontSize="sm">
-          Show all comments from this page
-        </Link>
-        <Text fontSize="xs" color="gray.600">
-          Press Esc to close the comments.
-        </Text>
-      </Stack>
+          <Switch.Root
+            size="sm"
+            colorPalette="blue"
+            checked={showBalloons}
+            onCheckedChange={(event) => onShowBalloonsChange(event.checked)}
+            mb="2"
+          >
+            <Switch.HiddenInput />
+            <Switch.Control>
+              <Switch.Thumb />
+            </Switch.Control>
+            <Switch.Label>Show comments notes</Switch.Label>
+          </Switch.Root>
+          <Link href={commentsHref} color="blue.700" fontSize="sm">
+            Show all comments from this page
+          </Link>
+          <Text fontSize="xs" color="gray.600">
+            Press Esc to close the comments.
+          </Text>
+        </Stack>
+      )}
     </Portal>
   );
 }

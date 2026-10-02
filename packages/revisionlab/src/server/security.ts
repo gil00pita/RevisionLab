@@ -1,4 +1,6 @@
 import {
+  createCipheriv,
+  createDecipheriv,
   createHash,
   randomBytes,
   randomInt,
@@ -21,6 +23,56 @@ export function valuesMatch(value: string, expectedHash: string): boolean {
   const actual = Buffer.from(hashValue(value));
   const expected = Buffer.from(expectedHash);
   return actual.length === expected.length && timingSafeEqual(actual, expected);
+}
+
+function encryptionKey(encoded: string): Buffer {
+  const key = Buffer.from(encoded, "base64url");
+  if (key.length !== 32)
+    throw new HttpError(
+      503,
+      "Configure REVISIONLAB_PERSONA_ENCRYPTION_KEY as a 32-byte base64url secret.",
+    );
+  return key;
+}
+
+export function encryptSecret(value: string, encodedKey: string): string {
+  const nonce = randomBytes(12);
+  const cipher = createCipheriv(
+    "aes-256-gcm",
+    encryptionKey(encodedKey),
+    nonce,
+  );
+  const ciphertext = Buffer.concat([
+    cipher.update(value, "utf8"),
+    cipher.final(),
+  ]);
+  return [
+    "v1",
+    nonce.toString("base64url"),
+    cipher.getAuthTag().toString("base64url"),
+    ciphertext.toString("base64url"),
+  ].join(".");
+}
+
+export function decryptSecret(value: string, encodedKey: string): string {
+  const [version, nonce, tag, ciphertext] = value.split(".");
+  if (version !== "v1" || !nonce || !tag || ciphertext == null)
+    throw new HttpError(500, "Stored persona credentials are invalid.");
+  try {
+    const decipher = createDecipheriv(
+      "aes-256-gcm",
+      encryptionKey(encodedKey),
+      Buffer.from(nonce, "base64url"),
+    );
+    decipher.setAuthTag(Buffer.from(tag, "base64url"));
+    return Buffer.concat([
+      decipher.update(Buffer.from(ciphertext, "base64url")),
+      decipher.final(),
+    ]).toString("utf8");
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    throw new HttpError(500, "Stored persona credentials cannot be opened.");
+  }
 }
 
 export function readCookie(request: Request, name: string): string | undefined {

@@ -25,6 +25,8 @@ test("legacy databases retain recordings, screenshots and unpinned comments duri
   try {
     await original.batch(
       [
+        "CREATE TABLE workspace_settings (id INTEGER PRIMARY KEY, show_comment_bubbles INTEGER NOT NULL DEFAULT 1, comment_bubble_color TEXT NOT NULL DEFAULT 'blue')",
+        "INSERT INTO workspace_settings VALUES (1, 0, 'pink')",
         "CREATE TABLE reviewers (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, name TEXT NOT NULL, created_at TEXT NOT NULL)",
         "CREATE TABLE flows (id TEXT PRIMARY KEY, name TEXT NOT NULL, persona TEXT NOT NULL, route TEXT NOT NULL, status TEXT NOT NULL, created_by TEXT NOT NULL REFERENCES reviewers(id), created_at TEXT NOT NULL, updated_at TEXT NOT NULL)",
         "CREATE TABLE steps (id TEXT PRIMARY KEY, flow_id TEXT NOT NULL REFERENCES flows(id), title TEXT NOT NULL, route TEXT NOT NULL, screenshot TEXT, position INTEGER NOT NULL, created_at TEXT NOT NULL)",
@@ -53,7 +55,11 @@ test("legacy databases retain recordings, screenshots and unpinned comments duri
   }
   const migrated = await getDatabase(config);
   try {
-    assert.deepEqual(await readSettings(migrated), defaultSettings);
+    assert.deepEqual(await readSettings(migrated), {
+      ...defaultSettings,
+      showCommentBubbles: false,
+      commentBubbleColor: "pink",
+    });
     const [flow] = await readFlows(migrated, "/api/revisionlab");
     assert.equal(flow.id, flowId);
     assert.equal(flow.familyId, flowId);

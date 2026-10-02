@@ -12,6 +12,10 @@ import {
   captureRecordingScreens,
   type AutomaticCaptureRequest,
 } from "../../../client/recording-capture.js";
+import {
+  defaultWcagSettings,
+  type WcagSettings,
+} from "../../../wcag-settings.js";
 import { useAutomaticCapture } from "./useAutomaticCapture.js";
 
 type RecordingOperation = "capture" | "start" | "finish" | "discard" | null;
@@ -21,7 +25,10 @@ export function useRecording(
   route: string,
   enabled: boolean,
   paused = false,
+  standard: WcagSettings = defaultWcagSettings,
+  auditRecordings = true,
 ) {
+  const { wcagVersion, wcagLevel } = standard;
   const [recording, setRecording] = useState<ActiveRecording | null>(null);
   const [operation, setOperation] = useState<RecordingOperation>(null);
   const [error, setError] = useState("");
@@ -74,7 +81,9 @@ export function useRecording(
       const task = (async () => {
         try {
           return await captureRecordingScreens({
+            standard: { wcagVersion, wcagLevel },
             apiPath,
+            auditRecordings,
             flowId: target.flowId,
             route,
             title,
@@ -111,10 +120,19 @@ export function useRecording(
       pendingCapture.current = task;
       return task;
     },
-    [apiPath, enabled, route, updateOperation],
+    [
+      apiPath,
+      enabled,
+      route,
+      updateOperation,
+      auditRecordings,
+      wcagVersion,
+      wcagLevel,
+    ],
   );
 
   useAutomaticCapture({
+    standard,
     flowId: recording?.flowId,
     route,
     enabled,

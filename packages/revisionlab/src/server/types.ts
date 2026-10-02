@@ -1,3 +1,4 @@
+import type { WorkspaceOrigin } from "../workspace-instances.js";
 import type { RevisionLabSettings } from "../comment-settings.js";
 import type { AccessibilityReport } from "../accessibility.js";
 export type {
@@ -22,6 +23,8 @@ export interface RevisionLabConfig {
   ownerEmail?: string;
   resendApiKey?: string;
   emailFrom?: string;
+  systemUrl?: string;
+  personaEncryptionKey?: string;
   basePath?: string;
   apiPath?: string;
   localOwner?: boolean;
@@ -61,6 +64,7 @@ export interface RevisionLabBoard {
 }
 
 export interface RevisionLabFlow {
+  workspace?: WorkspaceOrigin;
   id: string;
   familyId: string;
   version: number;
@@ -116,6 +120,7 @@ export interface RevisionLabElementAnchor {
 }
 
 export interface RevisionLabComment {
+  workspace?: WorkspaceOrigin;
   id: string;
   flowId: string | null;
   stepId: string | null;
@@ -148,15 +153,41 @@ export interface RevisionLabInvitation {
 }
 
 export interface RevisionLabPersona {
+  workspace?: WorkspaceOrigin;
   id: string;
   name: string;
   description: string;
   archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  hasCredentials: boolean;
+}
+
+export type RevisionLabMembershipStatus =
+  | "pending"
+  | "active"
+  | "suspended"
+  | "removed";
+
+export interface RevisionLabMembership {
+  id: string;
+  email: string;
+  name: string | null;
+  role: RevisionLabRole;
+  status: RevisionLabMembershipStatus;
+  source: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RevisionLabAccessSettings {
+  systemUrl: string;
+  allowedEmails: string[];
+  joinCodeCreatedAt: string | null;
 }
 
 export interface RevisionLabState {
+  setup: import("../setup.js").SetupProgress;
   settings: RevisionLabSettings;
   project: { id: string; name: string };
   actor: RevisionLabActor;
@@ -164,6 +195,8 @@ export interface RevisionLabState {
   comments: RevisionLabComment[];
   invitations: RevisionLabInvitation[];
   personas: RevisionLabPersona[];
+  memberships: RevisionLabMembership[];
+  accessSettings: RevisionLabAccessSettings | null;
 }
 
 export interface RevisionLabRouteContext {

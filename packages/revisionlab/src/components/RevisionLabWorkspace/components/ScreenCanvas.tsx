@@ -109,7 +109,14 @@ export function ScreenCanvas({
               </Text>
             </Box>
             <Link
-              href={safePrototypeRoute(step.route, basePath)}
+              href={
+                flow.workspace && flow.workspace.id !== "local"
+                  ? new URL(
+                      safePrototypeRoute(step.route, flow.workspace.basePath),
+                      flow.workspace.url,
+                    ).toString()
+                  : safePrototypeRoute(step.route, basePath)
+              }
               color="blue.700"
               fontSize="sm"
               flexShrink="0"
