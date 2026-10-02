@@ -1,3 +1,4 @@
+import { NotificationSettings } from "../../NotificationSettings/index.js";
 import type { WorkspaceInstance } from "../../../workspace-instances.js";
 import type {
   RevisionLabAccessSettings,
@@ -58,7 +59,7 @@ export function WorkspaceSettings({
   const [selectedTab, setSelectedTab] = useState<string>(initialTab);
   const canManageInstallation = actorRole === "owner" && Boolean(invitations);
   const activeTab =
-    ["users", "general", "instances"].includes(selectedTab) &&
+    ["users", "general", "instances", "notifications"].includes(selectedTab) &&
     !canManageInstallation
       ? "system"
       : selectedTab;
@@ -116,9 +117,9 @@ export function WorkspaceSettings({
       <Text fontSize="sm" color="gray.600">
         Widget, Comments, and Audit settings apply to{" "}
         {settingsWorkspace?.name ?? "This workspace"}. General, Users &amp;
-        Roles, and Workspace Instances manage this installation. History follows
-        the selected workspace source, or every available source in All
-        workspaces.
+        Roles, Notifications, and Workspace Instances manage this installation.
+        History follows the selected workspace source, or every available source
+        in All workspaces.
       </Text>
       {!canEdit && <Badge alignSelf="start">Read only</Badge>}
       <Tabs.Root
@@ -136,6 +137,11 @@ export function WorkspaceSettings({
           <Tabs.Trigger value="system" px={{ base: "3", md: "4" }}>
             Widget
           </Tabs.Trigger>
+          {canManageInstallation && (
+            <Tabs.Trigger value="notifications" px={{ base: "3", md: "4" }}>
+              Notifications
+            </Tabs.Trigger>
+          )}
           <Tabs.Trigger value="comments" px={{ base: "3", md: "4" }}>
             Comments
           </Tabs.Trigger>
@@ -185,6 +191,11 @@ export function WorkspaceSettings({
               onRefresh={onRefresh}
               onRemoved={onInstanceRemoved}
             />
+          </Tabs.Content>
+        )}
+        {canManageInstallation && (
+          <Tabs.Content value="notifications" p="0">
+            <NotificationSettings apiPath={managementApiPath} />
           </Tabs.Content>
         )}
         <Tabs.Content value="system" p="0">

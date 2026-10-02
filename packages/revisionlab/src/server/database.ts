@@ -66,6 +66,9 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
   // One write transaction prevents simultaneous instances from applying an ALTER twice.
   await write(client, async (transaction) => {
     const additions = {
+      setup_progress: [
+        ["notifications_step_added", "INTEGER NOT NULL DEFAULT 1"],
+      ],
       installation: [["instance_id", "TEXT"]],
       workspace_history: [["committed_at", "TEXT"]],
       workspace_settings: [
@@ -135,6 +138,10 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
           await transaction.execute(
             `ALTER TABLE ${table} ADD COLUMN ${name} ${declaration}`,
           );
+          if (table === "setup_progress" && name === "notifications_step_added")
+            await transaction.execute(
+              "UPDATE setup_progress SET step = step + 1 WHERE step >= 5 AND completed = 0",
+            );
         }
       }
     }

@@ -220,3 +220,16 @@ export { handler as GET, handler as POST, handler as PATCH, handler as DELETE };
 Adjust the relative configuration import to the route's location. Server configuration and credentials must never be passed into client components. The automatic installer assumes default Next.js route extensions and no framework `basePath`. A static export cannot run RevisionLab's APIs; use a Next.js server deployment.
 
 The command prepares an existing application; it does not create a new Next.js project, publish the package, provision external services, or deploy the host application.
+
+
+## Notification delivery (local changes; not yet published)
+
+Owners can open **Settings → Notifications**, or the optional **Notifications** step before **Users & roles** in the initial wizard. Choose an explicit default email provider, then configure it in **Custom SMTP**, **Resend**, or **SMTP.dev**. Switching tabs only changes the fields being edited. Provider settings are retained independently. The selected default sends login links, invitations, and enabled review notifications. **Host configuration** preserves existing `RESEND_API_KEY` / `REVISIONLAB_EMAIL_FROM` behavior; **Disabled** stops email delivery, including new login emails.
+
+Custom SMTP supports a host, port, STARTTLS or implicit TLS, optional username/password, and sender email. TLS and certificate validation are required. Resend uses an API key and authorized sender, with a signup link. SMTP.dev offers a signup link, API key storage, and SMTP username/password; it sends through `send.smtp.dev:587` with STARTTLS **inside its sandbox only**. Its API key manages/reads mail and is not a sending credential. Do not select it for external reviewers' login emails.
+
+Add up to 20 notification recipients and select new comments/replies and/or saved accessibility issues. Slack uses a channel's incoming webhook, an enable switch, and independent event choices. Issues here are accessibility findings saved with a new recorded screen; live scans, reused screens, status changes, and history restoration do not notify. Configure each installation separately; connected workspaces cannot administer these secrets.
+
+Save before using **Send test email** or **Send test Slack message**. Tests send real messages when configured. The latest channel status reports provider acceptance or a sanitized failure; acceptance is not proof of receipt. Event delivery is attempted once with bounded timeouts and never rolls back saved feedback. There is no background retry queue in this increment.
+
+Credentials are encrypted, never returned by the settings API, and excluded from workspace state/history. Blank secret fields preserve existing values; use the explicit removal checkbox to clear one. SQLite installations create a private `notification.key` beside the database. Hosted/shared databases require `REVISIONLAB_NOTIFICATION_ENCRYPTION_KEY` (32 random bytes encoded as base64url), shared by all server instances and preserved across deployments. Keep this key private and backed up separately; losing it makes saved credentials unreadable. Bootstrap hosted owner access with the existing host email configuration before configuring providers through the owner-only UI.

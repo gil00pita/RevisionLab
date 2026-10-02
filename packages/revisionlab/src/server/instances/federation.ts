@@ -22,6 +22,7 @@ export async function handleFederation(
   path: string[],
   client: Client,
   config: ResolvedConfig,
+  notificationDeadline = Date.now() + 4000,
 ) {
   const actor = await authenticateApiKey(request, client);
   if (request.method === "GET" && path.length === 1 && path[0] === "manifest")
@@ -73,7 +74,15 @@ export async function handleFederation(
       config,
       actor,
       historyAction(request.method, path),
-      () => handleComments(request, path, client, actor),
+      () =>
+        handleComments(
+          request,
+          path,
+          client,
+          actor,
+          config,
+          notificationDeadline,
+        ),
     );
   if (path[0] === "personas")
     return withHistory(

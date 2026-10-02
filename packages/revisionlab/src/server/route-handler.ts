@@ -1,3 +1,4 @@
+import { handleNotifications } from "./notifications/routes.js";
 import { handleApiKeys } from "./instances/keys.js";
 import { handleConnections } from "./instances/connections.js";
 import { handleFederation } from "./instances/federation.js";
@@ -25,6 +26,7 @@ export function createRevisionLabHandler(
   initialConfig: RevisionLabConfig,
 ): RevisionLabRouteHandler {
   return async (request, context) => {
+    const notificationDeadline = Date.now() + 4000;
     try {
       const config = resolveConfig(initialConfig);
       const { path = [] } = await context.params;
@@ -34,10 +36,18 @@ export function createRevisionLabHandler(
       if (path[0] === "auth")
         return await handleAuth(request, path.slice(1), client, config);
       if (path[0] === "federation")
-        return await handleFederation(request, path.slice(1), client, config);
+        return await handleFederation(
+          request,
+          path.slice(1),
+          client,
+          config,
+          notificationDeadline,
+        );
       const actor = await authenticate(request, client, config);
       if (request.method !== "GET")
         await consumeRateLimit(client, `mutate:${actor.id}`, 120, 60_000);
+      if (path[0] === "settings" && path[1] === "notifications")
+        return await handleNotifications(request, path, client, config, actor);
       if (path[0] === "api-keys")
         return await handleApiKeys(request, path, client, actor);
       if (path[0] === "instances") {
@@ -59,11 +69,7 @@ export function createRevisionLabHandler(
       if (path.length === 2 && path[0] === "settings" && path[1] === "ai") {
         return await handleAiInstructions(request, config, actor);
       }
-      if (
-        request.method === "GET" &&
-        path.length === 1 &&
-        path[0] === "state"
-      )
+      if (request.method === "GET" && path.length === 1 && path[0] === "state")
         return json(await readWorkspaceState(client, config, actor));
       if (
         request.method === "GET" &&
@@ -109,7 +115,7 @@ export function createRevisionLabHandler(
           config,
           actor,
           historyAction(request.method, path),
-          () => handleComments(request, path, client, actor),
+          () => handleComments(request, path, client, actor, config),
         );
       if (path[0] === "invitations")
         return await handleInvitations(request, path, client, config, actor);
