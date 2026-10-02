@@ -1,3 +1,8 @@
+import {
+  defaultAiSettings,
+  type AiInstructionSettings,
+} from "./ai-instructions/index.js";
+
 export const commentBubbleColors = [
   "gray",
   "red",
@@ -14,11 +19,13 @@ export const commentBubbleColors = [
 export type CommentBubbleColor = (typeof commentBubbleColors)[number];
 
 export interface RevisionLabSettings {
+  ai: AiInstructionSettings;
   showCommentBubbles: boolean;
   commentBubbleColor: CommentBubbleColor;
 }
 
 export const defaultSettings: RevisionLabSettings = {
+  ai: defaultAiSettings,
   showCommentBubbles: true,
   commentBubbleColor: "blue",
 };

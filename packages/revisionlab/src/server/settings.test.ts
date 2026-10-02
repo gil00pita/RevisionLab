@@ -15,6 +15,7 @@ test("workspace settings default to visible blue bubbles and survive a fresh con
   });
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), {
+    ...defaultSettings,
     showCommentBubbles: false,
     commentBubbleColor: "pink",
   });
@@ -37,6 +38,7 @@ test("all standard bubble colors are accepted; malformed settings cannot be stor
       200,
     );
     assert.deepEqual((await f.state()).settings, {
+      ...defaultSettings,
       showCommentBubbles: true,
       commentBubbleColor: color,
     });
@@ -82,6 +84,7 @@ test("owners and editors edit settings; commenters read but cannot change them",
   const state = await f.call("state", "GET", undefined, commenter);
   assert.equal(state.status, 200);
   assert.deepEqual((await state.json()).settings, {
+    ...defaultSettings,
     showCommentBubbles: true,
     commentBubbleColor: "teal",
   });
@@ -113,6 +116,7 @@ test("concurrent partial settings updates preserve both fields and existing revi
   assert.ok(responses.every((response) => response.status === 200));
   const after = await f.state();
   assert.deepEqual(after.settings, {
+    ...defaultSettings,
     showCommentBubbles: false,
     commentBubbleColor: "orange",
   });

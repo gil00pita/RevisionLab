@@ -1,3 +1,4 @@
+import { aiSettingsSchema } from "./ai-settings-schema.js";
 import type { Client, Transaction } from "@libsql/client";
 import { z } from "zod";
 import {
@@ -12,6 +13,7 @@ import type { RevisionLabActor } from "./types.js";
 
 const settingsSchema = z
   .object({
+    ai: aiSettingsSchema,
     showCommentBubbles: z.boolean(),
     commentBubbleColor: z.enum(commentBubbleColors),
   })
@@ -32,6 +34,10 @@ export async function readSettings(
   const row = result.rows[0];
   return row
     ? settingsSchema.parse({
+        ai:
+          row.ai_instructions_json == null
+            ? defaultSettings.ai
+            : JSON.parse(String(row.ai_instructions_json)),
         showCommentBubbles: Number(row.show_comment_bubbles) === 1,
         commentBubbleColor: row.comment_bubble_color,
       })
@@ -47,14 +53,19 @@ export async function handleSettings(
   requireRole(actor, "editor");
   if (request.method !== "PATCH" || path.length !== 1)
     throw new HttpError(404, "Not found.");
-  const patch = settingsPatch.parse(await readJson(request));
+  const patch = settingsPatch.parse(await readJson(request, 524_288));
   const settings = await write(client, async (transaction) => {
     const next = { ...(await readSettings(transaction)), ...patch };
     await transaction.execute({
-      sql: `INSERT INTO workspace_settings (id, show_comment_bubbles, comment_bubble_color) VALUES (1, ?, ?)
+      sql: `INSERT INTO workspace_settings (id, show_comment_bubbles, comment_bubble_color, ai_instructions_json) VALUES (1, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET show_comment_bubbles = excluded.show_comment_bubbles,
-        comment_bubble_color = excluded.comment_bubble_color`,
-      args: [next.showCommentBubbles ? 1 : 0, next.commentBubbleColor],
+        comment_bubble_color = excluded.comment_bubble_color,
+        ai_instructions_json = excluded.ai_instructions_json`,
+      args: [
+        next.showCommentBubbles ? 1 : 0,
+        next.commentBubbleColor,
+        JSON.stringify(next.ai),
+      ],
     });
     return next;
   });

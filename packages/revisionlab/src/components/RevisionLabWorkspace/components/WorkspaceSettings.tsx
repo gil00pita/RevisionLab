@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabSettings } from "../../../comment-settings.js";
+import { AiInstructionsSettings } from "./AiInstructionsSettings.js";
 import { BubbleColorPicker } from "./BubbleColorPicker.js";
 
 export function WorkspaceSettings({
@@ -120,6 +121,8 @@ export function WorkspaceSettings({
       <Text role="status" fontSize="sm" color="gray.600" minH="5">
         {busy ? "Saving settings..." : saved ? "Settings saved." : ""}
       </Text>
+      <Separator />
+      <AiInstructionsSettings apiPath={apiPath} value={settings.ai} canEdit={canEdit} onRefresh={onRefresh} />
     </Stack>
   );
 }

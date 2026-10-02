@@ -1,5 +1,9 @@
 # Build Instructions — RevisionLab Embedded Review
 
+## Current increment — AI Instructions and design systems
+
+Implement the Settings editor with the supplied full default review prompt, durable base text and design-system configuration, the 18-framework radio catalogue with dated GitHub stars and resource links, manual resources, and optional skill/MCP setup requests in the generated preview/copy output. Preserve the base prompt when disabling the appendix and preserve existing comment settings and role checks. Use the installed Chakra v3 components. Direct installation remains unconfirmed; this implementation prepares instructions for the receiving agent. Validate new/legacy defaults, reload, intentionally empty prompts, resource validation, concurrent comment updates, permissions, and keyboard/desktop/mobile behavior. See PRODUCT.md for the authoritative acceptance criteria and VALIDATION.md for actual results.
+
 ## Implementation checkpoint — 22 September 2026
 
 Local login recovery (1 October 2026, implemented locally): expose only the local-owner availability flag through a public auth-options endpoint; add an explicit local access action that awaits the existing logout operation before opening the workspace. Retain invalid-session rejection and all production/hostname/configuration restrictions. All 17 route-handler tests pass, including stale-cookie recovery, proxy access to options, and production/hostname/configuration restrictions. Lint and the production build pass. Chrome checks verify recovery, cookie removal, keyboard retry after a failed logout, hidden unavailable access, and a 390px layout without horizontal overflow. The user confirmed localhost is affected; the exact original error remains unconfirmed. This fixes the reproduced localhost recovery gap.

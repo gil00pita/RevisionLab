@@ -119,3 +119,9 @@ The package builds before the host application. Webpack is selected for compatib
 See [VALIDATION.md](VALIDATION.md) for the checks performed, independent UI review, and remaining verification limits.
 
 See [PRODUCT.md](PRODUCT.md) for the product vision and [PLAN.md](PLAN.md) for the remaining implementation roadmap.
+
+### AI Instructions
+
+Open **Settings → AI Instructions** to edit the included product/UX review prompt. New installations are prefilled with the complete review template. Save changes to keep them for this project; **Copy AI instructions** copies the generated text for your AI agent.
+
+Enable **Add a design system** to select one of 18 frameworks or enter a manual system. The list includes dated GitHub star counts and documentation links. The selected system's GitHub, docs, and available design.md, AI skill, and MCP links are appended without changing the base prompt. Where available, include skill-installation or MCP-setup instructions for the receiving agent. These options do not install or connect services from RevisionLab. Turning the toggle off preserves the selection and excludes the appendix. Owners/editors can save; commenters can view and copy.
