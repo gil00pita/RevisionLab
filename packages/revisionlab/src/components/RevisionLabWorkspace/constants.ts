@@ -12,6 +12,6 @@ export const workspaceViewSubtitles: Record<WorkspaceView, string> = {
   flows: "Review recorded journeys, screens, and versions.",
   comments: "Review feedback and follow the discussion.",
   personas: "Organize the personas used in your recordings.",
-  settings: "Configure the widget and comments on your prototype.",
+  settings: "Manage system preferences, comments, and accessibility checks.",
   people: "Manage invitations and reviewer permissions.",
 };

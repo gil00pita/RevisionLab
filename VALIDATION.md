@@ -1,5 +1,11 @@
 # Release validation
 
+## Settings tabs and single page title - 2 October 2026
+
+Removed the duplicate in-content Settings heading, retaining the workspace page title. System contains widget configuration, Comments contains bubble preferences, and Audit explains existing checks and where to stop/rerun them; no persisted audit options were added. Tab panels remain mounted to preserve unsaved widget drafts, and read-only/save/error behavior is retained. PRODUCT.md, PLAN.md, and both READMEs describe the new organization.
+
+Validation: lint, production build, and diff checks pass. Chromium confirmed one Settings heading, the default System panel, separate Comments/Audit panels, ArrowRight/Home navigation with focus, and a draft horizontal offset retained after visiting both other tabs. At 320px all tabs fit without horizontal overflow. Browser error output was empty. Screenshots: `.context/settings-tabs-desktop.png` and `.context/settings-tabs-mobile.png`; build log: `.context/settings-tabs-build.log`.
+
 ## Widget settings and accessibility badges - 2 October 2026
 
 Workspace Settings now persists widget visibility, ten named colors, left/right side, and whole-pixel horizontal/bottom offsets (0–1000). Existing installations migrate to visible/blue/right/24px defaults without losing comment settings. Idle hidden launchers stop live-page scans; active sessions retain their controls. Associated panels follow placement, and rendered offsets are constrained to keep controls onscreen. The minimal logo shows the supplied issue artwork for current findings or a spinner while checking.

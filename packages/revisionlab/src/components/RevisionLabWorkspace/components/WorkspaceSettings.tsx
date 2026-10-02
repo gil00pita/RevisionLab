@@ -1,18 +1,10 @@
 import { useRef, useState } from "react";
-import {
-  Badge,
-  Field,
-  Flex,
-  Heading,
-  Separator,
-  Stack,
-  Switch,
-  Text,
-} from "@chakra-ui/react";
+import { Badge, Stack, Tabs, Text } from "@chakra-ui/react";
 import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabSettings } from "../../../comment-settings.js";
 import { WidgetSettingsForm } from "./WidgetSettingsForm.js";
-import { SettingsColorPicker } from "./SettingsColorPicker.js";
+import { CommentSettings } from "./CommentSettings.js";
+import { AuditSettings } from "./AuditSettings.js";
 
 export function WorkspaceSettings({
   apiPath,
@@ -76,50 +68,39 @@ export function WorkspaceSettings({
       maxW="3xl"
       aria-busy={busy}
     >
-      <Flex align="center" justify="space-between" gap="3">
-        <Heading as="h2" size="xl">
-          Settings
-        </Heading>
-        {!canEdit && <Badge>Read only</Badge>}
-      </Flex>
-      <Separator />
-      <WidgetSettingsForm
-        settings={settings}
-        canEdit={canEdit}
-        busy={busy}
-        onSave={update}
-      />
-      <Separator />
-      <Heading as="h3" size="md">
-        Live comments
-      </Heading>
-      <Field.Root disabled={!canEdit}>
-        <Switch.Root
-          checked={displayed.showCommentBubbles}
-          disabled={!canEdit}
-          readOnly={busy}
-          onCheckedChange={(event) =>
-            void update({ showCommentBubbles: event.checked })
-          }
-          colorPalette="blue"
-        >
-          <Switch.HiddenInput />
-          <Switch.Control
-            borderWidth="1px"
-            borderColor="gray.500"
-            _checked={{ borderColor: "blue.700" }}
-          >
-            <Switch.Thumb />
-          </Switch.Control>
-          <Switch.Label>Show comment bubbles by default</Switch.Label>
-        </Switch.Root>
-      </Field.Root>
-      <SettingsColorPicker
-        value={displayed.commentBubbleColor}
-        disabled={!canEdit}
-        readOnly={busy}
-        onChange={(color) => void update({ commentBubbleColor: color })}
-      />
+      {!canEdit && <Badge alignSelf="start">Read only</Badge>}
+      <Tabs.Root defaultValue="system" colorPalette="blue" variant="line">
+        <Tabs.List aria-label="Settings sections" mb="6">
+          <Tabs.Trigger value="system" px={{ base: "3", md: "4" }}>
+            System
+          </Tabs.Trigger>
+          <Tabs.Trigger value="comments" px={{ base: "3", md: "4" }}>
+            Comments
+          </Tabs.Trigger>
+          <Tabs.Trigger value="audit" px={{ base: "3", md: "4" }}>
+            Audit
+          </Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Content value="system" p="0">
+          <WidgetSettingsForm
+            settings={settings}
+            canEdit={canEdit}
+            busy={busy}
+            onSave={update}
+          />
+        </Tabs.Content>
+        <Tabs.Content value="comments" p="0">
+          <CommentSettings
+            settings={displayed}
+            canEdit={canEdit}
+            busy={busy}
+            onChange={update}
+          />
+        </Tabs.Content>
+        <Tabs.Content value="audit" p="0">
+          <AuditSettings />
+        </Tabs.Content>
+      </Tabs.Root>
       {error && (
         <Text role="alert" color="red.700">
           {error}

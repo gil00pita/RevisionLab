@@ -1339,6 +1339,8 @@ docs/review-canvas.md
 
 ## Current increment - Compact widget and automatic evidence
 
+Settings layout refinement: keep the top page title only and group content into System (widget), Comments (bubble preferences), and Audit (existing-check guidance). Preserve permissions, saving/error feedback, and unsaved drafts across accessible tab changes; verify keyboard navigation and mobile layout.
+
 Widget configuration refinement: extend stored workspace Settings with visibility, named color, left/right side, and horizontal/bottom pixel offsets; preserve active stop/save recovery and clamp placement within the viewport. Add current-issues and scanning badges to the minimal logo. Validate migration, persistence, permissions, invalid/partial updates, panel positioning, badges, and narrow-screen behavior. See PRODUCT.md for confirmed intent and implementation decisions.
 
 Minimal-widget refinement (2 October 2026): default to a 36px logo-only disclosure at bottom right, with matching compact controls and brief horizontal slide/fade animations in both directions (instant with reduced motion). Expand to show the full tools and separate workspace link. Keep each active recording/commenting/auditing stop beside the logo when collapsed, auto-collapse on recording/comment start, and hide routine status/help while retaining actionable errors and save acknowledgement. Stop auditing aborts pending publication and pauses live-page rescans until rerun without affecting recording evidence. Validate keyboard disclosure, independent stops, cancelled audit results, rerun, permissions, save feedback, and desktop/mobile sizing. This supersedes the always-expanded branded toolbar checkpoint below; see PRODUCT.md and VALIDATION.md.
