@@ -89,7 +89,7 @@ test("setup rejects invalid identity and URLs atomically and prevents jumping ah
     (await f.call("setup", "PATCH", { action: "advance", step: 5 })).status,
     400,
   );
-  for (const step of [2, 3, 4, 5])
+  for (const step of [2, 3, 4, 5, 6])
     assert.equal(
       (await f.call("setup", "PATCH", { action: "advance", step })).status,
       200,
@@ -223,4 +223,58 @@ test("setup keeps explicit host owner identity authoritative and rejects duplica
   );
   assert.equal(response.status, 400);
   assert.equal((await f.state()).setup.step, 0);
+});
+
+test("notification wizard step preserves configuration through finish and migrates old user-step progress once", async (t) => {
+  const f = await reviewFixture(t);
+  await f.call("setup", "PATCH", identity);
+  for (const step of [2, 3, 4, 5])
+    assert.equal(
+      (await f.call("setup", "PATCH", { action: "advance", step })).status,
+      200,
+    );
+  const initial = await (await f.call("settings/notifications")).json();
+  assert.equal(
+    (
+      await f.call("settings/notifications", "PATCH", {
+        settings: { ...initial.settings, defaultProvider: "disabled" },
+        revision: 0,
+        secrets: {},
+      })
+    ).status,
+    200,
+  );
+  assert.equal(
+    (await f.call("setup", "PATCH", { action: "advance", step: 6 })).status,
+    200,
+  );
+  assert.equal(
+    (await f.call("setup", "PATCH", { action: "advance", step: 7 })).status,
+    400,
+  );
+  assert.equal(
+    (await f.call("setup", "PATCH", { action: "finish" })).status,
+    200,
+  );
+  assert.equal(
+    (await (await f.call("settings/notifications")).json()).settings
+      .defaultProvider,
+    "disabled",
+  );
+
+  await f.client.execute("UPDATE setup_progress SET step = 5, completed = 0");
+  await f.client.execute(
+    "ALTER TABLE setup_progress DROP COLUMN notifications_step_added",
+  );
+  for (const suffix of ["first", "again"]) {
+    const migrated = await getDatabase({
+      ...f.config,
+      databaseAuthToken: `notifications-wizard-${suffix}`,
+    });
+    try {
+      assert.equal((await readSetup(migrated)).step, 6);
+    } finally {
+      migrated.close();
+    }
+  }
 });
