@@ -8,12 +8,11 @@ import {
   Icon,
   Text,
 } from "@chakra-ui/react";
-import { Download, LogOut, RefreshCw } from "lucide-react";
+import { LogOut } from "lucide-react";
 import type {
   RevisionLabFlow,
   RevisionLabState,
 } from "../../../server/types.js";
-import { downloadReport } from "../utils.js";
 import { workspaceViewSubtitles, workspaceViewTitles } from "../constants.js";
 import type { WorkspaceView } from "./WorkspaceNavigation.js";
 
@@ -22,7 +21,7 @@ export function WorkspaceHeader({
   view,
   flow,
   actions,
-  onRefresh,
+  onNewTest,
   onSignOut,
   signingOut,
 }: {
@@ -30,12 +29,10 @@ export function WorkspaceHeader({
   view: WorkspaceView;
   flow?: RevisionLabFlow;
   actions?: ReactNode;
-  onRefresh: () => Promise<void>;
+  onNewTest: () => void;
   onSignOut: () => Promise<void>;
   signingOut: boolean;
 }) {
-  const showReviewActions = view === "flows" || view === "comments";
-
   return (
     <Flex
       as="header"
@@ -84,31 +81,12 @@ export function WorkspaceHeader({
       </Box>
       <Flex gap="3" align="center" flexWrap="wrap" maxW="full">
         {actions}
+        {data.actor.role !== "commenter" && view !== "sessions" && (
+          <Button size="sm" variant="outline" onClick={onNewTest}>
+            New test session
+          </Button>
+        )}
         <Flex gap="2" flexWrap="wrap">
-          {showReviewActions && (
-            <>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => downloadReport(data)}
-              >
-                <Icon>
-                  <Download />
-                </Icon>
-                Export report
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => void onRefresh()}
-              >
-                <Icon>
-                  <RefreshCw />
-                </Icon>
-                Refresh
-              </Button>
-            </>
-          )}
           {!data.actor.local && (
             <Button
               size="sm"

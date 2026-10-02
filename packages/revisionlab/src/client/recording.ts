@@ -76,7 +76,7 @@ export function captureDimensions() {
   };
 }
 
-export async function captureScreen(): Promise<string> {
+export async function captureScreen(maskInputs = false): Promise<string> {
   const { toPng } = await import("html-to-image");
   await document.fonts.ready;
   // Private controls never enter the cloned document. Hosts can redact whole regions.
@@ -86,7 +86,8 @@ export async function captureScreen(): Promise<string> {
     filter: (node) =>
       !(
         node instanceof Element &&
-        (node.hasAttribute("data-revisionlab-ui") ||
+        ((maskInputs && node.matches("input, textarea, [contenteditable]")) ||
+          node.hasAttribute("data-revisionlab-ui") ||
           node.hasAttribute("data-revisionlab-private") ||
           node.matches(
             'nextjs-portal, .html2canvas-container, input[type="password"], input[autocomplete="one-time-code"]',

@@ -65,6 +65,7 @@ export interface RevisionLabBoard {
 }
 
 export interface RevisionLabFlow {
+  testSessionId?: string;
   workspace?: WorkspaceOrigin;
   id: string;
   familyId: string;
@@ -165,10 +166,7 @@ export interface RevisionLabPersona {
 }
 
 export type RevisionLabMembershipStatus =
-  | "pending"
-  | "active"
-  | "suspended"
-  | "removed";
+  "pending" | "active" | "suspended" | "removed";
 
 export interface RevisionLabMembership {
   id: string;
