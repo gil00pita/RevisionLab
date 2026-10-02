@@ -370,6 +370,13 @@ Temporary browser-only state responses added two corner-pin comments for a three
 
 The first mobile check found an overflowing expanded thread; above/below placement with a constrained mobile height corrected it. Source review also identified offscreen-pin and failed-image cases, both addressed and browser-checked. Eight deterministic
 
+## Recording Stop recovery — 3 October 2026
+
+Fixed the zero-screen Stop loop: the widget blocks new captures, waits for its pending capture, then calls an atomic server finish operation. Persisted screens are completed regardless of the browser count; empty unfinished drafts use the existing authorized discard cleanup. Failed requests keep a stopped retry state, and repeated completion/empty cleanup is idempotent. Workspace history records the transition.
+
+Validation: `npm run lint`, `npm run build`, and all **222 package tests** passed. Ten added regression tests cover stuck/empty sessions, stale zero counts, pending-upload ordering, failed capture and completion retry, session replacement, server idempotency/history, previous-version preservation, permissions, and concurrent capture/Stop. Existing discard tests also passed after sharing transaction-level cleanup.
+
+Local Chromium checks used an isolated database under `.context/` and seeded recording state to reproduce the reported stuck session. The actual collapsed-widget **Stop recording** button cleared an empty draft with the explicit nothing-saved notice; a stale zero count completed a server-persisted screen and showed its exact View recording link; an injected HTTP 503 displayed an error and retained the stopped draft, then a second click completed cleanup. Browser assertions waited for the visible response after React rendered. No styling or component markup changed. A fresh package installation, hosted deployment, and other browsers were not retested.
 
 ## Notification settings and setup wizard — 3 October 2026
 

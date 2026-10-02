@@ -171,3 +171,78 @@ test("a successful clear after storage recovery resets a null volatile override"
   f.persisted.set(storageKey, JSON.stringify(recording));
   assert.deepEqual(loadRecording(), recording);
 });
+
+test("Stop ends an empty recording, including a previously stuck session", async (t) => {
+  const { finishPendingRecording } = await import("./recording-finish.js");
+  browserFixture(t);
+  const request = t.mock.method(globalThis, "fetch", async (url: string | URL | Request, options?: RequestInit) => {
+    assert.equal(url, "/api/revisionlab/flows/test-recording/finish");
+    assert.equal(options?.method, "POST");
+    assert.equal(loadRecording()?.finishRequested, true);
+    return Response.json({ outcome: "empty" });
+  });
+  for (const finishRequested of [undefined, true]) {
+    saveRecording({ ...recording, count: 0, finishRequested });
+    const result = await finishPendingRecording("/api/revisionlab", null);
+    assert.equal(result?.outcome, "empty");
+    assert.equal(loadRecording(), null);
+  }
+  assert.equal(request.mock.callCount(), 2);
+});
+
+test("Stop uses server confirmation even when the cached screen count is zero", async (t) => {
+  const { finishPendingRecording } = await import("./recording-finish.js");
+  browserFixture(t);
+  saveRecording({ ...recording, count: 0 });
+  t.mock.method(globalThis, "fetch", async () => Response.json({ outcome: "saved" }));
+  assert.deepEqual(await finishPendingRecording("/api/revisionlab", null), {
+    outcome: "saved", id: recording.flowId, name: recording.name,
+  });
+  assert.equal(loadRecording(), null);
+});
+
+test("Stop blocks captures immediately and waits for the current upload before finishing", async (t) => {
+  const { finishPendingRecording } = await import("./recording-finish.js");
+  browserFixture(t);
+  saveRecording({ ...recording, count: 0 });
+  let release!: (captured: boolean) => void;
+  const upload = new Promise<boolean>((resolve) => { release = resolve; });
+  const request = t.mock.method(globalThis, "fetch", async () => Response.json({ outcome: "saved" }));
+  const stopping = finishPendingRecording("/api/revisionlab", upload);
+  assert.equal(loadRecording()?.finishRequested, true);
+  assert.equal(request.mock.callCount(), 0);
+  saveRecording({ ...loadRecording()!, count: 1 });
+  release(true);
+  assert.equal((await stopping)?.outcome, "saved");
+  assert.equal(request.mock.callCount(), 1);
+  assert.equal(loadRecording(), null);
+});
+
+test("a failed capture does not prevent Stop; failed completion stays retryable", async (t) => {
+  const { finishPendingRecording } = await import("./recording-finish.js");
+  browserFixture(t);
+  saveRecording({ ...recording, count: 0 });
+  let fail = true;
+  t.mock.method(globalThis, "fetch", async () => {
+    if (fail) throw new Error("Connection lost");
+    return Response.json({ outcome: "empty" });
+  });
+  await assert.rejects(finishPendingRecording("/api/revisionlab", Promise.resolve(false)), /Connection lost/);
+  assert.equal(loadRecording()?.finishRequested, true);
+  assert.equal(loadRecording()?.flowId, recording.flowId);
+  fail = false;
+  assert.equal((await finishPendingRecording("/api/revisionlab", null))?.outcome, "empty");
+  assert.equal(loadRecording(), null);
+});
+
+test("Stop never clears a different recording while waiting for an acknowledgement", async (t) => {
+  const { finishPendingRecording } = await import("./recording-finish.js");
+  browserFixture(t);
+  saveRecording(recording);
+  t.mock.method(globalThis, "fetch", async () => {
+    saveRecording({ ...recording, flowId: "another-recording" });
+    return Response.json({ outcome: "saved" });
+  });
+  assert.equal(await finishPendingRecording("/api/revisionlab", null), null);
+  assert.equal(loadRecording()?.flowId, "another-recording");
+});

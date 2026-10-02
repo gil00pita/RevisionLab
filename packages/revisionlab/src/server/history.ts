@@ -148,6 +148,7 @@ export function historyAction(method: string, path: string[]): string | null {
   if (path[0] !== "flows") return null;
   if (path[1] === "delete") return "Deleted flows";
   if (path[2] === "discard") return "Discarded a recording";
+  if (path[2] === "finish") return "Stopped a recording";
   if (path[2] === "board") return "Edited a flow board";
   if (path[2] === "steps") return "Captured a screen";
   if (path[2] === "versions") return "Started a new flow version";
