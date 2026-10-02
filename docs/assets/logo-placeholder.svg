@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="120" viewBox="0 0 720 120" role="img" aria-labelledby="title description">
+  <title id="title">RevisionLab logo placeholder</title>
+  <desc id="description">Reserved space for the approved RevisionLab logo. This is a documentation placeholder, not final artwork.</desc>
+  <rect x="1" y="1" width="718" height="118" rx="16" fill="#f8fafc" stroke="#64748b" stroke-dasharray="8 6"/>
+  <g font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#334155">
+    <text x="360" y="52" font-size="20" font-weight="700">LOGO GOES HERE</text>
+    <text x="360" y="80" font-size="14">A little space for the RevisionLab identity.</text>
+  </g>
+</svg>

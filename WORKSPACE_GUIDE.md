@@ -1,0 +1,171 @@
+# RevisionLab workspace guide
+
+Detailed setup and operating instructions. For the project overview, see [README.md](README.md). Feature status and validation notes below describe their recorded implementation checkpoints.
+
+First-use wizard (implemented locally; not yet published): on a new installation, choose **Setup** on the prototype to open the first-use wizard. Save your identity and live URL first, then configure the widget, comments, accessibility audits, personas, and users/roles. You can skip the remaining steps after the first save and adjust them later in the workspace. Setup progress is stored in the workspace database.
+
+Review prototype flows, comments, and versions from inside each Next.js project.
+
+The selected flow's title, recording action, and delete action live in the top workspace header. Use the **Whiteboard** and **Screen & comments** tabs to switch views, and the history icon beside them to choose a version. Other workspace pages show their own title: **Comments**, **Personas**, **Settings**, or **Review access**; an empty flow workspace shows **Flows**. Each page has a subtitle describing its purpose, while selected flows show persona, status, and screen count. **Export report** and **Refresh** appear on Flows and Comments only. Reports still include the whole workspace. This compact layout is part of the local build.
+
+Whiteboard zoom, percentage/reset, and Fit controls float inside the board's bottom-right corner. Paths and other editing controls remain above the board.
+
+RevisionLab is an installable Next.js App Router integration. The floating widget records real prototype screens and opens a full review workspace. This repository runs the same package that the installer adds to other projects.
+
+## Connected workspace instances
+
+Owners can connect deployed versions of the same project without copying or merging their databases:
+
+1. On the source installation, open **Settings → General**, name an API key, choose **Editor** or **Commenter**, and generate it. Copy the key while it is visible; it cannot be retrieved later.
+2. On the receiving installation, open **Settings → Workspace Instances → Add workspace**. Enter a name, the live URL, then the API key. Change the API path only if the source uses a custom path.
+3. With two workspaces available (this installation plus one connection), use the sidebar selector to choose a workspace or **All workspaces**. Flows, screenshots, comments, and personas identify their source. Edits save to that source, subject to both the signed-in user's role and the source key's permissions.
+
+Widget, Comments, and Audit settings follow the selected workspace; All workspaces uses local settings. General, Users & Roles, and Workspace Instances always manage the current installation. Open the source prototype to record there. Connected writes identify the named connection as their author. Refresh or polling retrieves current data; an unavailable source is marked and last-loaded data is retained during the session, while other sources stay usable. Removing a connection leaves its source data intact. Revoke a key on its source to stop its connections, then generate a replacement and use **Update connection** to reconnect.
+
+Both installations must run this unreleased workspace-connections implementation, share a RevisionLab project ID, and have distinct installation databases. Connections use public HTTPS on port 443; private network destinations and API redirects are rejected. URL paths are reduced to the origin, and the separate API path locates RevisionLab. Keys cannot manage invitations, other keys, or connections. Generated keys are hashed on their source; the receiving installation stores the connection credential in its server database for authenticated requests, never in browser state. Protect that database and its backups as credentials. Requests use bounded concurrency, timeouts, and a 16 MiB response limit. This is live access to each installation, not background replication or recursive connections.
+
+## Thirty-day workspace history
+
+Open **Settings → History** to inspect recoverable changes from the last 30 days. RevisionLab records flows, captured screens, recording state, whiteboards, comments, personas, and Widget/Comments/Audit settings. Each entry names the action, actor, workspace source, date, and expiry. Commenters can inspect history; owners and editors can restore when their local role and, for a connected source, its API key both allow editing.
+
+Restore returns that source workspace to immediately before the chosen change, including its flow relationships and retained screenshots. Because this is a point-in-time restore, later content changes in the same source are also reverted; the confirmation calls this out. The restore creates another history entry, so it can itself be undone. Connected history stays on its source and is unavailable while that source is offline. Screenshot artifacts that exist only in history stay private until their final 30-day reference expires, then are cleaned up. Sessions, invitations, reviewers, API keys, and workspace connections are excluded so a restore cannot reopen access or replace installation credentials.
+
+## Run locally
+
+In **Screen & comments**, use **Fix with Codex** for all open screen comments and saved accessibility findings, or choose it on an individual comment or rule. The local, signed-in Codex CLI prepares a reviewable before/after proposal using the workspace AI instructions and recorded screenshot when available. **Apply locally**, **Discard fix**, and **Undo local fix** preserve unrelated work and reject stale source files. **Create draft PR** publishes the reviewed fix on a separate GitHub branch, using GitHub CLI, without switching your active branch. Changed files must match the remote default-branch baseline for PR creation. Verify project checks and a fresh accessibility scan before resolving feedback; historical reports/comments are retained.
+
+Run these actions from `localhost` with the development server as an owner/editor. Install and sign in to Codex (`codex login`); draft PRs also need GitHub CLI (`gh auth login`) and a GitHub `origin` remote. The server must find these commands on its PATH. Optional `aiProjectDirectory` selects the local Git checkout; it defaults to the server working directory. Code and screenshots may be sent through your Codex account. [Codex automation documentation](https://learn.chatgpt.com/docs/non-interactive-mode) describes CLI authentication and sandboxing. This increment is implemented locally, not published; Claude and GitHub AI providers remain future work.
+
+**Generate Jira ticket** on any screen comment or saved accessibility issue opens an editable summary and description with evidence, review link, and acceptance criteria. Use **Copy ticket**, **Copy summary**, or **Copy description**, then paste into Jira. This requires no AI/Jira connection and does not create a ticket remotely.
+
+**Workspace → Settings → Audit** lets owners and editors save Markdown instructions for their AI tools. Choose **Save AI instructions** to write `.revisionlab/ai-instructions.md` in the host project; the full local path appears beside the editor. Reopening Settings reads the file, including edits made outside the app. Commenters can read it. The file is stored on the machine running the server, requires writable persistent storage, and is gitignored by default. This feature stores guidance; it does not automatically configure or invoke an AI tool. Hosts can override the location with the server-only `aiInstructionsFile` option in `revisionlab.config.ts`.
+
+Recordings now save an accessibility report with each screen. Whiteboard cards show status/counts; open a screen and choose **Accessibility** beside **Comments** to review rule severity, affected-element locations, and documentation links. Reports survive reloads and stay with their original screen/version. Existing captures show **Not checked**; failed, unstable, or unmatched pre-interaction checks show **Check unavailable**, never a pass. Automated checks are not compliance certification. This is part of the local build, not the published package.
+
+In **Flows > Your flows**, owners and editors can use the trash icon in the open flow's header or choose **Select** in the menu to reveal checkboxes and **Delete selected**. **Select all** applies to completed flows in the filtered results; **Select none** clears every selection. **Done** clears selection and hides the bulk controls. Confirmation removes each selected flow family, screenshots, boards, and attached comments from the active workspace. It can be restored for 30 days from **Settings → History**; live-page comments and unrelated flows are kept. Finish or discard unfinished recordings first. This is part of the local build, not the published package.
+
+**Workspace > Settings > Live comments** controls default bubble visibility and color. Owners and editors can choose from gray, red, orange, yellow, green, teal, cyan, blue, purple, and pink; changes save to the workspace database. Commenters have read-only access. The live Show comments switch remains a temporary page-level override. New pages use the saved default; comment details always require activation.
+
+Recording setup opens just above the bottom-right widget, like the accessibility panel. After a successful Stop, **Recording ended and saved** appears with **View recording**, opening that exact flow in the workspace. The confirmation remains until dismissed or a new recording starts; failed saves remain retryable without a success message.
+
+The widget starts as a 36px logo-only button at the bottom right. Click it to slide out the workspace, accessibility, recording, and commenting tools; click again to slide them back in. Reduced-motion preferences disable the animation. **Open review workspace** is a separate link with normal new-tab support. Active recording, commenting, and auditing keep their Stop controls beside the logo even when collapsed. Starting recording or commenting collapses the tools automatically; expand for selection help or routine recording status. Errors and saved-recording confirmation remain visible. **Stop auditing** pauses live-page checks until **Run again** or a fresh page load; late scan results are ignored and recording evidence is unaffected. The accessibility icon runs local axe-core checks on each visited, authorized prototype page and updates after host DOM changes. A check means automated checks passed, not full accessibility compliance. Other states identify scanning, issues, manual review, stale results, or failure; click the icon for findings and **Run again**. Current findings show problem bubbles on visible affected elements. Click a title, individual target, or bubble to scroll to and highlight the component without activating it. **Read more** opens the rule documentation; **All issues** restores the list. Close or Escape clears this inspection layer. Private, hidden, removed, stale, and unavailable frame targets are not highlighted.
+
+The workspace sidebar starts with a primary **Back to prototype** link; **Settings** sits at the bottom. Owners manage invitations and reviewer permissions in **Settings → Users & Roles**.
+
+In **Workspace → Settings → Widget**, owners/editors can show or hide the launcher, choose its color, place it on the left or right, and set horizontal and bottom offsets in whole pixels (0–1000). Settings are saved to this installation's database; defaults are visible, blue, right, and 24px offsets. Placement adjusts to keep controls onscreen. Active recordings/comment sessions keep their controls when visibility is switched off, and the workspace remains accessible directly to restore it. Comment bubble visibility/color is independent and lives in the Comments tab; In **Audit**, owners/editors save a default WCAG version (2.0, 2.1, or 2.2) and level (A, AA, or AAA), initially 2.2 AA. It applies to new live checks and recording evidence; existing reports retain their original results. Supported automated checks do not establish full conformance, and manual review remains necessary. The collapsed logo shows an accessibility issue badge for current findings or a spinner while scanning; stopped, stale, failed, waiting, and manual-review states do not display a success badge.
+
+Click the comment icon to select components directly on the live page. The crosshair and highlight show the target; clicking opens an anchored speech bubble with a comment field, **Post**, and **Cancel**, without activating the host control. Submission or cancellation returns to selection; **Stop commenting** or Escape ends the mode. Saved comment markers follow the workspace default (initially visible); click a marker (or activate it with the keyboard) to open its details and component highlight. Use **Show comments** in the selection controls to hide or show the markers. Closing details leaves markers visible; showing markers again never opens details automatically. Escape or Stop commenting preserves visibility. The layer temporarily hides while composing and restores markers afterward. Route changes/reload restore the workspace default with details closed. Replies and resolution remain in the workspace, reached through **All comments on this page**. The toolbar badge still counts open page threads, not replies. Keyboard selection uses Up/Down and Enter, without floating navigation buttons. No recording is required. Targets persist across reloads and comments are scoped to the pathname, not a recorded version. Opening comment mode preserves the last accessibility result; actual host changes still invalidate it. Existing deployment enablement and reviewer access still apply.
+
+```bash
+yarn install
+yarn dev
+```
+
+The example app links `revisionlab` from `packages/revisionlab` through workspaces. Keep its dependency as `"*"`: Yarn Classic copies `file:` dependencies, which can leave the app without the compiled package. The dev and build scripts compile the linked package before starting Next.js.
+
+Opening a saved live comment bubble highlights its attached component with an outline and subtle tint matching the workspace bubble color. The highlight follows the open preview as the page moves, without blocking clicks. Closing the preview or hiding comments removes it; Escape preserves it when comments remain visible.
+
+Open the local URL printed by Next.js. Expand the logo and click the camera (**Record prototype**), enter a recording name, choose a saved persona, then **Start recording**. Create persona types in **Workspace → Personas** (also linked from the dialog). Owners and editors can edit, archive, and restore personas; existing recording labels remain unchanged. An existing name (ignoring case and surrounding spaces) requires confirmation: **Cancel** keeps the setup, while **Replace and record** creates a new version of that flow and preserves previous screenshots/comments. Unfinished recordings must be finished or discarded first. Setup closes and the camera becomes **Stop recording**. The first page, subsequent pages, and completed field changes capture automatically after the page settles. Changed clicks preserve the pre-interaction screen and settled result; unchanged clicks add no screens. Already-captured pre-states are not duplicated, and host clicks are not delayed or replayed. Rapid interactions coalesce; typing alone does not capture. **Capture screen** remains available in the review panel. Stop prevents new captures and waits for an ongoing capture before saving.
+
+New captures include bounded cursor samples and numbered clicks. Toggle **Cursor path** on the whiteboard or full-screen review to show the path on its exact capture; old recordings are unchanged. Readiness checks wait for document/fonts/images, host `aria-busy`, and 650ms of quiet DOM/resource activity, with a visible error after 10 seconds instead of silently recording a loading state. This is not network interception, video, or action replay; hosts should expose asynchronous loading with `aria-busy`. Widget/private/password regions are excluded.
+
+The workspace uses a single sidebar. **Flows** slides the main menu content away and replaces it with **Your flows**, while the logo and desktop footer stay in place; **Back** restores the menu without changing the selected flow or canvas. Comments, Personas, and Review access open from that main menu.
+
+**Discard recording** is different: after confirmation it prevents new captures, waits for any capture in progress, and removes the unfinished draft and its screenshots without saving a completed flow. Previously saved versions remain. While recording, same-domain links proceed without a warning. Same-origin prototype navigation continues recording automatically; only same-tab links to another hostname show Stay or Discard and leave. Discard failures keep you on the page with capture stopped and a retry; navigation waits for successful cleanup.
+
+Recording controls have passed local Stop, Stay, Continue, and discard-retry browser checks, with warning visuals confirmed at desktop and narrow widths, alongside lint, the production build, and all 88 package tests; see [VALIDATION.md](VALIDATION.md) for evidence and remaining limits. Reload/close uses the browser's native warning, not automatic discard. New-tab/modified clicks, downloads, hash links, and switching tabs do not discard the recording. Host `router.push`/`router.replace` calls need the [programmatic navigation helper](packages/revisionlab/README.md#programmatic-navigation); client-side browser Back/Forward is not globally blocked.
+
+Each recording opens as a **Whiteboard**: unique screen states are connected by observed visits, including returns and branches. Historical recordings retain their captured sequence. Use the mouse wheel over the board or a screen to zoom the full flow around the cursor. Drag the background or use Shift+wheel to pan; zoom buttons, reset to 100%, and **Fit** remain available. Editors choose **Paths** to enter editing without opening a form, then use **Connect** on a source screen and **Connect here** on a target. Select a connection to inspect its recorded click, edit its label, remove it, or discuss that path. Commenters can inspect and discuss saved connections without editing the graph.
+
+Board changes **autosave** after a short pause or a completed drag. **Undo** reverses the last local edit, including a saved edit; a drag or continuous label edit is one operation. **Done editing** and internal navigation wait for pending saves. Failed saves keep your changes with a retry; conflicts never silently overwrite another editor. This granular board Undo is limited to the current flow session; the persistent 30-day workspace history covers saved boards, comments, recordings, and other workspace content through point-in-time restore.
+
+**Remove screen** hides it and its adjacent active paths from the board; **Undo** restores them together, while **Restore** brings just the screen back. Captures and feedback are retained. Removed connection threads remain accessible in **All comments**. New paths finish autosaving before receiving comments.
+
+Open a screen card, then click the captured image to place a numbered comment pin. Pins open discussions with replies and resolution. Keyboard users can place a pin with Enter and adjust its horizontal/vertical percentages. Existing page and unpinned screen comments remain available.
+
+Direct editing is partially implemented and locally verified: package and production builds, lint, and all 113 package tests pass. Local browser checks cover autosave, grouped Undo, removal/restoration, retry, and navigation protection, with desktop/mobile layout evidence in [VALIDATION.md](VALIDATION.md). Fresh hosted and separate-host installation checks were not repeated. Decision elements and adding a screen by URL are **not implemented**. Decision-node versus prototype-form behavior, and URL capture versus a linked placeholder, remain unanswered in [PRODUCT.md](PRODUCT.md).
+
+Local development on localhost gives the developer owner access. If an old reviewer session leaves you on the access page, choose **Open local workspace** to clear that session and continue without email. This option appears only when local development owner access is enabled; production and Vercel preview/production deployments cannot display or authorize it, even if `NODE_ENV` is misconfigured as `development`. Hosted reviews always use passwordless workspace membership. Data persists in `.revisionlab/revisionlab.db`, with private screenshots in `.revisionlab/artifacts/`. Both are ignored by Git. There is no seeded application data; the workspace starts empty.
+
+## Install in another Next.js project
+
+The package is published on npm (`latest` is `0.1.1`, verified 25 September 2026). From your existing Next.js project directory:
+
+```bash
+npx revisionlab@latest --help
+npx revisionlab@latest init --dry-run
+npx revisionlab@latest init
+npm run dev
+```
+
+Add `--protect` to `init` to generate the optional prototype invitation gate (Next.js 15.5+). No global package installation is needed.
+
+Registry verification on 25 September 2026 found `revisionlab@0.1.1` under `latest`, with no `next` tag. The newer widget, saved personas, interaction capture, and comment settings described above are local workspace changes, not included in that published archive. To try those changes, build a local archive:
+
+```bash
+npm run build:package
+npm pack --workspace revisionlab
+```
+
+Run this from an existing Next.js project, substituting the archive's absolute path:
+
+```bash
+npx --package /absolute/path/revisionlab-0.1.1.tgz revisionlab init \
+  --package /absolute/path/revisionlab-0.1.1.tgz --protect
+```
+
+The installer installs the exact version invoked, including explicit versions and `@next` prereleases when that tag is available. Re-running `init` updates the dependency while preserving customized integration files and review data; restart the development server afterward. The installer supports Next.js 15/16 App Router, React 19, TypeScript/JavaScript, and `app/` or `src/app/`. It generates the API, workspace/access routes, configuration, and widget layout integration. `--protect` also generates the prototype access gate (Next.js 15.5+). Existing files are checked before writes, modified host files are backed up, and repeat installation preserves customizations.
+
+See the [package guide](packages/revisionlab/README.md) for all options and manual integration. Standalone React/Vite and the Pages Router are not included in this release.
+
+## Automatic npm releases
+
+[The publishing workflow](.github/workflows/publish.yml) now publishes after each merge or direct push to `main`, once all checks pass. It selects the next patch above npm's highest stable version, updates the workspace version inside CI while preserving `yarn.lock`, and publishes the exact tested archive to `latest`. No manual version bump or GitHub Release is needed. This change takes effect after it is merged into `main`.
+
+Release runs queue through version selection and publication. Already-published source commits are skipped on full reruns; registry errors and failed checks stop publication. Checked-in versions remain development baselines, with no bot commits. Pull requests and manual workflow runs validate only. Explicit GitHub Releases still support intentional releases (`latest` for stable versions, `next` for prereleases).
+
+npm trusted publishing uses no stored npm token. The GitHub `npm` environment is confirmed; npm's trusted-publisher settings and a live automated publication still need verification. Follow [RELEASING.md](RELEASING.md) for setup, retries, and release status. GitHub's **Packages** panel shows a separate registry; use [revisionlab on npm](https://www.npmjs.com/package/revisionlab) to check availability.
+
+## Shared review
+
+Configure the server-only settings in [.env.example](.env.example): a Turso/libSQL database, owner email, and Resend delivery credentials. The owner verifies their email at `/revisionlab/access`, then creates invitations from **Review access**. Employees and clients can use any permitted email; no Vercel account or separate registration is required. Invitations expire and can be revoked, including their active sessions. Commenters can review and comment; editors can record and resolve feedback; owners manage access.
+
+### Users and roles security increment
+
+The local build adds **Users & roles** with fixed Owner, Editor, and Commenter roles; workspace self-join through a link plus a revocable code and configurable exact-email/domain policy; manual member addition with a project-named email; and passwordless single-use email links for login. A canonical system URL controls absolute join and login links. Existing invitation records and routes remain supported during migration. This increment is not yet published.
+
+Editors and Owners creating flows choose a saved persona. A persona may optionally hold an encrypted synthetic prototype username/password configured by an Owner. The widget shows an authorized **Test account for {persona}** banner with the password masked until reveal/copy. These credentials are prototype-only, excluded from captures/exports/logs, and never grant RevisionLab permissions. See [PRODUCT.md](PRODUCT.md) for the accepted experience and [PLAN.md](PLAN.md) for the migration and security requirements.
+
+Remote mode stores private screenshot BLOBs in the same database by default. A server-only artifact adapter can use separate object storage. Vercel cannot persist a local SQLite file, and its Deployment Protection sits in front of this application: the review deployment must allow invitees to reach RevisionLab's own email gate. This repository includes that gate in `src/proxy.ts`.
+
+Hosted Turso and Resend paths are implemented but require real deployment credentials to verify. Local development displays verification codes without sending email; this shortcut is disabled in production.
+
+## Implemented scope
+
+The functional release includes installation, SQLite/libSQL persistence, invitations and sessions, flow/persona recording, private screenshots, immutable completed screen versions, version switching, generated flow boards with saved layouts and manual branches, screen-area comment pins and threaded replies, page comments, and Markdown reports. The local recording increment also reuses matching automatic captures within a version: A -> B -> C -> A -> E has one A screen, a C -> A return path, and A -> B / A -> E branches. Changed screen states remain separate. Select a recorded connection to inspect its clicked item and location on the source screenshot when available; legacy or unavailable evidence is not invented. The current partial editing increment adds on-board connection editing/discussions and reversible screen removal; its validation status is above. Board metadata remains editable without changing completed captures. Screens are DOM captures, not video recordings. A persona labels a recording; the prototype still controls its own user permissions.
+
+Automatic discovery of unrecorded paths, executable action graphs and replay, replay-aware DOM re-anchoring, visual diff generation, and PDF/Excalidraw/Confluence integrations remain roadmap items. The widget supports live DOM-element targets separately from screenshot pins. Manual branches describe a path; they do not claim it was recorded or make it executable. The whiteboard uses geometric connectors rather than an obstacle-avoiding diagram engine.
+
+## Development checks
+
+```bash
+npm run lint
+npm run build
+npm run test:package
+npm run test:release
+npm run release:check
+```
+
+The package builds before the host application. Webpack is selected for compatibility with Chakra/Emotion hydration. Tests use isolated temporary databases and block external email delivery.
+
+See [VALIDATION.md](VALIDATION.md) for the checks performed, independent UI review, and remaining verification limits.
+
+See [PRODUCT.md](PRODUCT.md) for the product vision and [PLAN.md](PLAN.md) for the remaining implementation roadmap.
+
+### AI Instructions
+
+AI Instructions and design-system controls share the **Audit** tab with the accessibility switches and WCAG target. Both instruction and design-system saves apply to the selected workspace, including connected instances. History restores saved design-system choices; the external Markdown file stays outside history.
+
+Open **Settings → Audit → AI Instructions** to edit the included product/UX review prompt. New installations are prefilled with the complete review template. Save changes to keep them for this project; **Copy AI instructions** copies the generated text for your AI agent. The base text is saved in the configured local Markdown file (32,000 characters maximum), while design-system choices persist in the workspace database. Local Codex fixes use that file plus the enabled design-system resources; external file edits appear when reopening Settings. A missing file uses the saved fallback or bundled template, while an existing empty file stays empty.
+
+Enable **Add a design system** to select one of 18 frameworks or enter a manual system. The list includes dated GitHub star counts and documentation links. The selected system's GitHub, docs, and available design.md, AI skill, and MCP links are appended without changing the base prompt. Where available, include skill-installation or MCP-setup instructions for the receiving agent. These options do not install or connect services from RevisionLab. Turning the toggle off preserves the selection and excludes the appendix. Owners/editors can save; commenters can view and copy.
