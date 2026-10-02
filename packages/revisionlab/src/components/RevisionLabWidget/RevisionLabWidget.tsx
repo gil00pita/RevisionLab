@@ -65,11 +65,13 @@ function Widget({
     route,
     Boolean(data && data.actor.role !== "commenter" && !reviewRoute),
     open || live.commenting,
+    settings,
   );
   const accessibility = usePageAccessibility(
     route,
     Boolean(data && !reviewRoute && settings.showWidget),
     open || live.commenting,
+    settings,
   );
   const showLauncher =
     !workspace.loading &&

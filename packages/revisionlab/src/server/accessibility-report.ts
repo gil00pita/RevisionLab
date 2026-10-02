@@ -1,9 +1,17 @@
+import { wcagVersions, wcagLevels } from "../wcag-settings.js";
 import { z } from "zod";
 import { MAX_ACCESSIBILITY_REPORT_BYTES } from "../accessibility.js";
 
 export const accessibilityReportSchema = z
   .object({
     status: z.enum(["passed", "issues", "review", "unavailable"]),
+    standard: z
+      .object({
+        wcagVersion: z.enum(wcagVersions),
+        wcagLevel: z.enum(wcagLevels),
+      })
+      .strict()
+      .optional(),
     checkedAt: z.string().datetime().optional(),
     engineVersion: z.string().min(1).max(40).optional(),
     violationCount: z.number().int().min(0).max(1000),

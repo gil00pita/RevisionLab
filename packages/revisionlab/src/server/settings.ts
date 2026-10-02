@@ -1,3 +1,4 @@
+import { wcagVersions, wcagLevels } from "../wcag-settings.js";
 import type { Client, Transaction } from "@libsql/client";
 import { z } from "zod";
 import {
@@ -13,6 +14,8 @@ import type { RevisionLabActor } from "./types.js";
 
 const settingsSchema = z
   .object({
+    wcagVersion: z.enum(wcagVersions),
+    wcagLevel: z.enum(wcagLevels),
     showCommentBubbles: z.boolean(),
     commentBubbleColor: z.enum(commentBubbleColors),
     showWidget: z.boolean(),
@@ -38,6 +41,8 @@ export async function readSettings(
   const row = result.rows[0];
   return row
     ? settingsSchema.parse({
+        wcagVersion: row.wcag_version,
+        wcagLevel: row.wcag_level,
         showCommentBubbles: Number(row.show_comment_bubbles) === 1,
         commentBubbleColor: row.comment_bubble_color,
         showWidget: Number(row.show_widget) === 1,
@@ -63,12 +68,13 @@ export async function handleSettings(
     const next = { ...(await readSettings(transaction)), ...patch };
     await transaction.execute({
       sql: `INSERT INTO workspace_settings (id, show_comment_bubbles, comment_bubble_color,
-        show_widget, widget_color, widget_side, widget_offset, widget_bottom_offset)
-        VALUES (1, ?, ?, ?, ?, ?, ?, ?)
+        show_widget, widget_color, widget_side, widget_offset, widget_bottom_offset, wcag_version, wcag_level)
+        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET show_comment_bubbles = excluded.show_comment_bubbles,
         comment_bubble_color = excluded.comment_bubble_color, show_widget = excluded.show_widget,
         widget_color = excluded.widget_color, widget_side = excluded.widget_side,
-        widget_offset = excluded.widget_offset, widget_bottom_offset = excluded.widget_bottom_offset`,
+        widget_offset = excluded.widget_offset, widget_bottom_offset = excluded.widget_bottom_offset,
+        wcag_version = excluded.wcag_version, wcag_level = excluded.wcag_level`,
       args: [
         next.showCommentBubbles ? 1 : 0,
         next.commentBubbleColor,
@@ -77,6 +83,8 @@ export async function handleSettings(
         next.widgetSide,
         next.widgetOffset,
         next.widgetBottomOffset,
+        next.wcagVersion,
+        next.wcagLevel,
       ],
     });
     return next;

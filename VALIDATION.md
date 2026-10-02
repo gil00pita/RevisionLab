@@ -1,5 +1,13 @@
 # Release validation
 
+## Default WCAG version and level - 2 October 2026
+
+Settings → Audit now saves WCAG 2.0/2.1/2.2 and A/AA/AAA for owners/editors, retaining 2.2 AA as the migration/default value. Live checks and subsequent recording scans use the selected supported axe tags, cached pre-interaction evidence is isolated by standard, and new reports retain the tested standard alongside their findings. Historical results remain unchanged and legacy reports are readable. PRODUCT.md, PLAN.md, and both READMEs reflect the setting and automated coverage limits.
+
+Lint, production build, formatting, whitespace checks, and all 168 package tests pass. Added tests cover all nine targets against real axe rule metadata, scan-runner options, cancellation, cache separation, stored report metadata, settings persistence/concurrent updates, invalid inputs, and commenter restrictions; existing migration tests verify the added defaults while preserving legacy data. Chromium verified saving/reloading 2.0 AA, draft retention across tabs, radio keyboard focus/selection, the displayed target, and no horizontal overflow at 320px. A read-only wrapper around the real axe runner observed 2.0 AA tags and, after changing settings, 2.2 AAA tags and the updated results label. Browser-only commenter simulation disabled all six radios and Save. Overrides were removed, owner state restored, and the local default reset to its original 2.2 AA. Browser error output was empty; no recordings or invitations were created.
+
+Evidence: `.context/wcag-settings-desktop.png`, `.context/wcag-settings-mobile.png`, `.context/wcag-tests.log`, and `.context/wcag-build.log`. Recording integration was built and source-reviewed; report persistence and rule selection have automated coverage, but no new end-to-end recording or hosted service test was performed for this increment. Automated checks cover only supported criteria and are not conformance certification.
+
 ## Users & Roles Settings tab - 2 October 2026
 
 The owner-only invitation and reviewer-permission interface now lives in Settings → Users & Roles; the standalone Review access sidebar item is removed. Legacy `?view=people` links show Settings and select Users & Roles for owners, with Widget as the fallback for other roles. Tabs wrap on narrow screens and preserve mounted invitation drafts. PRODUCT.md, PLAN.md, and both READMEs describe the move.

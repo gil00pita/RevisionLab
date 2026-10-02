@@ -1,3 +1,4 @@
+import { defaultWcagSettings, type WcagSettings } from "../wcag-settings.js";
 import {
   captureExcluded,
   takeInteractionSnapshot,
@@ -9,6 +10,7 @@ import { recordedClick } from "./recording-click.js";
 export function prepareInteractionSnapshots(
   enabled: () => boolean,
   onRemovedTarget: (event: PointerEvent) => void,
+  standard: WcagSettings = defaultWcagSettings,
 ) {
   let prepared: InteractionSnapshot | undefined;
   let target: Element | undefined;
@@ -19,7 +21,7 @@ export function prepareInteractionSnapshots(
     // Coalesce rapid interactions rather than starting unbounded DOM renders.
     if (rendering >= 2) return;
     rendering += 1;
-    const snapshot = takeInteractionSnapshot();
+    const snapshot = takeInteractionSnapshot(standard);
     void snapshot.image.then(() => {
       rendering -= 1;
     });

@@ -1,3 +1,4 @@
+import { defaultWcagSettings, type WcagSettings } from "../wcag-settings.js";
 import html2canvas from "html2canvas-pro";
 import { captureDimensions } from "./recording.js";
 import type { RevisionLabClick } from "../server/types.js";
@@ -56,7 +57,9 @@ export function pageContentSignature(): string {
   return (hash >>> 0).toString(16);
 }
 
-export function takeInteractionSnapshot(): InteractionSnapshot {
+export function takeInteractionSnapshot(
+  standard: WcagSettings = defaultWcagSettings,
+): InteractionSnapshot {
   const dimensions = captureDimensions();
   const signature = pageContentSignature();
   const title =
@@ -98,6 +101,7 @@ export function takeInteractionSnapshot(): InteractionSnapshot {
     title,
     image,
     accessibility:
-      cachedAccessibility(signature) ?? unavailableAccessibility("not-scanned"),
+      cachedAccessibility(signature, standard) ??
+      unavailableAccessibility("not-scanned"),
   };
 }

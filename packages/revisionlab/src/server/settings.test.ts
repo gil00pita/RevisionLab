@@ -218,3 +218,58 @@ test("invalid widget configuration and commenter writes leave saved settings unc
     200,
   );
 });
+
+test("WCAG defaults persist, validate all version/level pairs, and preserve other settings", async (t) => {
+  const f = await reviewFixture(t);
+  const editor = await f.login("editor");
+  for (const wcagVersion of ["2.0", "2.1", "2.2"]) {
+    for (const wcagLevel of ["A", "AA", "AAA"]) {
+      assert.equal(
+        (await f.call("settings", "PATCH", { wcagVersion, wcagLevel }, editor))
+          .status,
+        200,
+      );
+      assert.deepEqual((await f.state()).settings, {
+        ...defaultSettings,
+        wcagVersion,
+        wcagLevel,
+      });
+    }
+  }
+  const responses = await Promise.all([
+    f.call("settings", "PATCH", { wcagVersion: "2.0", wcagLevel: "AA" }),
+    f.call("settings", "PATCH", { widgetOffset: 35 }),
+  ]);
+  assert.ok(responses.every((response) => response.status === 200));
+  const before = (await f.state()).settings;
+  assert.deepEqual(before, {
+    ...defaultSettings,
+    wcagVersion: "2.0",
+    widgetOffset: 35,
+  });
+  const second = await getDatabase({
+    ...f.config,
+    databaseAuthToken: "wcag-restart",
+  });
+  try {
+    assert.deepEqual(await readSettings(second), before);
+  } finally {
+    second.close();
+  }
+  const commenter = await f.login("commenter");
+  assert.equal(
+    (await f.call("settings", "PATCH", { wcagLevel: "AAA" }, commenter)).status,
+    403,
+  );
+  for (const input of [
+    { wcagVersion: "3.0" },
+    { wcagVersion: 2 },
+    { wcagLevel: "aa" },
+    { wcagLevel: "AAAA" },
+    { wcagVersion: null },
+    { wcagVersion: "2.1", wcagLevel: "invalid" },
+  ]) {
+    assert.equal((await f.call("settings", "PATCH", input)).status, 400);
+    assert.deepEqual((await f.state()).settings, before);
+  }
+});

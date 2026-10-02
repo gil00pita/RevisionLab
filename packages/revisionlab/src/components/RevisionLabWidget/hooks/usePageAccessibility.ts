@@ -1,3 +1,4 @@
+import { wcagLabel, type WcagSettings } from "../../../wcag-settings.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { pageContentSignature } from "../../../client/interaction-snapshot.js";
 import {
@@ -18,6 +19,7 @@ export interface AccessibilityFinding {
   targets: { label: string; element: HTMLElement | null }[];
 }
 export interface PageAccessibility {
+  standard?: WcagSettings;
   status:
     | "stopped"
     | "waiting"
@@ -37,7 +39,9 @@ export function usePageAccessibility(
   route: string,
   enabled: boolean,
   suspended: boolean,
+  standard: WcagSettings,
 ) {
+  const { wcagVersion, wcagLevel } = standard;
   const [result, setResult] = useState<PageAccessibility & { route?: string }>({
     status: "waiting",
     issues: [],
@@ -62,7 +66,8 @@ export function usePageAccessibility(
     let running = false;
     let dirty = false;
     const publish = (next: PageAccessibility) => {
-      if (!controller.signal.aborted) setResult({ ...next, route });
+      if (!controller.signal.aborted)
+        setResult({ ...next, route, standard: { wcagVersion, wcagLevel } });
     };
     const observer = new MutationObserver((records) => {
       if (controller.signal.aborted || !records.some(isHostMutation)) return;
@@ -84,6 +89,7 @@ export function usePageAccessibility(
         const signature = pageContentSignature();
         const scanResult = await runAccessibilityScan(
           () => controller.signal.aborted,
+          { wcagVersion, wcagLevel },
         );
         if (!scanResult) return;
         if (
@@ -91,7 +97,10 @@ export function usePageAccessibility(
           !controller.signal.aborted &&
           signature === pageContentSignature()
         )
-          rememberAccessibility(signature, summarizeAccessibility(scanResult));
+          rememberAccessibility(
+            signature,
+            summarizeAccessibility(scanResult, { wcagVersion, wcagLevel }),
+          );
         publish({
           status: dirty
             ? "stale"
@@ -148,13 +157,20 @@ export function usePageAccessibility(
       clearTimeout(timer);
       observer.disconnect();
     };
-  }, [route, enabled, suspended, revision, stopped]);
+  }, [route, enabled, suspended, revision, stopped, wcagVersion, wcagLevel]);
   const current: PageAccessibility = stopped
     ? { status: "stopped", issues: [], incomplete: 0 }
-    : enabled && result.route === route
+    : enabled &&
+        result.route === route &&
+        result.standard &&
+        wcagLabel(result.standard) === wcagLabel(standard)
       ? suspended && result.status === "checking"
         ? { ...result, status: "stale" }
         : result
       : { status: "waiting", issues: [], incomplete: 0 };
-  return { result: current, rerun, stop };
+  return {
+    result: { ...current, standard: { wcagVersion, wcagLevel } },
+    rerun,
+    stop,
+  };
 }

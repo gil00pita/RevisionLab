@@ -1,3 +1,5 @@
+import { defaultWcagSettings, type WcagSettings } from "./wcag-settings.js";
+
 export const commentBubbleColors = [
   "gray",
   "red",
@@ -13,7 +15,7 @@ export const commentBubbleColors = [
 
 export type CommentBubbleColor = (typeof commentBubbleColors)[number];
 
-export interface RevisionLabSettings {
+export interface RevisionLabSettings extends WcagSettings {
   showCommentBubbles: boolean;
   commentBubbleColor: CommentBubbleColor;
   showWidget: boolean;
@@ -24,6 +26,7 @@ export interface RevisionLabSettings {
 }
 
 export const defaultSettings: RevisionLabSettings = {
+  ...defaultWcagSettings,
   showCommentBubbles: true,
   commentBubbleColor: "blue",
   showWidget: true,

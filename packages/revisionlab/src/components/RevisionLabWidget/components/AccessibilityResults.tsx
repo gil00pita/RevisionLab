@@ -1,3 +1,4 @@
+import { wcagLabel } from "../../../wcag-settings.js";
 import { useEffect, useRef } from "react";
 import {
   Badge,
@@ -44,9 +45,9 @@ export function AccessibilityResults({
   // Keep the compact detail panel away from targets near the page bottom.
   const topPanel = Boolean(
     active &&
-    inspection.highlight &&
-    inspection.highlight.y + inspection.highlight.height >
-      window.innerHeight / 2,
+      inspection.highlight &&
+      inspection.highlight.y + inspection.highlight.height >
+        window.innerHeight / 2,
   );
   useEffect(() => {
     onPlacementChange(topPanel);
@@ -112,8 +113,8 @@ export function AccessibilityResults({
                   {label.replace("Accessibility: ", "")}
                 </Text>
                 <Text fontSize="xs" color="gray.600">
-                  Automated WCAG A/AA checks only. Manual testing is still
-                  required.
+                  {result.standard ? wcagLabel(result.standard) : "WCAG"}{" "}
+                  automated checks only. Manual testing is still required.
                 </Text>
                 {result.checkedAt && (
                   <Text fontSize="xs" color="gray.600">

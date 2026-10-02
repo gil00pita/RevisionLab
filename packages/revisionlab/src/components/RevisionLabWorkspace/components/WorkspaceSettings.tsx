@@ -117,7 +117,12 @@ export function WorkspaceSettings({
           />
         </Tabs.Content>
         <Tabs.Content value="audit" p="0">
-          <AuditSettings />
+          <AuditSettings
+            settings={settings}
+            canEdit={canEdit}
+            busy={busy}
+            onSave={update}
+          />
         </Tabs.Content>
         {invitations && (
           <Tabs.Content value="users" p="0">

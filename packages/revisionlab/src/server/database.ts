@@ -61,6 +61,14 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
     const additions = {
       workspace_settings: [
         [
+          "wcag_version",
+          "TEXT NOT NULL DEFAULT '2.2' CHECK(wcag_version IN ('2.0', '2.1', '2.2'))",
+        ],
+        [
+          "wcag_level",
+          "TEXT NOT NULL DEFAULT 'AA' CHECK(wcag_level IN ('A', 'AA', 'AAA'))",
+        ],
+        [
           "show_widget",
           "INTEGER NOT NULL DEFAULT 1 CHECK(show_widget IN (0, 1))",
         ],
