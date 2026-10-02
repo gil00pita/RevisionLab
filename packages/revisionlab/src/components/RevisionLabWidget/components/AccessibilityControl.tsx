@@ -14,6 +14,7 @@ const passedIconUrl = new URL(
 ).href;
 
 const labels: Record<PageAccessibility["status"], string> = {
+  stopped: "Accessibility: auditing stopped",
   waiting: "Accessibility: waiting for access",
   checking: "Accessibility: checking this page",
   passed: "Accessibility: automated checks passed",
@@ -62,7 +63,8 @@ export function AccessibilityControl({
         <IconButton
           aria-label={label}
           title={label}
-          w={{ base: "12", md: "14" }}
+          w="10"
+          minW="10"
           h="14"
           borderRadius="0"
           variant="plain"

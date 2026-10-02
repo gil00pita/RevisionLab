@@ -35,7 +35,7 @@ export function RecordingPopover({
       initialFocusEl={() => content.current?.querySelector("input") ?? null}
       finalFocusEl={() =>
         document.querySelector<HTMLButtonElement>(
-          '[aria-label="Record prototype"], [aria-label="Stop recording"]',
+          '[aria-label="Record prototype"], [aria-label="Stop recording"], [data-widget-toggle]',
         )
       }
       positioning={{

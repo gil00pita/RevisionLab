@@ -4,10 +4,13 @@ import type { useRecording } from "../hooks/useRecording.js";
 export function WidgetStatus({
   recorder,
   basePath,
+  expanded,
 }: {
   recorder: ReturnType<typeof useRecording>;
   basePath: string;
+  expanded: boolean;
 }) {
+  if (!expanded && recorder.recording && !recorder.error) return null;
   if (!recorder.recording && !recorder.error && !recorder.notice) return null;
   return (
     <Box

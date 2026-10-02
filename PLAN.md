@@ -451,9 +451,9 @@ A root comment owns the pin. Replies reference the root thread and inherit its e
 
 ## 1. Embedded Widget and Full-Page Workspace
 
-On enabled prototype pages, render an accessible floating widget with configurable placement. The RevisionLab logotype links directly to the configured workspace in the same tab, with no intermediate dialog. Preserve native link semantics, keyboard activation, and modifier-click/new-tab behavior. The camera enters **Record prototype** setup separately. Offer relevant flow/comment links; never start recording on widget open. Recording setup and launch must be possible without visiting the workspace first.
+On enabled prototype pages, render an accessible floating widget with configurable placement. The logo expands or collapses the tools; a separate **Open review workspace** link opens the configured workspace in the same tab. Preserve native link semantics, keyboard activation, and modifier-click/new-tab behavior. The camera enters **Record prototype** setup separately. Offer relevant flow/comment links; never start recording on widget open. Recording setup and launch must be possible without visiting the workspace first.
 
-Open the full-page workspace at the configured project-local route. The widget logotype opens it directly in the same tab through an accessible link; modifier-click or the browser context menu can open a new tab to preserve the original prototype. Carry validated project-local return context and flow/version selection. Avoid placing sensitive form values or arbitrary redirect targets in URLs.
+Open the full-page workspace at the configured project-local route. The expanded widget’s workspace action opens it in the same tab through an accessible link; modifier-click or the browser context menu can open a new tab to preserve the original prototype. Carry validated project-local return context and flow/version selection. Avoid placing sensitive form values or arbitrary redirect targets in URLs.
 
 The workspace allows users to:
 
@@ -1104,7 +1104,7 @@ Prepare architecture for them without implementing unnecessary complexity.
 
 Entry point on the prototype:
 
-RevisionLab widget logotype → full-page review workspace (no intermediate dialog)
+RevisionLab widget logo → expanded tools → Open review workspace
 
 Inside the full-page workspace for this installation:
 
@@ -1338,6 +1338,8 @@ docs/review-canvas.md
 # Build Strategy
 
 ## Current increment - Compact widget and automatic evidence
+
+Minimal-widget refinement (2 October 2026): default to a logo-only disclosure at bottom right. Expand to show the full tools and separate workspace link. Keep each active recording/commenting/auditing stop beside the logo when collapsed, auto-collapse on recording/comment start, and hide routine status/help while retaining actionable errors and save acknowledgement. Stop auditing aborts pending publication and pauses live-page rescans until rerun without affecting recording evidence. Validate keyboard disclosure, independent stops, cancelled audit results, rerun, permissions, save feedback, and desktop/mobile sizing. This supersedes the always-expanded branded toolbar checkpoint below; see PRODUCT.md and VALIDATION.md.
 
 Workspace comment settings: add a database-backed Settings view with default live-bubble visibility and named swatches for all ten standard color families. Owners/editors save changes; commenters have read-only access. Preserve visible/blue defaults on existing installations, validate updates on the server, and keep per-page reviewer overrides separate from the shared default. Apply color to live markers and selected-component highlights only. Validate persistence, permissions, partial updates, failures, keyboard access, contrast, and desktop/mobile layout.
 

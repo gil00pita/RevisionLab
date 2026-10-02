@@ -46,6 +46,7 @@ function Widget({
   basePath,
   route,
 }: Required<RevisionLabWidgetProps> & { route: string }) {
+  const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"comment" | "record">("comment");
   const workspace = useRevisionLab(apiPath);
@@ -90,6 +91,7 @@ function Widget({
     }
   }
   function beginCommenting() {
+    setExpanded(false);
     live.setCommenting(true);
     live.setPicking(true);
     live.setAnchor(null);
@@ -152,6 +154,7 @@ function Widget({
     <>
       {data && live.picking && (
         <ElementPicker
+          showControls={expanded}
           commentsHref={commentsHref}
           showBalloons={live.showBalloons}
           onShowBalloonsChange={live.setShowBalloons}
@@ -187,6 +190,9 @@ function Widget({
         />
       )}
       <WidgetLauncher
+        expanded={expanded}
+        onExpandedChange={setExpanded}
+        onStopAudit={accessibility.stop}
         recording={Boolean(recorder.recording)}
         canRecord={Boolean(data && data.actor.role !== "commenter")}
         authorized={Boolean(data)}
@@ -238,7 +244,10 @@ function Widget({
                   recorder={recorder}
                   personas={data.personas ?? []}
                   basePath={basePath}
-                  onStarted={() => setOpen(false)}
+                  onStarted={() => {
+                    setOpen(false);
+                    setExpanded(false);
+                  }}
                 />
                 {recorder.error && (
                   <Text role="alert" color="red.700">
@@ -294,7 +303,11 @@ function Widget({
         </WidgetPanel>
       </WidgetDialog>
       {!open && !live.commenting && (
-        <WidgetStatus recorder={recorder} basePath={basePath} />
+        <WidgetStatus
+          recorder={recorder}
+          basePath={basePath}
+          expanded={expanded}
+        />
       )}
       {leaveDialog}
     </>

@@ -1,5 +1,13 @@
 # Release validation
 
+## Minimal front-end widget - 2 October 2026
+
+The widget now rests as a logo-only disclosure at bottom right. Expanded tools include a separate workspace link; recording, commenting, and running audits retain their own Stop buttons when collapsed. Recording/comment start collapses the tools; routine recording text and picker help appear only when expanded. Error/save feedback and active composers remain available. Audit cancellation immediately aborts pending publication and pauses automatic scans until rerun; an executing axe call can finish internally but cannot publish its cancelled result. Recording accessibility evidence is independent.
+
+Validation: `npm run lint`, `npm run build`, all 162 existing package tests, and `git diff --check` pass. Local Chromium checks verified logo-only idle state, pointer/Enter/Space expansion and Escape/focus return, commenting auto-collapse and expanded picker settings, a real recording started and saved from the collapsed Stop control, acknowledged View recording/dismissal, and the separate workspace link reaching `/revisionlab` with the launcher hidden. A deliberately busy host page kept an audit pending: Stop auditing removed its stop control, host changes did not restart it, and Run again resumed scanning. Desktop 1440px and mobile 390/320px checks found no horizontal overflow; expanded tools with a running audit fit at 320px. Browser error output was empty. This does not add automated hook tests or independently validate cancellation inside axe itself, simultaneous recording/commenting, fresh hosted installation, or other browsers.
+
+Screenshots: `.context/widget-collapsed-desktop.png`, `.context/widget-collapsed-mobile.png`, `.context/widget-expanded-mobile.png`, `.context/widget-recording.png`, `.context/widget-commenting.png`, and `.context/widget-auditing-mobile.png`. Build/test logs are in `.context/widget-build.log` and `.context/widget-tests.log`. PRODUCT.md, PLAN.md, both READMEs, and homepage instructions reflect the changed launcher workflow. No publication or deployment was performed.
+
 ## Floating whiteboard viewport controls - 28 September 2026
 
 Zoom out, percentage/reset, zoom in, and icon-only Fit moved from the top toolbar into a bounded bottom-right widget. It is anchored to the canvas wrapper, outside the transformed graph and wheel/focus/pan event surface; the existing camera callbacks and limits are unchanged. Paths, cursor visibility, Auto-arrange, and Undo remain above the canvas. Read-only users retain viewport controls without an empty editing toolbar.
