@@ -8,6 +8,7 @@ import { getDatabase } from "./database.js";
 import { createRevisionLabHandler } from "./route-handler.js";
 import { protectRevisionLab } from "./protection.js";
 import { resolveConfig } from "./config.js";
+import { sessionCookieName } from "./authentication.js";
 import type { RevisionLabConfig, RevisionLabState } from "./types.js";
 
 const PNG =
@@ -350,6 +351,62 @@ test("logout deletes the server session and expires its cookie", async (t) => {
   assert.equal(response.status, 200);
   assert.match(response.headers.get("set-cookie")!, /Max-Age=0/);
   assert.equal((await f.call("state", "GET", undefined, cookie)).status, 401);
+});
+
+test("local access options let a stale session recover through explicit logout", async (t) => {
+  const f = await fixture(t);
+  const cookie = `${sessionCookieName(resolveConfig(f.config))}=old-workspace-session`;
+  assert.equal((await f.call("state", "GET", undefined, cookie)).status, 401);
+  const options = await f.call("auth/options", "GET", undefined, cookie);
+  assert.equal(options.status, 200);
+  assert.deepEqual(await options.json(), { localOwner: true });
+  assert.equal(
+    await protectRevisionLab(
+      new Request(`${BASE}/api/revisionlab/auth/options`, {
+        headers: { Cookie: cookie },
+      }),
+      f.config,
+    ),
+    undefined,
+  );
+  // Reading options must not silently turn an invalid reviewer into an owner.
+  assert.equal((await f.call("state", "GET", undefined, cookie)).status, 401);
+  const logout = await f.call("auth/logout", "POST", undefined, cookie);
+  assert.equal(logout.status, 200);
+  assert.match(logout.headers.get("set-cookie")!, /Max-Age=0/);
+  const state: RevisionLabState = await (await f.call("state")).json();
+  assert.equal(state.actor.local, true);
+  assert.equal(state.actor.role, "owner");
+});
+
+test("local access options respect production, host, and configuration restrictions", async (t) => {
+  const f = await fixture(t);
+  const options = async (config: RevisionLabConfig, request: Request) => {
+    const response = await createRevisionLabHandler(config)(request, {
+      params: Promise.resolve({ path: ["auth", "options"] }),
+    });
+    assert.equal(response.status, 200);
+    return response.json();
+  };
+  const localRequest = () => new Request(`${BASE}/api/revisionlab/auth/options`);
+  assert.deepEqual(
+    await options({ ...f.config, localOwner: false }, localRequest()),
+    { localOwner: false },
+  );
+  for (const request of [
+    new Request("https://prototype.example/api/revisionlab/auth/options"),
+    new Request(localRequest(), { headers: { "x-forwarded-host": "prototype.example" } }),
+    new Request(localRequest(), { headers: { forwarded: "host=prototype.example" } }),
+  ]) {
+    assert.deepEqual(await options(f.config, request), { localOwner: false });
+  }
+  process.env.REVISIONLAB_LOCAL_OWNER = "false";
+  assert.deepEqual(await options(f.config, localRequest()), { localOwner: false });
+  delete process.env.REVISIONLAB_LOCAL_OWNER;
+  process.env.NODE_ENV = "production";
+  assert.deepEqual(await options(f.config, localRequest()), { localOwner: false });
+  await f.call("auth/logout", "POST");
+  assert.equal((await f.call("state")).status, 401);
 });
 
 test("local owner cannot bypass authentication in production or through a nonlocal hostname", async (t) => {

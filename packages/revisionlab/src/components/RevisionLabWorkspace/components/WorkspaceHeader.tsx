@@ -14,9 +14,12 @@ import type {
   RevisionLabState,
 } from "../../../server/types.js";
 import { downloadReport } from "../utils.js";
+import { workspaceViewSubtitles, workspaceViewTitles } from "../constants.js";
+import type { WorkspaceView } from "./WorkspaceNavigation.js";
 
 export function WorkspaceHeader({
   data,
+  view,
   flow,
   actions,
   onRefresh,
@@ -24,12 +27,15 @@ export function WorkspaceHeader({
   signingOut,
 }: {
   data: RevisionLabState;
+  view: WorkspaceView;
   flow?: RevisionLabFlow;
   actions?: ReactNode;
   onRefresh: () => Promise<void>;
   onSignOut: () => Promise<void>;
   signingOut: boolean;
 }) {
+  const showReviewActions = view === "flows" || view === "comments";
+
   return (
     <Flex
       as="header"
@@ -45,7 +51,7 @@ export function WorkspaceHeader({
     >
       <Box flex="1" minW={{ base: "full", md: "48" }}>
         <Heading as="h1" size="lg" overflowWrap="anywhere">
-          {flow?.name ?? data.project.name}
+          {flow?.name ?? workspaceViewTitles[view]}
         </Heading>
         {flow ? (
           <Flex gap="2" mt="2" align="center" flexWrap="wrap">
@@ -69,29 +75,33 @@ export function WorkspaceHeader({
           </Flex>
         ) : (
           <Text fontSize="xs" color="gray.600">
-            Screens, versions, and feedback in one place
+            {workspaceViewSubtitles[view]}
           </Text>
         )}
       </Box>
       <Flex gap="3" align="center" flexWrap="wrap" maxW="full">
         {actions}
         <Flex gap="2" flexWrap="wrap">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => downloadReport(data)}
-          >
-            <Icon>
-              <Download />
-            </Icon>
-            Export report
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => void onRefresh()}>
-            <Icon>
-              <RefreshCw />
-            </Icon>
-            Refresh
-          </Button>
+          {showReviewActions && (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => downloadReport(data)}
+              >
+                <Icon>
+                  <Download />
+                </Icon>
+                Export report
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => void onRefresh()}>
+                <Icon>
+                  <RefreshCw />
+                </Icon>
+                Refresh
+              </Button>
+            </>
+          )}
           {!data.actor.local && (
             <Button
               size="sm"
