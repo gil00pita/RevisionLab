@@ -14,11 +14,10 @@ import {
 import type { RevisionLabActor, RevisionLabPersona } from "./types.js";
 
 const personaSchema = z
-  .object({
+  .strictObject({
     name: z.string().trim().min(1).max(120),
     description: z.string().trim().max(1000).default(""),
-  })
-  .strict();
+  });
 
 export async function readPersonas(
   client: Client,
@@ -116,11 +115,10 @@ export async function handlePersonas(
         );
       const secretKey = config.personaEncryptionKey;
       const input = z
-        .object({
+        .strictObject({
           username: z.string().trim().min(1).max(254),
           password: z.string().min(1).max(1024),
         })
-        .strict()
         .parse(await readJson(request));
       await write(client, async (transaction) => {
         const persona = await transaction.execute({
@@ -175,7 +173,7 @@ export async function handlePersonas(
   const input = creating
     ? personaSchema.parse(body)
     : z
-        .union([personaSchema, z.object({ archived: z.boolean() }).strict()])
+        .union([personaSchema, z.strictObject({ archived: z.boolean() })])
         .parse(body);
   const id = creating ? randomUUID() : path[1];
   await write(client, async (transaction) => {

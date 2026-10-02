@@ -78,12 +78,6 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const [completingBoard, setCompletingBoard] = useState(false);
   const boardFlush = useRef<(() => Promise<boolean>) | null>(null);
   const checkingBoard = useRef(false);
-  const registerBoardFlush = useCallback(
-    (handler: (() => Promise<boolean>) | null) => {
-      boardFlush.current = handler;
-    },
-    [],
-  );
   const boardDirtyChanged = useCallback((dirty: boolean) => {
     if (!dirty) setBoardNavigationError("");
   }, []);
@@ -260,6 +254,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           <WorkspaceSettings
             apiPath={apiPath}
             settings={data.settings ?? defaultSettings}
+            accessSettings={data.accessSettings}
             canEdit={data.actor.role !== "commenter"}
             onRefresh={refresh}
           />
@@ -301,7 +296,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
                 basePath={basePath}
                 onFlowSelect={selectFlow}
                 onRefresh={refresh}
-                onBeforeLeaveChange={registerBoardFlush}
+                beforeLeaveRef={boardFlush}
                 onDirtyChange={boardDirtyChanged}
                 navigationPending={
                   completingBoard ||

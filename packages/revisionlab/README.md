@@ -90,7 +90,7 @@ Automatic captures now reuse an identical captured image on the same route withi
 
 The workspace has one drill-down sidebar: choose **Flows** to replace the main menu with **Your flows**, then **Back** to restore the menu. The selected flow and canvas stay mounted during this transition; no second flow-list column consumes canvas width.
 
-Flow metadata and comments persist in `.revisionlab/revisionlab.db`, a local SQLite database initialized automatically; private screenshots are stored in `.revisionlab/artifacts/`. Open `/revisionlab` to review recorded steps and discussions. A loopback development session gets local owner access; this development shortcut is disabled in production. Set `REVISIONLAB_LOCAL_OWNER=false` to test invitation access during development.
+Flow metadata and comments persist in `.revisionlab/revisionlab.db`, a local SQLite database initialized automatically; private screenshots are stored in `.revisionlab/artifacts/`. Open `/revisionlab` to review recorded steps and discussions. A loopback development session gets local owner access; this development shortcut is disabled in production and whenever Vercel deployment markers are present. Set `REVISIONLAB_LOCAL_OWNER=false` to test passwordless membership access during development.
 
 Screenshots capture the rendered DOM. Cross-origin images, embedded frames, video, and canvas content may be unavailable to the browser capture API. Record only prototype data that reviewers may access. A persona is a recording label; it does not impersonate or log in as a host application's user.
 

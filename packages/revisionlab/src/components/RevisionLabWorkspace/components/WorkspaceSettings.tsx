@@ -11,16 +11,20 @@ import {
 } from "@chakra-ui/react";
 import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabSettings } from "../../../comment-settings.js";
+import type { RevisionLabAccessSettings } from "../../../server/types.js";
 import { BubbleColorPicker } from "./BubbleColorPicker.js";
+import { SystemUrlSettings } from "./SystemUrlSettings.js";
 
 export function WorkspaceSettings({
   apiPath,
   settings,
+  accessSettings,
   canEdit,
   onRefresh,
 }: {
   apiPath: string;
   settings: RevisionLabSettings;
+  accessSettings: RevisionLabAccessSettings | null;
   canEdit: boolean;
   onRefresh: () => Promise<void>;
 }) {
@@ -82,6 +86,16 @@ export function WorkspaceSettings({
         {!canEdit && <Badge>Read only</Badge>}
       </Flex>
       <Separator />
+      {accessSettings && (
+        <>
+          <SystemUrlSettings
+            apiPath={apiPath}
+            settings={accessSettings}
+            onRefresh={onRefresh}
+          />
+          <Separator />
+        </>
+      )}
       <Heading as="h3" size="md">
         Live comments
       </Heading>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type Ref } from "react";
 import { Flex, Icon, Tabs } from "@chakra-ui/react";
 import { Image as ScreenIcon, Workflow } from "lucide-react";
 import type {
@@ -16,7 +16,7 @@ export function FlowReview({
   basePath,
   onFlowSelect,
   onRefresh,
-  onBeforeLeaveChange,
+  beforeLeaveRef,
   onDirtyChange,
   navigationPending,
 }: {
@@ -26,7 +26,7 @@ export function FlowReview({
   basePath: string;
   onFlowSelect: (id: string) => void;
   onRefresh: () => Promise<void>;
-  onBeforeLeaveChange: (handler: (() => Promise<boolean>) | null) => void;
+  beforeLeaveRef: Ref<() => Promise<boolean>>;
   onDirtyChange: (dirty: boolean) => void;
   navigationPending: boolean;
 }) {
@@ -102,7 +102,7 @@ export function FlowReview({
             setView("screen");
           }}
           onRefresh={onRefresh}
-          onBeforeLeaveChange={onBeforeLeaveChange}
+          beforeLeaveRef={beforeLeaveRef}
           onDirtyChange={onDirtyChange}
         />
       </Tabs.Content>

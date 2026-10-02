@@ -28,6 +28,7 @@ async function fixture(t: TestContext) {
   const envKeys = [
     "NODE_ENV",
     "VERCEL",
+    "VERCEL_ENV",
     "RESEND_API_KEY",
     "REVISIONLAB_LOCAL_OWNER",
     "REVISIONLAB_DATABASE_AUTH_TOKEN",
@@ -410,6 +411,17 @@ test("local access options respect production, host, and configuration restricti
     localOwner: false,
   });
   delete process.env.REVISIONLAB_LOCAL_OWNER;
+  const hostedConfig = {
+    ...f.config,
+    databaseUrl: "libsql://revisionlab-test.turso.io",
+    databaseAuthToken: "test-token",
+  };
+  process.env.VERCEL = "1";
+  assert.equal(resolveConfig(hostedConfig).localOwner, false);
+  delete process.env.VERCEL;
+  process.env.VERCEL_ENV = "preview";
+  assert.equal(resolveConfig(hostedConfig).localOwner, false);
+  delete process.env.VERCEL_ENV;
   process.env.NODE_ENV = "production";
   assert.deepEqual(await options(f.config, localRequest()), {
     localOwner: false,

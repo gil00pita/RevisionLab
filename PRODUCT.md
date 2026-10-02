@@ -218,7 +218,7 @@ RevisionLab uses passwordless workspace membership and email login. Members may 
 
 ## Local access recovery
 
-Login troubleshooting (1 October 2026, implemented locally; not yet published): an old reviewer cookie can redirect a local developer to the email access form even though localhost development already permits owner access. The access page offers an explicit **Open local workspace** action only when the server confirms development mode, a loopback request, and enabled local-owner access. It clears the saved reviewer session through the existing logout endpoint before opening the workspace, with a retryable error if logout fails. The user confirmed the login problem occurs on localhost. Stale-cookie lockout was reproduced locally; the exact original error remains unconfirmed. Acceptance: stale sessions can be cleared without email configuration; reading access options never grants access or changes a valid reviewer’s role; production, forwarded remote hosts, and disabled local-owner configurations offer no local shortcut and retain normal invitation/OTP checks.
+Login troubleshooting (1 October 2026, implemented locally; not yet published): an old reviewer cookie can redirect a local developer to the email access form even though localhost development already permits owner access. The access page offers an explicit **Open local workspace** action only when the server confirms development mode, a loopback request, enabled local-owner access, and the absence of a hosted deployment runtime. It clears the saved reviewer session through the existing logout endpoint before opening the workspace, with a retryable error if logout fails. The user confirmed the login problem occurs on localhost. Stale-cookie lockout was reproduced locally; the exact original error remains unconfirmed. Acceptance: stale sessions can be cleared without email configuration; reading access options never grants access or changes a valid reviewer’s role; production, Vercel preview/production deployments, forwarded remote hosts, and disabled local-owner configurations neither display nor authorize the local shortcut and retain normal passwordless membership checks. A deployed instance must remain denied even if its `NODE_ENV` is accidentally set to `development`.
 
 ## Workspace membership paths
 
@@ -234,6 +234,8 @@ Login troubleshooting (1 October 2026, implemented locally; not yet published): 
 1. An owner opens **Users & roles**, enters an email address, and chooses a default role.
 2. RevisionLab creates a pending membership and emails the recipient that they were added to the named project, using the configured system URL for the login destination.
 3. The recipient opens a short-lived, single-use login link. The membership becomes active after the email is verified; no password is created or stored.
+
+The **Users & roles** view uses the workspace header as its single page title; its content begins with supporting guidance and must not repeat that heading inside the management panel.
 
 A signed-out member enters their email to request a fresh link whenever they want to log in. Generic responses must not reveal whether an email, membership, or workspace exists. An already authenticated session remains usable until its configured expiry, sign-out, membership suspension/removal, role change requiring rotation, or owner revocation. Direct flow, screen, comment, and version links preserve their destination through login.
 
@@ -253,7 +255,7 @@ Prototype roles/personas such as Applicant or Administrator are recording contex
 
 ## System URL
 
-Owners configure a canonical system URL used to build absolute join, notification, and passwordless login links. Production accepts only an explicit `https` origin and supported base path; loopback development may use `http`. The server must not derive security-sensitive links from an untrusted request `Host` header, and redirect destinations must remain inside the configured installation. Changing the URL affects newly generated links only and must be audited.
+Owners configure the canonical system URL from the workspace **Settings** page, separate from the allowed-email and join-code controls in **Users & roles**. The URL is used to build absolute join, notification, and passwordless login links. Production accepts only an explicit `https` origin and supported base path; loopback development may use `http`. The server must not derive security-sensitive links from an untrusted request `Host` header, and redirect destinations must remain inside the configured installation. Changing the URL affects newly generated links only and must be audited.
 
 ## Commenting experience
 

@@ -215,8 +215,7 @@ export async function handleMemberships(
   requireRole(actor, "owner");
   if (path[0] === "members" && request.method === "POST" && path.length === 1) {
     const input = z
-      .object({ email: emailSchema, role: roleSchema })
-      .strict()
+      .strictObject({ email: emailSchema, role: roleSchema })
       .parse(await readJson(request));
     const now = new Date().toISOString();
     const membershipId = await write(client, async (transaction) => {
@@ -256,8 +255,10 @@ export async function handleMemberships(
     z.string().uuid().safeParse(path[1]).success
   ) {
     const input = z
-      .object({ role: roleSchema.optional(), status: statusSchema.optional() })
-      .strict()
+      .strictObject({
+        role: roleSchema.optional(),
+        status: statusSchema.optional(),
+      })
       .refine((value) => value.role || value.status)
       .parse(await readJson(request));
     await write(client, async (transaction) => {
@@ -300,11 +301,10 @@ export async function handleMemberships(
     request.method === "PATCH"
   ) {
     const input = z
-      .object({
+      .strictObject({
         systemUrl: z.string().trim().min(1).max(2048),
         allowedEmails: z.array(z.string().trim().min(2).max(254)).max(100),
       })
-      .strict()
       .parse(await readJson(request));
     const systemUrl = validateSystemUrl(input.systemUrl);
     const allowedEmails = normalizeRules(input.allowedEmails);

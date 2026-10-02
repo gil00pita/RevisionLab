@@ -8,13 +8,14 @@ import type { AccessibilityFinding } from "./usePageAccessibility.js";
 
 export function useAccessibilityInspection(issues: AccessibilityFinding[]) {
   const [selected, setSelected] = useState<AccessibilityTarget | null>(null);
-  const [, refresh] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(0);
   useEffect(() => {
     let frame = 0;
     const update = () => {
       cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => refresh((value) => value + 1));
+      frame = requestAnimationFrame(() => setViewportHeight(window.innerHeight));
     };
+    update();
     const timer = setInterval(update, 250);
     window.addEventListener("scroll", update, true);
     window.addEventListener("resize", update);
@@ -56,5 +57,12 @@ export function useAccessibilityInspection(issues: AccessibilityFinding[]) {
       inline: "nearest",
     });
   }
-  return { active, highlight, markers, select, clear: () => setSelected(null) };
+  return {
+    active,
+    highlight,
+    markers,
+    viewportHeight,
+    select,
+    clear: () => setSelected(null),
+  };
 }

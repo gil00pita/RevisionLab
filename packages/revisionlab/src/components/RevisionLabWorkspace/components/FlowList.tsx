@@ -54,6 +54,7 @@ export function FlowList({
     confirm,
     remove,
   } = useFlowList({ flows, disabled, onDelete });
+  const selectedFamilies = new Set(selection);
   return (
     <Box
       as="section"
@@ -176,7 +177,7 @@ export function FlowList({
             key={flow.familyId}
             flow={flow}
             current={selected?.familyId === flow.familyId}
-            checked={selection.includes(flow.familyId)}
+            checked={selectedFamilies.has(flow.familyId)}
             selecting={canDelete && selecting}
             active={active.has(flow.familyId)}
             disabled={disabled || busy}

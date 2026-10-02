@@ -24,6 +24,7 @@ export async function reviewFixture(t: TestContext) {
   const keys = [
     "NODE_ENV",
     "VERCEL",
+    "VERCEL_ENV",
     "RESEND_API_KEY",
     "REVISIONLAB_LOCAL_OWNER",
     "REVISIONLAB_DATABASE_AUTH_TOKEN",

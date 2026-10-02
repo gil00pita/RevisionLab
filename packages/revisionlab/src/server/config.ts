@@ -7,6 +7,10 @@ export function defineRevisionLabConfig(
   return config;
 }
 
+function isHostedRuntime(): boolean {
+  return Boolean(process.env.VERCEL || process.env.VERCEL_ENV);
+}
+
 export function resolveConfig(
   config: RevisionLabConfig,
 ): Required<
@@ -68,6 +72,7 @@ export function resolveConfig(
     apiPath: config.apiPath ?? "/api/revisionlab",
     localOwner:
       process.env.NODE_ENV === "development" &&
+      !isHostedRuntime() &&
       process.env.REVISIONLAB_LOCAL_OWNER !== "false" &&
       (config.localOwner ?? true),
     artifactsDirectory: config.artifactsDirectory ?? ".revisionlab/artifacts",

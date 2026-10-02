@@ -32,9 +32,8 @@ export function LiveCommentBalloons({
   const [selected, setSelected] = useState<string | null>(null);
   const boundary = useRef<HTMLDivElement>(null);
   const active = targets.find((target) => target.id === selected);
-  const visibleComments = comments.filter((comment) =>
-    active?.ids.includes(comment.id),
-  );
+  const activeIds = new Set(active?.ids ?? []);
+  const visibleComments = comments.filter((comment) => activeIds.has(comment.id));
   return (
     <Popover.Root
       open={Boolean(active)}

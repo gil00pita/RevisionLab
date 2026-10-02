@@ -2,6 +2,7 @@ import type {
   RevisionLabComment,
   RevisionLabFlow,
 } from "../../server/types.js";
+import type { Ref } from "react";
 
 export interface FlowBoardProps {
   flow: RevisionLabFlow;
@@ -13,7 +14,7 @@ export interface FlowBoardProps {
   onOpenScreen: (stepId: string) => void;
   onRefresh: () => Promise<void>;
   onDirtyChange?: (dirty: boolean) => void;
-  onBeforeLeaveChange?: (handler: (() => Promise<boolean>) | null) => void;
+  beforeLeaveRef?: Ref<() => Promise<boolean>>;
 }
 
 export type FlowBoardData = RevisionLabFlow["board"];
