@@ -2,6 +2,24 @@
 
 This is the living product specification. Update it as new product requests and decisions arise. Requirements describe intended behavior unless explicitly marked implemented; proposals and open questions are not accepted implementation decisions.
 
+## Human-centred collaboration and evidence-to-delivery — 3 October 2026
+
+Confirmed purpose: address the difficulty of collaborating while using AI to prototype. Clients, business analysts, designers, developers, and other team members contribute different prototype variants and feedback. Consolidate their review context in one project-owned workspace, with flows, versions, comments, and real-user evidence available together. Reduce duplicated review/documentation work and dependence on separate review tools to help save money; these are intended benefits, not measured savings or a promise to replace every team tool. Human-centred design (HCD) guides the workflow: understand people's needs, test with real users, use evidence to prioritise improvements, and review the next revision together.
+
+Confirmed scope: enable teams to create usability tests with real users and consolidate their findings alongside flow reviews. Testing/flow reports must surface pain points, issues, and priorities, and support elaborating editable tickets from that evidence for easy addition to Jira. Preserve the source flow/version and relevant feedback so the team can understand why work is prioritised. The existing one-click **Fix with Codex** entry point remains a handoff of scoped feedback for a reviewable local proposal; applying changes and verifying the result remain explicit steps.
+
+Delivery boundary: shared flows, comments, Markdown review reports, individual comment/accessibility Jira drafts, and local Codex proposals already exist as described in the current delivery boundary. Prototype test-session creation, participant entry, recording, metrics, and replay are implemented locally as specified under **Prototype test sessions**. Structured testing findings, report-level prioritisation, and tickets generated from testing/flow reports remain planned requirements. Retain manual copy into Jira as the existing handoff; direct Jira API creation is not confirmed. Test facilitation, participant recruitment, priority scales, and report-to-ticket UI details remain open design questions. The broader reporting direction remains documentation-only and does not authorize further implementation or external integration changes.
+
+Observable acceptance for the planned workflow:
+
+1. Clients, BAs, and team members can review the relevant prototype variants in the same project workspace, attach contextual comments, and identify each finding's source flow/version.
+2. A team can create a usability test, involve real users, and retain findings in the same review context; persona-labelled recordings alone do not count as real-user testing.
+3. Testing/flow reports expose pain points, issues, priorities, and supporting evidence so the team can agree on next actions.
+4. Report findings can become editable Jira-ready ticket drafts with source context, evidence, priority, and acceptance criteria, with a straightforward copy/paste handoff unless a future integration is confirmed.
+5. An authorized user can initiate **Fix with Codex** in one click from supported screen feedback, review the proposed changes, and explicitly apply them without losing the original review evidence. Fixes from future testing findings are planned; the existing localhost/development and role constraints remain in force.
+
+Confirmed README direction: provide a short, creative introduction explaining the collaboration problem, intended cost/tool savings, and HCD approach. Include replaceable logo and screenshot placeholders, a typical-workflow versus RevisionLab diagram, short setup commands, and links to detailed instructions. Label planned and unpublished capabilities clearly. Detailed operating instructions live in WORKSPACE_GUIDE.md rather than the introductory README.
+
 ## AI Instructions and design-system resources — 2 October 2026
 
 Confirmed requirements: provide an editable AI Instructions area, prefilled on every new project installation with the complete supplied senior product designer / UX review prompt (the 2 October attachment). Include an on/off design-system toggle, a single-choice radio list of all 18 supplied frameworks, their GitHub star counts, and an external documentation icon. Catalogue records retain name, GitHub URL, documentation URL, and optional design.md, AI skill, and MCP resource URLs. Include manual entry for a custom system. Append the enabled system's resources to the generated instructions and offer skill/MCP options when the selected system supplies those resources.

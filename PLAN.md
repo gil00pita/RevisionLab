@@ -1,5 +1,11 @@
 # Build Instructions — RevisionLab Embedded Review
 
+## Planned direction — Human-centred collaboration and usability evidence
+
+Confirmed 3 October 2026: bring client, BA, and team prototype variants and feedback together, reducing duplicated work and review-tool switching with human-centred design as the guiding approach. Build on existing flows, versions, comments, prototype test sessions and replay, individual Jira drafts, and local Codex fixes. Consolidated testing findings, testing/flow reports containing pain points/issues/priorities, and report-derived Jira-ready tickets remain unimplemented requirements. Preserve evidence and source flow/version context through reporting and ticket drafting. Current Jira handoff is manual copy/paste; Codex generates proposals for explicit review/application under its existing local permissions.
+
+Before implementing this planned increment, resolve test facilitation, priority scales, and the report-to-ticket interaction, reusing the implemented participant/session handling. Do not equate personas or automated accessibility scans with real-user usability testing. PRODUCT.md defines acceptance criteria and delivery boundaries; the current request authorizes documentation only. README.md is the concise introduction, and WORKSPACE_GUIDE.md retains detailed operating instructions.
+
 ## Current increment — AI Instructions and design systems
 
 Implement the Settings → Audit editor with the supplied full default review prompt, local Markdown base text and database-backed design-system configuration, the 18-framework radio catalogue with dated GitHub stars and resource links, manual resources, and optional skill/MCP setup requests in the generated preview/copy output. Preserve the base prompt when disabling the appendix and preserve existing comment settings and role checks. Use the installed Chakra v3 components. Direct installation remains unconfirmed; this implementation prepares instructions for the receiving agent. Validate new/legacy defaults, reload, intentionally empty prompts, resource validation, concurrent comment updates, permissions, and keyboard/desktop/mobile behavior. The merged editor preserves the file location, external edits, and explicit file-loading failure/retry; local Codex composes the same enabled appendix used by preview/copy. Use the selected workspace endpoint for both Markdown and design-system saves; retain backwards compatibility for remote state and history snapshots created before AI settings existed. See PRODUCT.md for the authoritative acceptance criteria and VALIDATION.md for actual results.
@@ -954,6 +960,9 @@ Report should contain:
 - failed flow steps
 - screenshots
 - annotation details
+- real-user usability findings and supporting evidence (planned)
+- pain points, issues, and priorities agreed during testing/flow review (planned)
+- editable Jira-ready ticket drafts derived from report findings (planned; manual copy/paste)
 
 Example structure:
 
