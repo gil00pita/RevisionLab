@@ -1,4 +1,4 @@
-![RevisionLab logo placeholder — replace with the approved logo](docs/assets/logo-placeholder.svg)
+![RevisionLab logo](docs/assets/revisionlab-logo.svg)
 
 # RevisionLab
 
