@@ -1,5 +1,9 @@
 # Release validation
 
+## Persistent workspace navigation — 2 October 2026
+
+Menu section changes now use native history replacement integrated with Next.js search parameters. Before the change, a browser check observed a new `?_rsc=` route request when switching sections. After the change, all five sections updated their URL, active item, and page header with zero route requests, zero sidebar removals, the same sidebar/navigation DOM nodes, and an unchanged history length. Keyboard activation, flow-menu Back focus, Settings reload/deep-link behavior, and a 390px layout with retained menu focus and no horizontal overflow passed. Production build, package compilation, lint, and whitespace checks pass. Board-autosave and permission guards remain in place; failure scenarios and the full package test suite were not rerun for this navigation-only change.
+
 ## Local Codex screen fixes, draft PRs, and Jira drafts — 29 September 2026
 
 Screen review now offers a Codex run for the screen's open comments/saved accessibility findings and actions for individual comments/rules. Authenticated localhost development routes read the persisted screen context and workspace instructions, attach the recorded screenshot when available, and launch `codex exec` in read-only mode with schema-constrained output. The review dialog supports before/after inspection, Apply, Discard, guarded Undo, regeneration, and Create draft PR. Source paths, unique matches, and JavaScript/TypeScript syntax are validated; intervening file edits block Apply/Undo. Proposals and source snapshots persist locally, and the current browser tab remembers its latest proposal per scope. No feedback/report is automatically resolved or marked passed.
