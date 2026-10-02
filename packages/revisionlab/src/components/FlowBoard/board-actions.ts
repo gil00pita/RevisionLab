@@ -3,7 +3,10 @@ import { arrangeNodes, clampPosition } from "./geometry.js";
 import type { BoardEdge } from "./types.js";
 
 /** Stable UI callbacks always read the latest controller state, not render snapshots. */
-export function boardActions(controller: BoardAutosaveController) {
+export function boardActions(
+  controller: BoardAutosaveController,
+  idPrefix = "",
+) {
   return {
     moveNode(stepId: string, x: number, y: number) {
       controller.change((current) => ({
@@ -33,7 +36,7 @@ export function boardActions(controller: BoardAutosaveController) {
         return null;
       }
       const edge: BoardEdge = {
-        id: crypto.randomUUID(),
+        id: `${idPrefix}${crypto.randomUUID()}`,
         sourceStepId,
         targetStepId,
         label: label.trim(),

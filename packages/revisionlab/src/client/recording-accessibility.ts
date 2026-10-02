@@ -1,3 +1,4 @@
+import { defaultWcagSettings, type WcagSettings } from "../wcag-settings.js";
 import {
   unavailableAccessibility,
   type AccessibilityReport,
@@ -13,6 +14,7 @@ import { isHostMutation } from "./page-settled.js";
 export async function captureAccessibility(
   signature: string,
   cancelled: () => boolean,
+  standard: WcagSettings = defaultWcagSettings,
 ): Promise<AccessibilityReport> {
   let expired = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -33,6 +35,7 @@ export async function captureAccessibility(
     const scan = await Promise.race([
       runAccessibilityScan(
         () => expired || cancelled() || location.href !== route,
+        standard,
       ),
       new Promise<null>((resolve) => {
         timer = setTimeout(() => {
@@ -50,7 +53,7 @@ export async function captureAccessibility(
       signature !== pageContentSignature()
     )
       return unavailableAccessibility("changed");
-    const report = summarizeAccessibility(scan);
+    const report = summarizeAccessibility(scan, standard);
     rememberAccessibility(signature, report);
     return report;
   } catch {

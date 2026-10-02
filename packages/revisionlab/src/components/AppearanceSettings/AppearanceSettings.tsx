@@ -71,7 +71,10 @@ export function AppearanceSettings({
               aria-label="Widget position"
               onValueChange={({ value: position }) => {
                 if (position === "bottom-right" || position === "bottom-left")
-                  onChange({ widgetPosition: position });
+                  onChange({
+                    widgetPosition: position,
+                    widgetSide: position.endsWith("left") ? "left" : "right",
+                  });
               }}
             >
               <Flex gap="4" wrap="wrap">

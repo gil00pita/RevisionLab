@@ -1,3 +1,4 @@
+import { sourceCanEdit } from "../../../workspace-instances.js";
 import { useState, type Ref } from "react";
 import { useSearchParams } from "next/navigation";
 import { Flex, Icon, Tabs } from "@chakra-ui/react";
@@ -43,7 +44,7 @@ export function FlowReview({
   const versions = data.flows
     .filter((item) => item.familyId === flow.familyId)
     .sort((a, b) => b.version - a.version);
-  const canRecord = data.actor.role !== "commenter";
+  const canRecord = sourceCanEdit(data.actor.role, flow.workspace);
 
   return (
     <Tabs.Root

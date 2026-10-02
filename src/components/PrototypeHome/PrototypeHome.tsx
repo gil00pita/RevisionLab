@@ -112,7 +112,7 @@ export function PrototypeHome() {
             </Heading>
             <List.Root as="ol" gap="4" ps="5" color="gray.700">
               <List.Item>
-                Choose the camera icon in the RevisionLab toolbar.
+                Expand the RevisionLab logo, then choose the camera icon.
               </List.Item>
               <List.Item>
                 Name your recording and select a saved workspace persona.

@@ -66,8 +66,8 @@ export function DeleteFlowsDialog({
               <Stack gap="4">
                 <Dialog.Description>
                   All versions, screenshots, boards, and attached comments for
-                  these flows will be permanently deleted. This cannot be
-                  undone.
+                  these flows will be removed. You can restore this workspace
+                  from Settings → History for 30 days.
                 </Dialog.Description>
                 <List.Root gap="2" maxH="60" overflowY="auto" ps="5">
                   {targets.map((target) => (

@@ -1,28 +1,40 @@
-import { Box, Icon, Link, Stack, Text } from "@chakra-ui/react";
-import { ArrowLeft } from "lucide-react";
+import { Box, Icon, Stack, Text } from "@chakra-ui/react";
+import { Settings } from "lucide-react";
+import { WorkspaceNavigationButton } from "./WorkspaceNavigationButton.js";
 import type { RevisionLabState } from "../../../server/types.js";
 
 export function WorkspaceSidebarFooter({
   actor,
+  settingsActive,
+  onSettings,
+  disabled,
 }: {
   actor: RevisionLabState["actor"];
+  settingsActive: boolean;
+  onSettings: () => void;
+  disabled: boolean;
 }) {
   return (
     <Stack
       gap="4"
       flexShrink="0"
-      p="6"
+      p="3"
       borderTopWidth="1px"
       borderColor="whiteAlpha.200"
-      display={{ base: "none", lg: "flex" }}
     >
-      <Link href="/" color="gray.200" fontSize="sm">
-        <Icon>
-          <ArrowLeft />
-        </Icon>
-        Back to prototype
-      </Link>
-      <Box>
+      <Stack as="nav" aria-label="Workspace settings" gap="0">
+        <WorkspaceNavigationButton
+          active={settingsActive}
+          onClick={onSettings}
+          disabled={disabled}
+        >
+          <Icon>
+            <Settings />
+          </Icon>
+          Settings
+        </WorkspaceNavigationButton>
+      </Stack>
+      <Box px="3" pb="3" display={{ base: "none", lg: "block" }}>
         <Text fontWeight="semibold" fontSize="sm" overflowWrap="anywhere">
           {actor.name}
         </Text>

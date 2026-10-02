@@ -491,9 +491,9 @@ A root comment owns the pin. Replies reference the root thread and inherit its e
 
 ## 1. Embedded Widget and Full-Page Workspace
 
-On enabled prototype pages, render an accessible floating widget with configurable placement. The RevisionLab logotype links directly to the configured workspace in the same tab, with no intermediate dialog. Preserve native link semantics, keyboard activation, and modifier-click/new-tab behavior. The camera enters **Record prototype** setup separately. Offer relevant flow/comment links; never start recording on widget open. Recording setup and launch must be possible without visiting the workspace first.
+On enabled prototype pages, render an accessible floating widget with configurable placement. The logo expands or collapses the tools; a separate **Open review workspace** link opens the configured workspace in the same tab. Preserve native link semantics, keyboard activation, and modifier-click/new-tab behavior. The camera enters **Record prototype** setup separately. Offer relevant flow/comment links; never start recording on widget open. Recording setup and launch must be possible without visiting the workspace first.
 
-Open the full-page workspace at the configured project-local route. The widget logotype opens it directly in the same tab through an accessible link; modifier-click or the browser context menu can open a new tab to preserve the original prototype. Carry validated project-local return context and flow/version selection. Avoid placing sensitive form values or arbitrary redirect targets in URLs.
+Open the full-page workspace at the configured project-local route. The expanded widget’s workspace action opens it in the same tab through an accessible link; modifier-click or the browser context menu can open a new tab to preserve the original prototype. Carry validated project-local return context and flow/version selection. Avoid placing sensitive form values or arbitrary redirect targets in URLs.
 
 The workspace allows users to:
 
@@ -695,12 +695,12 @@ For the current wheel-navigation refinement, handle unmodified wheel input acros
 Example:
 
 ┌──────────────────────────┐
-│ Application Details      │
-│                          │
-│ [generated screen]       │
-│                          │
-│ 3 comments               │
-│ Changed since v14        │
+│ Application Details │
+│ │
+│ [generated screen] │
+│ │
+│ 3 comments │
+│ Changed since v14 │
 └──────────────────────────┘
 
 The current increment must support:
@@ -742,14 +742,14 @@ Support explicit labelled alternative connections between captured screens in th
 Example:
 
 Application Details
-        |
-        v
-     Continue
-      /    \
- Valid    Invalid
-   |         |
-   v         v
-Review    Error State
+|
+v
+Continue
+/ \
+ Valid Invalid
+| |
+v v
+Review Error State
 
 Current increment:
 
@@ -1150,7 +1150,7 @@ Prepare architecture for them without implementing unnecessary complexity.
 
 Entry point on the prototype:
 
-RevisionLab widget logotype → full-page review workspace (no intermediate dialog)
+RevisionLab widget logo → expanded tools → Open review workspace
 
 Inside the full-page workspace for this installation:
 
@@ -1385,6 +1385,16 @@ docs/review-canvas.md
 
 ## Current increment - Compact widget and automatic evidence
 
+WCAG settings: persist version 2.0/2.1/2.2 and level A/AA/AAA in Audit, preserving the current 2.2 AA default. Apply the saved target to live and recording scans, isolate caches by target, retain report metadata/history, and verify migration, permissions, validation, rule selection, and desktop/mobile saving.
+
+Sidebar hierarchy refinement: make Back to prototype the first primary navigation link, move Settings into the persistent bottom footer (also available on mobile), and remove the redundant project title/description below the brand. Keep Settings view guards and active state, Flows/Back transitions, and owner-only access management intact.
+
+Settings layout refinement: keep the top page title only and group content into Widget (widget configuration), Comments (bubble preferences), Audit (WCAG defaults and existing-check guidance), and owner-only Users & Roles (existing invitations and reviewer permissions). Remove the standalone Review access sidebar entry, retain legacy people links, and preserve invitation drafts across tab changes. Preserve permissions, saving/error feedback, and unsaved drafts across accessible tab changes; verify keyboard navigation and mobile layout.
+
+Widget configuration refinement: extend stored workspace Settings with visibility, named color, left/right side, and horizontal/bottom pixel offsets; preserve active stop/save recovery and clamp placement within the viewport. Add current-issues and scanning badges to the minimal logo. Validate migration, persistence, permissions, invalid/partial updates, panel positioning, badges, and narrow-screen behavior. See PRODUCT.md for confirmed intent and implementation decisions.
+
+Minimal-widget refinement (2 October 2026): default to a 36px logo-only disclosure at bottom right, with matching compact controls and brief horizontal slide/fade animations in both directions (instant with reduced motion). Expand to show the full tools and separate workspace link. Keep each active recording/commenting/auditing stop beside the logo when collapsed, auto-collapse on recording/comment start, and hide routine status/help while retaining actionable errors and save acknowledgement. Stop auditing aborts pending publication and pauses live-page rescans until rerun without affecting recording evidence. Validate keyboard disclosure, independent stops, cancelled audit results, rerun, permissions, save feedback, and desktop/mobile sizing. This supersedes the always-expanded branded toolbar checkpoint below; see PRODUCT.md and VALIDATION.md.
+
 Workspace comment settings: add a database-backed Settings view with default live-bubble visibility and named swatches for all ten standard color families. Owners/editors save changes; commenters have read-only access. Preserve visible/blue defaults on existing installations, validate updates on the server, and keep per-page reviewer overrides separate from the shared default. Apply color to live markers and selected-component highlights only. Validate persistence, permissions, partial updates, failures, keyboard access, contrast, and desktop/mobile layout.
 
 Selected live-comment highlighting: use the resolved target bounds to render a non-interactive Chakra outline and tint for the open comment preview. Keep it synchronized with selection, scroll, resize, and layout changes; remove it when the preview closes, comments are hidden, or the target becomes unavailable. Preserve the existing visibility preference on Escape. Verify pointer/keyboard switching, grouped comments, privacy checks, host interaction, and desktop/mobile alignment.
@@ -1585,3 +1595,11 @@ Updating the underlying prototype and replaying the flow must refresh the genera
 - review history
 
 That behaviour is the central product promise.
+
+## Current increment — Thirty-day workspace history
+
+Record a pre-change workspace snapshot for flows, screens, recording state, boards, comments, personas, and workspace settings, retaining private screenshot evidence for the same 30-day window. Expose source-aware history in Settings for local and connected instances, with commenter visibility, editor-only restore, an explicit later-change warning, and a new history entry for each restore. Expire history and unreferenced artifacts during routine history activity while excluding access and connection credentials. Validate complete deletion/restoration, restore reversal, failed/no-op changes, expiry cleanup and retry, role boundaries, connected ID scoping, and desktop/mobile interaction. PRODUCT.md is authoritative for the confirmed behavior.
+
+## Completed increment — Connected workspace instances
+
+Add owner-managed General API keys and Workspace Instances connections, a workspace/all selector, bounded authenticated federation, namespaced review data/artifacts, source-aware editing, failure feedback, and departure guards. Validate key lifecycle, same-project identity, SSRF boundaries, role restrictions, collision isolation, partial failures, and desktop/mobile workflows with isolated installations. Implemented with the confirmed two-workspace selector threshold and permission-limited remote editing. PRODUCT.md records these decisions; VALIDATION.md records checks and remaining deployment verification.

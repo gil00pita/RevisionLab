@@ -1,5 +1,6 @@
+import { rawSourceId } from "../../../workspace-instances.js";
 import { useRef, useState } from "react";
-import { Button, Flex, Icon, Text } from "@chakra-ui/react";
+import { Button, Flex, Icon, Link, Text } from "@chakra-ui/react";
 import { Circle } from "lucide-react";
 import { apiRequest } from "../../../client/api.js";
 import {
@@ -84,20 +85,32 @@ export function FlowHeaderActions({
 
   return (
     <Flex gap="2" align="center" flexWrap="wrap" maxW="full">
-      <Button
-        size="sm"
-        colorPalette="blue"
-        onClick={() => void recordVersion()}
-        loading={busy}
-        disabled={disabled}
-      >
-        <Icon>
-          <Circle />
-        </Icon>
-        {flow.status === "complete"
-          ? "Record new version"
-          : "Continue recording"}
-      </Button>
+      {flow.workspace && flow.workspace.id !== "local" ? (
+        <Button asChild size="sm" colorPalette="blue">
+          <Link
+            href={`${flow.workspace.url}${flow.workspace.basePath}?flow=${encodeURIComponent(rawSourceId(flow.id))}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open source to record
+          </Link>
+        </Button>
+      ) : (
+        <Button
+          size="sm"
+          colorPalette="blue"
+          onClick={() => void recordVersion()}
+          loading={busy}
+          disabled={disabled}
+        >
+          <Icon>
+            <Circle />
+          </Icon>
+          {flow.status === "complete"
+            ? "Record new version"
+            : "Continue recording"}
+        </Button>
+      )}
       <DeleteFlowAction
         flow={flow}
         versions={versions}

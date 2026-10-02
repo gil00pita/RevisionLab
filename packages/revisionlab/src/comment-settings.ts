@@ -1,3 +1,5 @@
+import { defaultWcagSettings, type WcagSettings } from "./wcag-settings.js";
+
 export const commentBubbleColors = [
   "gray",
   "red",
@@ -13,24 +15,31 @@ export const commentBubbleColors = [
 
 export type CommentBubbleColor = (typeof commentBubbleColors)[number];
 
-export interface RevisionLabSettings {
-  widgetColor: CommentBubbleColor;
+export interface RevisionLabSettings extends WcagSettings {
   widgetPosition: "bottom-right" | "bottom-left";
-  showWidget: boolean;
   auditLivePages: boolean;
   auditRecordings: boolean;
   showCommentBubbles: boolean;
   commentBubbleColor: CommentBubbleColor;
+  showWidget: boolean;
+  widgetColor: CommentBubbleColor;
+  widgetSide: "left" | "right";
+  widgetOffset: number;
+  widgetBottomOffset: number;
 }
 
 export const defaultSettings: RevisionLabSettings = {
-  widgetColor: "blue",
+  ...defaultWcagSettings,
   widgetPosition: "bottom-right",
-  showWidget: true,
   auditLivePages: true,
   auditRecordings: true,
   showCommentBubbles: true,
   commentBubbleColor: "blue",
+  showWidget: true,
+  widgetColor: "blue",
+  widgetSide: "right",
+  widgetOffset: 24,
+  widgetBottomOffset: 24,
 };
 
 export function commentBubbleTokens(color: CommentBubbleColor) {

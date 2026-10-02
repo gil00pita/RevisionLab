@@ -1,3 +1,4 @@
+import { defaultWcagSettings, type WcagSettings } from "../wcag-settings.js";
 import { unavailableAccessibility } from "../accessibility.js";
 import type { RevisionLabCapture } from "../server/types.js";
 import { captureAccessibility } from "./recording-accessibility.js";
@@ -23,6 +24,7 @@ export interface AutomaticCaptureRequest {
 }
 
 export async function captureRecordingScreens({
+  standard = defaultWcagSettings,
   apiPath,
   auditRecordings = true,
   flowId,
@@ -33,6 +35,7 @@ export async function captureRecordingScreens({
   lastSignature,
   onSaved,
 }: {
+  standard?: WcagSettings;
   apiPath: string;
   auditRecordings?: boolean;
   flowId: string;
@@ -77,7 +80,11 @@ export async function captureRecordingScreens({
   const screenshot = await captureScreen();
   if (cancelled()) return false;
   evidence.accessibility = auditRecordings
-    ? await captureAccessibility(signature, () => Boolean(cancelled()))
+    ? await captureAccessibility(
+        signature,
+        () => Boolean(cancelled()),
+        standard,
+      )
     : unavailableAccessibility("not-scanned");
   if (cancelled()) return false;
   const persist = async (

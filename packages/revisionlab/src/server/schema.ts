@@ -1,4 +1,24 @@
 export const schema = [
+  `CREATE TABLE IF NOT EXISTS workspace_history (
+    id TEXT PRIMARY KEY, action TEXT NOT NULL, actor_id TEXT NOT NULL,
+    actor_name TEXT NOT NULL, snapshot_json TEXT NOT NULL,
+    created_at TEXT NOT NULL, expires_at TEXT NOT NULL, committed_at TEXT
+  )`,
+  `CREATE TABLE IF NOT EXISTS workspace_history_artifacts (
+    history_id TEXT NOT NULL REFERENCES workspace_history(id) ON DELETE CASCADE,
+    artifact_id TEXT NOT NULL REFERENCES artifacts(id),
+    PRIMARY KEY(history_id, artifact_id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS workspace_api_keys (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE,
+    role TEXT NOT NULL CHECK(role IN ('editor', 'commenter')),
+    created_by TEXT NOT NULL REFERENCES reviewers(id), created_at TEXT NOT NULL, revoked_at TEXT
+  )`,
+  `CREATE TABLE IF NOT EXISTS workspace_instances (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL, url TEXT NOT NULL UNIQUE,
+    instance_id TEXT NOT NULL UNIQUE, api_path TEXT NOT NULL, base_path TEXT NOT NULL,
+    api_key TEXT NOT NULL, created_at TEXT NOT NULL
+  )`,
   `CREATE TABLE IF NOT EXISTS setup_progress (
     id INTEGER PRIMARY KEY CHECK(id = 1), step INTEGER NOT NULL DEFAULT 0,
     completed INTEGER NOT NULL DEFAULT 0, name TEXT NOT NULL DEFAULT '',
@@ -107,5 +127,7 @@ export const schema = [
   "CREATE INDEX IF NOT EXISTS idx_sessions_invitation ON sessions(invitation_id)",
   "CREATE INDEX IF NOT EXISTS idx_sessions_membership ON sessions(membership_id)",
   "CREATE INDEX IF NOT EXISTS idx_challenges_invitation ON otp_challenges(invitation_id)",
+  "CREATE INDEX IF NOT EXISTS idx_workspace_history_expiry ON workspace_history(expires_at, created_at)",
+  "CREATE INDEX IF NOT EXISTS idx_workspace_history_artifacts ON workspace_history_artifacts(artifact_id)",
   "CREATE INDEX IF NOT EXISTS idx_login_challenges_email ON login_challenges(email, created_at)",
 ];

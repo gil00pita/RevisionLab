@@ -39,16 +39,25 @@ export function useFlowList({
       latest.set(flow.familyId, flow);
   }
   const filtered = [...latest.values()].filter((flow) =>
-    `${flow.name} ${flow.persona}`.toLowerCase().includes(search.toLowerCase()),
+    `${flow.name} ${flow.persona} ${flow.workspace?.name ?? ""}`
+      .toLowerCase()
+      .includes(search.toLowerCase()),
   );
-  const eligible = filtered.filter((flow) => !active.has(flow.familyId));
-  const selection = checked.filter((id) => latest.has(id) && !active.has(id));
-  const selectedFamilies = new Set(selection);
+  const eligible = filtered.filter(
+    (flow) =>
+      !active.has(flow.familyId) && flow.workspace?.role !== "commenter",
+  );
+  const selection = checked.filter(
+    (id) =>
+      latest.has(id) &&
+      !active.has(id) &&
+      latest.get(id)?.workspace?.role !== "commenter",
+  );
   const allChecked =
     eligible.length > 0 &&
-    eligible.every((flow) => selectedFamilies.has(flow.familyId));
+    eligible.every((flow) => selection.includes(flow.familyId));
   const someChecked = eligible.some((flow) =>
-    selectedFamilies.has(flow.familyId),
+    selection.includes(flow.familyId),
   );
   function toggleSelection() {
     if (disabled || busy) return;
@@ -66,12 +75,9 @@ export function useFlowList({
     setTargets(
       ids.map((familyId) => {
         const versions = flows.filter((flow) => flow.familyId === familyId);
-        const latestFlow = latest.get(familyId);
-        if (!latestFlow)
-          throw new Error("The selected flow is no longer available.");
         return {
           familyId,
-          name: latestFlow.name,
+          name: latest.get(familyId)!.name,
           versions: versions.length,
           screens: versions.reduce(
             (count, flow) => count + flow.steps.length,

@@ -23,7 +23,7 @@ function configuredCaller(config: RevisionLabConfig) {
 }
 
 for (const foreignKeys of [true, false])
-  test(`deleting a flow removes all versions, discussions, visits and private files (foreign keys ${foreignKeys})`, async (t) => {
+  test(`deleting a flow removes active data and privately retains recoverable files (foreign keys ${foreignKeys})`, async (t) => {
     const f = await reviewFixture(t);
     const family = await f.flow();
     const stepId = await f.capture(family);
@@ -86,7 +86,7 @@ for (const foreignKeys of [true, false])
     );
     assert.deepEqual(after.settings, before.settings);
     assert.deepEqual(after.personas, before.personas);
-    assert.equal((await readdir(f.config.artifactsDirectory)).length, 1);
+    assert.equal((await readdir(f.config.artifactsDirectory)).length, 4);
     assert.equal(
       (
         await f.call(
@@ -138,7 +138,7 @@ test("bulk deletion is all-or-nothing while any selected family has an unfinishe
     200,
   );
   assert.deepEqual((await f.state()).flows, []);
-  assert.deepEqual(await readdir(f.config.artifactsDirectory), []);
+  assert.equal((await readdir(f.config.artifactsDirectory)).length, 2);
 });
 
 test("deletion enforces roles, same-origin requests and bounded unique family IDs", async (t) => {
@@ -179,7 +179,7 @@ test("deletion enforces roles, same-origin requests and bounded unique family ID
   );
 });
 
-test("failed external cleanup removes access immediately and retries without retaining review data", async (t) => {
+test("expired external history remains private and retries storage cleanup", async (t) => {
   const f = await reviewFixture(t);
   const files = new Map<string, Uint8Array>();
   let fail = true;
@@ -212,26 +212,24 @@ test("failed external cleanup removes access immediately and retries without ret
   await call(`flows/${id}`, "PATCH", { status: "complete" });
   const artifact = [...files.keys()][0];
   const response = await call("flows/delete", "POST", { familyIds: [id] });
-  assert.equal(response.status, 503);
-  assert.match(
-    (await response.json()).error,
-    /flows were deleted.*cleanup is pending/,
-  );
+  assert.equal(response.status, 200);
   assert.deepEqual((await f.state()).flows, []);
   assert.equal((await call(`artifacts/${artifact}`)).status, 404);
   assert.equal(files.size, 1);
-  assert.equal(
-    (await f.client.execute("SELECT * FROM discarded_artifacts")).rows.length,
-    1,
+  assert.ok(
+    (await f.client.execute("SELECT * FROM workspace_history_artifacts")).rows
+      .length > 0,
   );
+  await f.client.execute(
+    "UPDATE workspace_history SET expires_at = '2000-01-01T00:00:00.000Z'",
+  );
+  assert.equal((await call("history")).status, 200);
+  assert.equal(files.size, 1);
   fail = false;
-  assert.equal(
-    (await call("flows/delete", "POST", { familyIds: [id] })).status,
-    200,
-  );
+  assert.equal((await call("history")).status, 200);
   assert.equal(files.size, 0);
   assert.equal(
-    (await f.client.execute("SELECT * FROM discarded_artifacts")).rows.length,
+    (await f.client.execute("SELECT * FROM artifacts")).rows.length,
     0,
   );
 });

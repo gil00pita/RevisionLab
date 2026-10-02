@@ -1,3 +1,4 @@
+import { sourceApiPath, sourceCanEdit } from "../../../workspace-instances.js";
 import { useState } from "react";
 import {
   Box,
@@ -8,7 +9,7 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import type { RevisionLabState } from "../../../server/types.js";
+import type { WorkspaceState } from "../../../workspace-instances.js";
 import { FeedbackThread } from "../../FeedbackThread/index.js";
 import { commentContextLabel, commentGroupKey } from "../comment-context.js";
 
@@ -19,7 +20,7 @@ export function AllComments({
   route,
   basePath,
 }: {
-  data: RevisionLabState;
+  data: WorkspaceState;
   apiPath: string;
   onRefresh: () => Promise<void>;
   route: string | null;
@@ -51,7 +52,7 @@ export function AllComments({
             {route}
           </Text>
           <Link
-            href={`${basePath}?view=comments`}
+            href={`${basePath}?${new URLSearchParams({ view: "comments", workspace: data.selection })}`}
             color="blue.700"
             fontSize="sm"
           >
@@ -96,14 +97,14 @@ export function AllComments({
               </Heading>
               <FeedbackThread
                 key={active}
-                apiPath={apiPath}
+                apiPath={sourceApiPath(apiPath, first.workspace)}
                 route={first.route}
                 flowId={first.flowId ?? undefined}
                 stepId={first.stepId ?? undefined}
                 edgeId={first.edgeId ?? undefined}
                 allowNewComments={!first.edge?.archived}
                 comments={comments}
-                canResolve={data.actor.role !== "commenter"}
+                canResolve={sourceCanEdit(data.actor.role, first.workspace)}
                 onRefresh={onRefresh}
               />
             </Box>

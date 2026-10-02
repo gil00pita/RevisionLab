@@ -1,28 +1,23 @@
-import {
-  Badge,
-  Box,
-  Flex,
-  Icon,
-  IconButton,
-  Image,
-  Link,
-  Text,
-} from "@chakra-ui/react";
-import NextLink from "next/link";
-import {
-  commentBubbleTokens,
-  type RevisionLabSettings,
-} from "../../../comment-settings.js";
-import { Camera, MessageSquarePlus, Square } from "lucide-react";
+import { Collapsible, Flex, Icon } from "@chakra-ui/react";
+import { Camera, MessageSquarePlus } from "lucide-react";
 import type { PageAccessibility } from "../hooks/usePageAccessibility.js";
 import { AccessibilityControl } from "./AccessibilityControl.js";
-import { ToolHint } from "./ToolHint.js";
+import { WidgetTool } from "./WidgetTool.js";
+import { WidgetWorkspaceLink } from "./WidgetWorkspaceLink.js";
 
-const markUrl = new URL("../../../../assets/widget-mark.svg", import.meta.url)
-  .href;
+import {
+  widgetColorTokens,
+  widgetPlacement,
+  type WidgetSettings,
+} from "../../../widget-settings.js";
+import type { RevisionLabSettings } from "../../../comment-settings.js";
+import { WidgetToggle } from "./WidgetToggle.js";
 
 export function WidgetLauncher({
   settings,
+  expanded,
+  onExpandedChange,
+  onStopAudit,
   recording,
   canRecord,
   commenting,
@@ -35,7 +30,10 @@ export function WidgetLauncher({
   onComment,
   authorized,
 }: {
-  settings: RevisionLabSettings;
+  settings: WidgetSettings & Pick<RevisionLabSettings, "auditLivePages">;
+  expanded: boolean;
+  onExpandedChange: (expanded: boolean) => void;
+  onStopAudit: () => void;
   recording: boolean;
   canRecord: boolean;
   commenting: boolean;
@@ -48,132 +46,107 @@ export function WidgetLauncher({
   onRecord: () => void;
   onComment: () => void;
 }) {
-  const colors = commentBubbleTokens(settings.widgetColor);
-  const left = settings.widgetPosition.endsWith("left");
-  const recordLabel = recording ? "Stop recording" : "Record prototype";
-  const commentLabel = commenting ? "Stop commenting" : "Comment on an element";
+  const auditing = accessibility.status === "checking";
   return (
-    <Flex
+    <Collapsible.Root
+      unmountOnExit
+      open={expanded}
+      onOpenChange={(event) => onExpandedChange(event.open)}
       data-revisionlab-ui
       role="group"
       aria-label="RevisionLab toolbar"
       position="fixed"
-      bottom={{ base: "4", md: "6" }}
-      right={left ? undefined : { base: "3", md: "6" }}
-      left={left ? { base: "3", md: "6" } : undefined}
+      {...widgetPlacement(settings)}
       zIndex="popover"
-      align="center"
-      bg={colors.solid}
-      color={colors.contrast}
+      display="flex"
+      alignItems="center"
+      flexDirection={settings.widgetSide === "left" ? "row-reverse" : "row"}
+      bg={widgetColorTokens(settings.widgetColor).solid}
+      color="white"
       borderRadius="full"
       shadow="lg"
       maxW="calc(100vw - 1.5rem)"
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          onExpandedChange(false);
+          event.currentTarget
+            .querySelector<HTMLButtonElement>("[data-widget-toggle]")
+            ?.focus();
+        }
+      }}
     >
-      <ToolHint label="Open RevisionLab workspace">
-        <Link
-          asChild
-          aria-label="Open RevisionLab workspace"
-          variant="plain"
-          display="inline-flex"
-          alignItems="center"
-          flexShrink="0"
-          color={colors.contrast}
-          h="14"
-          gap="2"
-          px={{ base: "3", md: "5" }}
-          borderRadius="0"
-          borderLeftRadius="full"
-          _hover={{ bg: "blackAlpha.200", textDecoration: "none" }}
-          focusRing="inset"
-        >
-          <NextLink href={workspaceHref} prefetch={false}>
-            <Image src={markUrl} alt="" w="18px" h="20px" flexShrink="0" />
-            <Text
-              fontSize={{ base: "md", md: "xl" }}
-              fontWeight="semibold"
-              letterSpacing="0"
-            >
-              RevisionLab
-            </Text>
-          </NextLink>
-        </Link>
-      </ToolHint>
-      {settings.auditLivePages && (
-        <Box borderLeftWidth="1px" borderColor="whiteAlpha.400">
-          <AccessibilityControl
-            result={accessibility}
-            onRerun={onRerun}
-            disabled={!authorized}
-            color={colors.contrast}
-          />
-        </Box>
-      )}
-      {canRecord && (
-        <Box borderLeftWidth="1px" borderColor="whiteAlpha.400">
-          <ToolHint label={recordLabel}>
-            <IconButton
-              aria-label={recordLabel}
-              aria-pressed={recording}
-              onClick={onRecord}
-              disabled={busy}
-              variant="plain"
-              color={recording ? "white" : colors.contrast}
-              bg={recording ? "red.700" : "transparent"}
-              h="14"
-              w={{ base: "12", md: "14" }}
-              borderRadius="0"
-              _hover={{ bg: recording ? "red.800" : "blackAlpha.200" }}
-              focusRing="inset"
-            >
-              <Icon boxSize="7">{recording ? <Square /> : <Camera />}</Icon>
-            </IconButton>
-          </ToolHint>
-        </Box>
-      )}
-      <Box
-        borderLeftWidth="1px"
-        borderColor="whiteAlpha.400"
-        position="relative"
+      <Collapsible.Content
+        flexShrink="0"
+        inert={!expanded}
+        animationFillMode="both"
+        _open={{
+          animationName: "expand-width, fade-in",
+          animationDuration: "moderate",
+          animationTimingFunction: "ease-out",
+          _motionReduce: { animationName: "none" },
+        }}
+        _closed={{
+          animationName: "collapse-width, fade-out",
+          animationDuration: "fast",
+          animationTimingFunction: "ease-in",
+          pointerEvents: "none",
+          _motionReduce: { animationName: "none" },
+        }}
       >
-        <ToolHint label={commentLabel}>
-          <IconButton
-            aria-label={commentLabel}
-            aria-pressed={commenting}
-            onClick={onComment}
-            disabled={!authorized}
-            variant="plain"
-            color={commenting ? "white" : colors.contrast}
-            bg={commenting ? "blue.800" : "transparent"}
-            h="14"
-            w={{ base: "12", md: "14" }}
-            borderRadius="0"
-            borderRightRadius="full"
-            _hover={{ bg: "blackAlpha.200" }}
-            focusRing="inset"
-          >
-            <Icon boxSize="7">
-              {commenting ? <Square /> : <MessageSquarePlus />}
-            </Icon>
-          </IconButton>
-        </ToolHint>
-        {commentCount > 0 && (
-          <Badge
-            position="absolute"
-            top="1"
-            right="1"
-            pointerEvents="none"
-            borderRadius="full"
-            bg="white"
-            color="blue.800"
-            minW="4"
-            justifyContent="center"
-            fontSize="10px"
-            aria-label={`${commentCount} open page comments`}
-          >
-            {commentCount > 99 ? "99+" : commentCount}
-          </Badge>
-        )}
-      </Box>
-    </Flex>
+        <Flex
+          align="center"
+          px="0.5"
+          w="max-content"
+          flexDirection={settings.widgetSide === "left" ? "row-reverse" : "row"}
+        >
+          <WidgetWorkspaceLink href={workspaceHref} />
+          {settings.auditLivePages && (
+            <AccessibilityControl
+              result={accessibility}
+              onRerun={onRerun}
+              disabled={!authorized}
+            />
+          )}
+          {canRecord && !recording && (
+            <WidgetTool
+              label="Record prototype"
+              disabled={busy}
+              onClick={onRecord}
+            >
+              <Icon boxSize="5">
+                <Camera />
+              </Icon>
+            </WidgetTool>
+          )}
+          {!commenting && (
+            <WidgetTool
+              label="Comment on an element"
+              disabled={!authorized}
+              onClick={onComment}
+              count={commentCount}
+            >
+              <Icon boxSize="5">
+                <MessageSquarePlus />
+              </Icon>
+            </WidgetTool>
+          )}
+        </Flex>
+      </Collapsible.Content>
+      {recording && (
+        <WidgetTool
+          label="Stop recording"
+          active
+          disabled={busy}
+          onClick={onRecord}
+        />
+      )}
+      {commenting && (
+        <WidgetTool label="Stop commenting" active onClick={onComment} />
+      )}
+      {settings.auditLivePages && auditing && (
+        <WidgetTool label="Stop auditing" active onClick={onStopAudit} />
+      )}
+      <WidgetToggle expanded={expanded} accessibility={accessibility} />
+    </Collapsible.Root>
   );
 }

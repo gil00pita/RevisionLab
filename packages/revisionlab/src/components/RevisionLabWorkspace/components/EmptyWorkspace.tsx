@@ -1,7 +1,15 @@
 import { Button, Heading, Icon, Link, Stack, Text } from "@chakra-ui/react";
 import { ArrowUpRight, Camera } from "lucide-react";
 
-export function EmptyWorkspace({ canRecord }: { canRecord: boolean }) {
+export function EmptyWorkspace({
+  canRecord,
+  unavailable = false,
+  prototypeUrl = "/",
+}: {
+  canRecord: boolean;
+  unavailable?: boolean;
+  prototypeUrl?: string;
+}) {
   return (
     <Stack
       gap="5"
@@ -15,15 +23,17 @@ export function EmptyWorkspace({ canRecord }: { canRecord: boolean }) {
         <Camera />
       </Icon>
       <Heading as="h2" size="2xl" maxW="lg">
-        A review starts with a real journey.
+        {unavailable
+          ? "Workspace data is currently unavailable."
+          : "A review starts with a real journey."}
       </Heading>
       <Text color="gray.600" maxW="lg">
-        Open your prototype, choose Record in the RevisionLab widget, and walk
-        through a flow. Each captured screen keeps its persona, version, and
-        feedback together.
+        {unavailable
+          ? "The connection could not be loaded. Retry with Refresh or choose another workspace."
+          : "Open your prototype, choose Record in the RevisionLab widget, and walk through a flow. Each captured screen keeps its persona, version, and feedback together."}
       </Text>
       <Button asChild colorPalette="blue">
-        <Link href="/">
+        <Link href={prototypeUrl}>
           Open prototype
           <Icon>
             <ArrowUpRight />
@@ -31,9 +41,11 @@ export function EmptyWorkspace({ canRecord }: { canRecord: boolean }) {
         </Link>
       </Button>
       <Text color="gray.600" fontSize="xs">
-        {canRecord
-          ? "Your workspace is ready. No flows have been recorded yet."
-          : "An editor will need to record the first flow. You can already comment on prototype pages."}
+        {unavailable
+          ? "Saved source data has not been deleted."
+          : canRecord
+            ? "Your workspace is ready. No flows have been recorded yet."
+            : "An editor will need to record the first flow. You can already comment on prototype pages."}
       </Text>
     </Stack>
   );

@@ -5,6 +5,7 @@ import { readSetup } from "./setup.js";
 import { getDatabase } from "./database.js";
 import { reviewFixture } from "./review-test-fixture.js";
 import { readSettings } from "./settings.js";
+import { defaultSettings } from "../comment-settings.js";
 
 const identity = {
   action: "identity",
@@ -138,7 +139,7 @@ test("widget and audit preferences survive skip, reject invalid values, and pres
     assert.equal((await f.call("settings", "PATCH", patch)).status, 400);
   await f.call("setup", "PATCH", { action: "finish" });
   const state = await f.state();
-  assert.deepEqual(state.settings, preferences);
+  assert.deepEqual(state.settings, { ...defaultSettings, ...preferences });
   assert.equal(state.accessSettings?.systemUrl, identity.systemUrl);
 });
 

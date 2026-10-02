@@ -68,6 +68,9 @@ export function useSetupWizard(
             ? {
                 widgetColor: settings.widgetColor,
                 widgetPosition: settings.widgetPosition,
+                widgetSide: settings.widgetPosition.endsWith("left")
+                  ? ("left" as const)
+                  : ("right" as const),
                 showWidget: settings.showWidget,
                 ...(colorInherited.current
                   ? { commentBubbleColor: settings.commentBubbleColor }

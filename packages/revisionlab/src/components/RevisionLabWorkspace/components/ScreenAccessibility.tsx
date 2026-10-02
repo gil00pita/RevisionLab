@@ -1,3 +1,4 @@
+import { wcagLabel } from "../../../wcag-settings.js";
 import { Badge, Heading, Link, List, Stack, Text } from "@chakra-ui/react";
 import type { AccessibilityReport } from "../../../accessibility.js";
 import { AccessibilityStatus } from "../../AccessibilityStatus/index.js";
@@ -34,7 +35,8 @@ export function ScreenAccessibility({
             {report.engineVersion}
           </Text>
           <Text fontSize="sm" color="gray.600">
-            Automated WCAG A/AA checks are not a compliance certification.
+            {report.standard ? wcagLabel(report.standard) : "Legacy WCAG A/AA"}{" "}
+            automated checks are not a compliance certification.
           </Text>
           {report.incomplete > 0 && (
             <Text fontSize="sm" color="orange.800">

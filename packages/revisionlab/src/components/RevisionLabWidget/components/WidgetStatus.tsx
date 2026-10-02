@@ -1,20 +1,28 @@
+import {
+  widgetPlacement,
+  type WidgetSettings,
+} from "../../../widget-settings.js";
 import { Box, CloseButton, Link, Stack, Text } from "@chakra-ui/react";
 import type { useRecording } from "../hooks/useRecording.js";
 
 export function WidgetStatus({
+  settings,
   recorder,
   basePath,
+  expanded,
 }: {
+  settings: WidgetSettings;
   recorder: ReturnType<typeof useRecording>;
   basePath: string;
+  expanded: boolean;
 }) {
+  if (!expanded && recorder.recording && !recorder.error) return null;
   if (!recorder.recording && !recorder.error && !recorder.notice) return null;
   return (
     <Box
       data-revisionlab-ui
       position="fixed"
-      bottom="24"
-      right={{ base: "3", md: "6" }}
+      {...widgetPlacement(settings, true)}
       zIndex="popover"
       maxW="calc(100vw - 1.5rem)"
       w="80"

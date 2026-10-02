@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { chmod, mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { createClient, type Client, type Transaction } from "@libsql/client";
@@ -41,6 +42,10 @@ async function initialize(
       sql: "INSERT OR IGNORE INTO installation (id, project_id) VALUES (1, ?)",
       args: [config.projectId],
     });
+    await client.execute({
+      sql: "UPDATE installation SET instance_id = ? WHERE id = 1 AND instance_id IS NULL",
+      args: [randomUUID()],
+    });
     const installation = await client.execute(
       "SELECT project_id FROM installation WHERE id = 1",
     );
@@ -61,6 +66,45 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
   // One write transaction prevents simultaneous instances from applying an ALTER twice.
   await write(client, async (transaction) => {
     const additions = {
+      installation: [["instance_id", "TEXT"]],
+      workspace_history: [["committed_at", "TEXT"]],
+      workspace_settings: [
+        [
+          "wcag_version",
+          "TEXT NOT NULL DEFAULT '2.2' CHECK(wcag_version IN ('2.0', '2.1', '2.2'))",
+        ],
+        [
+          "wcag_level",
+          "TEXT NOT NULL DEFAULT 'AA' CHECK(wcag_level IN ('A', 'AA', 'AAA'))",
+        ],
+        [
+          "show_widget",
+          "INTEGER NOT NULL DEFAULT 1 CHECK(show_widget IN (0, 1))",
+        ],
+        [
+          "widget_color",
+          "TEXT NOT NULL DEFAULT 'blue' CHECK(widget_color IN ('gray', 'red', 'orange', 'yellow', 'green', 'teal', 'cyan', 'blue', 'purple', 'pink'))",
+        ],
+        [
+          "widget_side",
+          "TEXT NOT NULL DEFAULT 'right' CHECK(widget_side IN ('left', 'right'))",
+        ],
+        [
+          "widget_offset",
+          "INTEGER NOT NULL DEFAULT 24 CHECK(widget_offset BETWEEN 0 AND 1000)",
+        ],
+        [
+          "widget_bottom_offset",
+          "INTEGER NOT NULL DEFAULT 24 CHECK(widget_bottom_offset BETWEEN 0 AND 1000)",
+        ],
+        ["system_url", "TEXT"],
+        ["widget_position", "TEXT NOT NULL DEFAULT 'bottom-right'"],
+        ["audit_live_pages", "INTEGER NOT NULL DEFAULT 1"],
+        ["audit_recordings", "INTEGER NOT NULL DEFAULT 1"],
+        ["allowed_email_rules", "TEXT NOT NULL DEFAULT '[]'"],
+        ["join_code_hash", "TEXT"],
+        ["join_code_created_at", "TEXT"],
+      ],
       steps: [
         ["capture_json", "TEXT"],
         ["capture_key", "TEXT"],
@@ -78,17 +122,6 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
         ["parent_id", "TEXT REFERENCES comments(id) ON DELETE CASCADE"],
         ["edge_id", "TEXT"],
         ["element_anchor", "TEXT"],
-      ],
-      workspace_settings: [
-        ["system_url", "TEXT"],
-        ["widget_color", "TEXT NOT NULL DEFAULT 'blue'"],
-        ["widget_position", "TEXT NOT NULL DEFAULT 'bottom-right'"],
-        ["show_widget", "INTEGER NOT NULL DEFAULT 1"],
-        ["audit_live_pages", "INTEGER NOT NULL DEFAULT 1"],
-        ["audit_recordings", "INTEGER NOT NULL DEFAULT 1"],
-        ["allowed_email_rules", "TEXT NOT NULL DEFAULT '[]'"],
-        ["join_code_hash", "TEXT"],
-        ["join_code_created_at", "TEXT"],
       ],
       sessions: [
         ["membership_id", "TEXT"],

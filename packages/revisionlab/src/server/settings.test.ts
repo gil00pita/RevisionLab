@@ -123,3 +123,153 @@ test("concurrent partial settings updates preserve both fields and existing revi
   assert.deepEqual(after.flows, before.flows);
   assert.deepEqual(after.comments, before.comments);
 });
+
+test("widget settings persist independently of comments and accept all named colors", async (t) => {
+  const f = await reviewFixture(t);
+  const widget = {
+    showWidget: false,
+    widgetColor: "purple",
+    widgetSide: "left",
+    widgetOffset: 0,
+    widgetBottomOffset: 1000,
+  };
+  assert.equal((await f.call("settings", "PATCH", widget)).status, 200);
+  assert.deepEqual((await f.state()).settings, {
+    ...defaultSettings,
+    ...widget,
+  });
+  const second = await getDatabase({
+    ...f.config,
+    databaseAuthToken: "widget-restart",
+  });
+  try {
+    assert.deepEqual(await readSettings(second), {
+      ...defaultSettings,
+      ...widget,
+    });
+  } finally {
+    second.close();
+  }
+  for (const widgetColor of commentBubbleColors) {
+    assert.equal(
+      (await f.call("settings", "PATCH", { widgetColor })).status,
+      200,
+    );
+    assert.deepEqual((await f.state()).settings, {
+      ...defaultSettings,
+      ...widget,
+      widgetColor,
+    });
+  }
+  const responses = await Promise.all([
+    f.call("settings", "PATCH", { showWidget: true }),
+    f.call("settings", "PATCH", { widgetOffset: 42, widgetBottomOffset: 64 }),
+    f.call("settings", "PATCH", { commentBubbleColor: "teal" }),
+  ]);
+  assert.ok(responses.every((response) => response.status === 200));
+  assert.deepEqual((await f.state()).settings, {
+    ...defaultSettings,
+    ...widget,
+    widgetColor: "pink",
+    showWidget: true,
+    widgetOffset: 42,
+    widgetBottomOffset: 64,
+    commentBubbleColor: "teal",
+  });
+});
+
+test("invalid widget configuration and commenter writes leave saved settings unchanged", async (t) => {
+  const f = await reviewFixture(t);
+  const before = (await f.state()).settings;
+  for (const input of [
+    { showWidget: "false" },
+    { widgetColor: "#123456" },
+    { widgetSide: "top" },
+    { widgetOffset: -1 },
+    { widgetOffset: 1001 },
+    { widgetOffset: 1.5 },
+    { widgetOffset: "24" },
+    { widgetBottomOffset: null },
+    { widgetBottomOffset: -1 },
+    { widgetBottomOffset: 1001 },
+    { widgetBottomOffset: 2.5 },
+    { showWidget: false, widgetSide: "left", widgetBottomOffset: -5 },
+  ]) {
+    assert.equal((await f.call("settings", "PATCH", input)).status, 400);
+    assert.deepEqual((await f.state()).settings, before);
+  }
+  const commenter = await f.login("commenter");
+  assert.equal(
+    (await f.call("settings", "PATCH", { showWidget: false }, commenter))
+      .status,
+    403,
+  );
+  assert.deepEqual((await f.state()).settings, before);
+  const editor = await f.login("editor");
+  assert.equal(
+    (
+      await f.call(
+        "settings",
+        "PATCH",
+        { showWidget: false, widgetSide: "left" },
+        editor,
+      )
+    ).status,
+    200,
+  );
+});
+
+test("WCAG defaults persist, validate all version/level pairs, and preserve other settings", async (t) => {
+  const f = await reviewFixture(t);
+  const editor = await f.login("editor");
+  for (const wcagVersion of ["2.0", "2.1", "2.2"]) {
+    for (const wcagLevel of ["A", "AA", "AAA"]) {
+      assert.equal(
+        (await f.call("settings", "PATCH", { wcagVersion, wcagLevel }, editor))
+          .status,
+        200,
+      );
+      assert.deepEqual((await f.state()).settings, {
+        ...defaultSettings,
+        wcagVersion,
+        wcagLevel,
+      });
+    }
+  }
+  const responses = await Promise.all([
+    f.call("settings", "PATCH", { wcagVersion: "2.0", wcagLevel: "AA" }),
+    f.call("settings", "PATCH", { widgetOffset: 35 }),
+  ]);
+  assert.ok(responses.every((response) => response.status === 200));
+  const before = (await f.state()).settings;
+  assert.deepEqual(before, {
+    ...defaultSettings,
+    wcagVersion: "2.0",
+    widgetOffset: 35,
+  });
+  const second = await getDatabase({
+    ...f.config,
+    databaseAuthToken: "wcag-restart",
+  });
+  try {
+    assert.deepEqual(await readSettings(second), before);
+  } finally {
+    second.close();
+  }
+  const commenter = await f.login("commenter");
+  assert.equal(
+    (await f.call("settings", "PATCH", { wcagLevel: "AAA" }, commenter)).status,
+    403,
+  );
+  for (const input of [
+    { wcagVersion: "3.0" },
+    { wcagVersion: 2 },
+    { wcagLevel: "aa" },
+    { wcagLevel: "AAAA" },
+    { wcagVersion: null },
+    { wcagVersion: "2.1", wcagLevel: "invalid" },
+  ]) {
+    assert.equal((await f.call("settings", "PATCH", input)).status, 400);
+    assert.deepEqual((await f.state()).settings, before);
+  }
+});

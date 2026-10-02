@@ -9,12 +9,18 @@ import {
 export function BubbleColorPicker({
   label = "Bubble color",
   value,
+  tokens = commentBubbleTokens,
   disabled,
   readOnly,
   onChange,
 }: {
-  label?: string;
   value: CommentBubbleColor;
+  label?: string;
+  tokens?: (color: CommentBubbleColor) => {
+    solid: string;
+    contrast: string;
+    outline: string;
+  };
   disabled: boolean;
   readOnly: boolean;
   onChange: (color: CommentBubbleColor) => void;
@@ -51,10 +57,10 @@ export function BubbleColorPicker({
                 h="10"
                 flexShrink="0"
                 borderRadius="full"
-                bg={commentBubbleTokens(color).solid}
-                color={commentBubbleTokens(color).contrast}
+                bg={tokens(color).solid}
+                color={tokens(color).contrast}
                 borderWidth="2px"
-                borderColor={commentBubbleTokens(color).outline}
+                borderColor={tokens(color).outline}
                 _checked={{
                   outlineWidth: "2px",
                   outlineStyle: "solid",

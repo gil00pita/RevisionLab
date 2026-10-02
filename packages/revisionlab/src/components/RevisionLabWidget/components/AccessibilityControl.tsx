@@ -21,6 +21,7 @@ const passedIconUrl = new URL(
 ).href;
 
 const labels: Record<PageAccessibility["status"], string> = {
+  stopped: "Accessibility: auditing stopped",
   waiting: "Accessibility: waiting for access",
   checking: "Accessibility: checking this page",
   passed: "Accessibility: automated checks passed",
@@ -64,8 +65,9 @@ export function AccessibilityControl({
         <IconButton
           aria-label={label}
           title={label}
-          w={{ base: "12", md: "14" }}
-          h="14"
+          size="sm"
+          boxSize="9"
+          minW="9"
           borderRadius="0"
           variant="plain"
           color={color}
@@ -78,13 +80,17 @@ export function AccessibilityControl({
             <Image
               src={result.status === "passed" ? passedIconUrl : issuesIconUrl}
               alt=""
-              w="28px"
-              h="28px"
+              w="24px"
+              h="24px"
               flexShrink="0"
             />
           ) : (
-            <Icon boxSize="7">
-              {result.status === "error" ? <CircleAlert /> : <CircleHelp />}
+            <Icon boxSize="5">
+              {result.status === "error" ? (
+                <CircleAlert />
+              ) : (
+                <CircleHelp />
+              )}
             </Icon>
           )}
         </IconButton>
