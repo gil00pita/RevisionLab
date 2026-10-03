@@ -116,6 +116,8 @@ npx --package /absolute/path/revisionlab-0.1.1.tgz revisionlab init \
 
 The installer installs the exact version invoked, including explicit versions and `@next` prereleases when that tag is available. Re-running `init` updates the dependency while preserving customized integration files and review data; restart the development server afterward. The installer supports Next.js 15/16 App Router, React 19, TypeScript/JavaScript, and `app/` or `src/app/`. It generates the API, workspace/access routes, configuration, and widget layout integration. `--protect` also generates the prototype access gate (Next.js 15.5+). Existing files are checked before writes, modified host files are backed up, and repeat installation preserves customizations.
 
+If npm installation fails, generated files and backups remain in place. Resolve the dependency conflict reported by npm, then install the exact RevisionLab version or archive you originally invoked; rerunning init is optional. For the `eslint@9` / `@eslint/js@10` conflict, retain ESLint 9 by running `npm install --save-dev @eslint/js@9` before retrying RevisionLab installation. See [failed-install recovery](packages/revisionlab/README.md#recover-from-a-failed-npm-install) for commands.
+
 See the [package guide](packages/revisionlab/README.md) for all options and manual integration. Standalone React/Vite and the Pages Router are not included in this release.
 
 ## Automatic npm releases
