@@ -1,5 +1,9 @@
 # Build Instructions — RevisionLab Embedded Review
 
+## Current refinement — White workspace navbar
+
+Implemented locally 3 October 2026, not yet published: use Chakra's white token for the workspace sidebar and submenus, including the Your flows Back area, flow-list section, and remaining panel space. This replaces the earlier light-grey background decision. Retain dark text/icons and count badges, pale-blue selected items, darker hover states, and visible dark-blue keyboard focus. Update the workspace selector and reviewer footer for contrast while preserving navigation and responsive layout. PRODUCT.md defines contrast acceptance criteria.
+
 ## Planned direction — Human-centred collaboration and usability evidence
 
 Confirmed 3 October 2026: bring client, BA, and team prototype variants and feedback together, reducing duplicated work and review-tool switching with human-centred design as the guiding approach. Build on existing flows, versions, comments, prototype test sessions and replay, individual Jira drafts, and local Codex fixes. Consolidated testing findings, testing/flow reports containing pain points/issues/priorities, and report-derived Jira-ready tickets remain unimplemented requirements. Preserve evidence and source flow/version context through reporting and ticket drafting. Current Jira handoff is manual copy/paste; Codex generates proposals for explicit review/application under its existing local permissions.
