@@ -50,13 +50,29 @@ async function readInstallation(root: string): Promise<Installation | null> {
   return manifest;
 }
 
+async function hasRouteContent(directory: string): Promise<boolean> {
+  const entries = await readdir(directory, { withFileTypes: true });
+  for (const entry of entries) {
+    // Empty directory trees can remain after Git removes tracked route files.
+    // Files and symbolic links still conflict, including dangling links.
+    if (
+      !entry.isDirectory() ||
+      (await hasRouteContent(path.join(directory, entry.name)))
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 async function assertNoReservedRoutes(root: string, app: string) {
   const routeChecks = await Promise.all(
     ["revisionlab", "api/revisionlab"].map(async (directory) => {
       const filename = path.join(root, app, directory);
+      await assertSafePath(root, filename);
       return {
         directory,
-        populated: (await exists(filename)) && (await readdir(filename)).length,
+        populated: (await exists(filename)) && (await hasRouteContent(filename)),
       };
     }),
   );
