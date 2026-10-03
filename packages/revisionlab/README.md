@@ -101,6 +101,8 @@ Paths follow the host's `src/` and language conventions. The layout remains a Se
 
 Initialization checks every target before writing. Conflicting files, symbolic links, ambiguous root layouts, and existing protection middleware cause a clear error. Re-running initialization preserves generated files you have customized and does not mount the widget twice. Backups of modified host files are at `.revisionlab/backups/`.
 
+The local installer also accepts existing `revisionlab/` and `api/revisionlab/` route folders containing only empty subfolders, such as `access/` and `[...path]/` left behind after Git removes files. Files (even empty or hidden ones) and symbolic links still cause a conflict. This refinement is not yet published.
+
 The installer adapts conventional `next dev` and `next build` scripts to Webpack because of the [Chakra/Emotion Turbopack hydration issue](https://chakra-ui.com/docs/get-started/frameworks/next-app#hydration-errors-turbopack). On Next.js 16 it adds `--webpack`; on Next.js 15 it removes `--turbo`/`--turbopack` because Webpack is already the default and that release has no `--webpack` flag. Other arguments and scripts are preserved. Custom shell commands remain untouched and produce manual instructions. Package changes are backed up and included in `--dry-run`.
 
 ```bash

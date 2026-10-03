@@ -110,6 +110,110 @@ test("preserves edits to generated files on repeat initialization", async (t) =>
   );
 });
 
+for (const app of ["app", "src/app"]) {
+  for (const nested of [false, true]) {
+    test(`initializes with ${nested ? "nested empty" : "empty"} reserved folders in ${app}`, async (t) => {
+      const project = await fixture(t, { app });
+      for (const directory of ["revisionlab", "api/revisionlab"]) {
+        await mkdir(
+          path.join(project.root, app, directory, nested ? "leftover/deep" : ""),
+          { recursive: true },
+        );
+      }
+      if (nested) {
+        await mkdir(path.join(project.root, app, "revisionlab/access"));
+        await mkdir(path.join(project.root, app, "api/revisionlab/[...path]"));
+        await mkdir(
+          path.join(project.root, app, "(private)/(review)/revisionlab/access"),
+          { recursive: true },
+        );
+        await mkdir(
+          path.join(project.root, app, "(private)/(review)/api/revisionlab/[...path]"),
+          { recursive: true },
+        );
+      }
+      const preview = await initialize({ cwd: project.root, dryRun: true });
+      assert.ok(preview.changed.includes(`${app}/revisionlab/page.tsx`));
+      assert.equal(await exists(path.join(project.root, ".revisionlab")), false);
+      assert.equal(
+        await readFile(path.join(project.root, app, "layout.tsx"), "utf8"),
+        project.layout,
+      );
+
+      await initialize({ cwd: project.root });
+      for (const filename of [
+        "revisionlab/page.tsx",
+        "revisionlab/access/page.tsx",
+        "api/revisionlab/[...path]/route.ts",
+      ]) {
+        assert.equal(await exists(path.join(project.root, app, filename)), true);
+      }
+      assert.equal((await initialize({ cwd: project.root })).changed.length, 0);
+    });
+  }
+}
+
+for (const directory of ["revisionlab", "api/revisionlab"]) {
+  for (const filename of ["page.tsx", "nested/deep/route.ts", ".gitkeep"]) {
+    test(`rejects ${directory}/${filename} even when the file is empty`, async (t) => {
+      const project = await fixture(t);
+      const target = path.join(project.root, project.app, directory, filename);
+      await mkdir(path.dirname(target), { recursive: true });
+      await writeFile(target, "");
+      const originalPackage = await readFile(
+        path.join(project.root, "package.json"),
+        "utf8",
+      );
+
+      await assert.rejects(
+        initialize({ cwd: project.root }),
+        {
+          message: `${path.join(project.app, directory)} already exists. Move the conflicting route before running init.`,
+        },
+      );
+      assert.equal(await readFile(target, "utf8"), "");
+      assert.equal(
+        await readFile(path.join(project.root, project.app, "layout.tsx"), "utf8"),
+        project.layout,
+      );
+      assert.equal(
+        await readFile(path.join(project.root, "package.json"), "utf8"),
+        originalPackage,
+      );
+      assert.equal(await exists(path.join(project.root, ".revisionlab")), false);
+    });
+  }
+}
+
+test("rejects symbolic links inside otherwise empty reserved folders", async (t) => {
+  const project = await fixture(t);
+  const target = path.join(project.root, project.app, "revisionlab/access");
+  await mkdir(target, { recursive: true });
+  await symlink(
+    path.join(project.root, "missing"),
+    path.join(target, "link"),
+    "dir",
+  );
+  await assert.rejects(
+    initialize({ cwd: project.root }),
+    /Move the conflicting route/,
+  );
+  assert.equal(await exists(path.join(project.root, ".revisionlab")), false);
+});
+
+test("rejects a reserved folder linked to an empty directory", async (t) => {
+  const project = await fixture(t);
+  const target = path.join(project.root, "empty");
+  await mkdir(target);
+  await symlink(
+    target,
+    path.join(project.root, project.app, "revisionlab"),
+    "dir",
+  );
+  await assert.rejects(initialize({ cwd: project.root }), /symbolic link/);
+  assert.equal(await exists(path.join(target, "page.tsx")), false);
+});
+
 test("generates JavaScript routes and Next 15 Node middleware", async (t) => {
   const project = await fixture(t, {
     app: "app",
