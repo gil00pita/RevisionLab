@@ -2,7 +2,7 @@
 
 ## Current refinement — White workspace navbar
 
-Implemented locally 3 October 2026, not yet published: use Chakra's white token for the workspace sidebar and submenus, including the Your flows Back area, flow-list section, and remaining panel space. This replaces the earlier light-grey background decision. Retain dark text/icons and count badges, pale-blue selected items, darker hover states, and visible dark-blue keyboard focus. Update the workspace selector and reviewer footer for contrast while preserving navigation and responsive layout. PRODUCT.md defines contrast acceptance criteria.
+Implemented locally 3 October 2026, not yet published: use Chakra's white token for the workspace sidebar and submenus, including the Your flows Back area, flow-list section, and remaining panel space. This replaces the earlier light-grey background decision. Retain dark text/icons and count badges, pale-blue selected items, and visible dark-blue keyboard focus. Navbar menu items, including Settings, use a light-blue hover background: blue.50 for unselected items and blue.200 for selected items. Update the workspace selector and reviewer footer for contrast while preserving navigation and responsive layout. PRODUCT.md defines contrast acceptance criteria.
 
 ## Planned direction — Human-centred collaboration and usability evidence
 

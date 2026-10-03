@@ -22,7 +22,7 @@ export function WorkspaceNavigationButton({
       justifyContent="flex-start"
       bg={active ? "blue.100" : "transparent"}
       color={active ? "blue.800" : "gray.800"}
-      _hover={{ bg: active ? "blue.200" : "gray.200" }}
+      _hover={{ bg: active ? "blue.200" : "blue.50" }}
       focusRing="inside"
       focusRingColor="blue.700"
       aria-current={active ? "page" : undefined}
