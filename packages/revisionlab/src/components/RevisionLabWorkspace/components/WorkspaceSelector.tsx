@@ -32,19 +32,22 @@ export function WorkspaceSelector({
         }}
         size="sm"
       >
-        <Select.Label fontSize="xs" color="gray.300">
+        <Select.Label fontSize="xs" color="gray.600">
           Workspace
         </Select.Label>
         <Select.HiddenSelect />
         <Select.Control>
           <Select.Trigger
-            bg="whiteAlpha.100"
-            color="white"
-            borderColor="whiteAlpha.300"
+            bg="white"
+            color="gray.900"
+            borderColor="gray.500"
+            _hover={{ borderColor: "gray.600" }}
+            focusRing="inside"
+            focusRingColor="blue.700"
           >
             <Select.ValueText truncate />
           </Select.Trigger>
-          <Select.IndicatorGroup color="white">
+          <Select.IndicatorGroup color="gray.700">
             <Select.Indicator />
           </Select.IndicatorGroup>
         </Select.Control>

@@ -20,7 +20,7 @@ export function WorkspaceSidebarFooter({
       flexShrink="0"
       p="3"
       borderTopWidth="1px"
-      borderColor="whiteAlpha.200"
+      borderColor="gray.300"
     >
       <Stack as="nav" aria-label="Workspace settings" gap="0">
         <WorkspaceNavigationButton
@@ -38,7 +38,7 @@ export function WorkspaceSidebarFooter({
         <Text fontWeight="semibold" fontSize="sm" overflowWrap="anywhere">
           {actor.name}
         </Text>
-        <Text fontSize="xs" color="gray.300" textTransform="capitalize">
+        <Text fontSize="xs" color="gray.600" textTransform="capitalize">
           {actor.role}
         </Text>
       </Box>

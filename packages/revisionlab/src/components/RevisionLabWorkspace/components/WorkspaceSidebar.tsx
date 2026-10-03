@@ -62,8 +62,8 @@ export function WorkspaceSidebar({
       borderRightWidth="1px"
       borderColor="gray.200"
       direction="column"
-      bg="blue.950"
-      color="white"
+      bg="white"
+      color="gray.900"
     >
       <WorkspaceSidebarHeader />
       <WorkspaceSelector
