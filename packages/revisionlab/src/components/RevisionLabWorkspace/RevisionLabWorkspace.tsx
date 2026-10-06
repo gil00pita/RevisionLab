@@ -1,6 +1,7 @@
 "use client";
 
 import { TestSessions } from "../TestSessions/index.js";
+import { FeedbackReview } from "../FeedbackReview/index.js";
 import { Suspense, useCallback, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -74,6 +75,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const view: WorkspaceView =
     requestedView === "sessions" ||
     requestedView === "comments" ||
+    requestedView === "feedback" ||
     requestedView === "personas" ||
     requestedView === "settings"
       ? requestedView
@@ -87,6 +89,11 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const [startingRecording, setStartingRecording] = useState(false);
   const [actionError, setActionError] = useState("");
   const [boardNavigationError, setBoardNavigationError] = useState("");
+  const [feedbackDirty, setFeedbackDirty] = useState(false);
+  const feedbackDirtyChanged = useCallback((dirty: boolean) => {
+    setFeedbackDirty(dirty);
+    if (!dirty) setBoardNavigationError("");
+  }, []);
   const [completingBoard, setCompletingBoard] = useState(false);
   const boardFlush = useRef<(() => Promise<boolean>) | null>(null);
   const checkingBoard = useRef(false);
@@ -111,6 +118,12 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   if (flow && flowId !== flow.id) setFlowId(flow.id);
 
   async function canLeaveBoard(): Promise<boolean> {
+    if (feedbackDirty) {
+      setBoardNavigationError(
+        "Save or discard your Feedback Review edits, or finish/cancel Codex, before leaving this section.",
+      );
+      return false;
+    }
     if (checkingBoard.current) return false;
     if (!boardFlush.current) return true;
     checkingBoard.current = true;
@@ -332,7 +345,15 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             Finishing board autosave…
           </Text>
         )}
-        {view === "sessions" ? (
+        {view === "feedback" ? (
+          <FeedbackReview
+            data={data}
+            apiPath={apiPath}
+            basePath={basePath}
+            onDirtyChange={feedbackDirtyChanged}
+            onRefresh={refresh}
+          />
+        ) : view === "sessions" ? (
           <TestSessions
             key={String(createTest)}
             apiPath={apiPath}

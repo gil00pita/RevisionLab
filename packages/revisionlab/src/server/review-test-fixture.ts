@@ -62,7 +62,7 @@ export async function reviewFixture(t: TestContext) {
         },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       }),
-      { params: Promise.resolve({ path: path.split("/") }) },
+      { params: Promise.resolve({ path: path.split("?")[0].split("/") }) },
     );
   }
   let flowNumber = 0;

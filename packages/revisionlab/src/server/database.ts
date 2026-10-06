@@ -126,6 +126,8 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
         ["parent_id", "TEXT REFERENCES comments(id) ON DELETE CASCADE"],
         ["edge_id", "TEXT"],
         ["element_anchor", "TEXT"],
+        ["screenshot", "TEXT"],
+        ["screenshot_anchor", "TEXT"],
       ],
       sessions: [
         ["membership_id", "TEXT"],

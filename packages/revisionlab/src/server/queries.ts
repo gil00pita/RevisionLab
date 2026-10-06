@@ -90,6 +90,11 @@ export async function readComments(
     FROM comments JOIN reviewers ON reviewers.id = comments.author_id
     LEFT JOIN comments AS parent ON parent.id = comments.parent_id
     LEFT JOIN board_edges AS edge ON edge.flow_id = comments.flow_id AND edge.id = comments.edge_id
+    WHERE NOT EXISTS (
+      SELECT 1 FROM feedback_ticket_evidence source JOIN feedback_tickets ticket ON ticket.id = source.ticket_id
+      WHERE source.comment_id = COALESCE(comments.parent_id, comments.id)
+      AND json_extract(ticket.ticket_json, '$.status') = 'fixed'
+    )
     ORDER BY comments.created_at DESC, comments.id`);
   return result.rows.map((row) => ({
     id: text(row, "id"),
@@ -117,6 +122,11 @@ export async function readComments(
         ? null
         : { x: Number(row.anchor_x), y: Number(row.anchor_y) },
     parentId: nullable(row, "parent_id"),
+    screenshot: nullable(row, "screenshot"),
+    screenshotAnchor:
+      row.screenshot_anchor == null
+        ? null
+        : JSON.parse(String(row.screenshot_anchor)),
     elementAnchor:
       row.thread_element_anchor == null
         ? null

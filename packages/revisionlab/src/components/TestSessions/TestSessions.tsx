@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button, Flex, Heading, Link, Stack, Text } from "@chakra-ui/react";
 import type {
   RevisionLabState,
@@ -22,10 +23,13 @@ export function TestSessions({
   data: RevisionLabState;
   initialCreate: boolean;
 }) {
+  const searchParams = useSearchParams();
   const [personas, setPersonas] = useState<RevisionLabPersona[]>([]);
   const [creating, setCreating] = useState(initialCreate);
   const [sessions, setSessions] = useState<TestSession[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(() =>
+    searchParams.get("session"),
+  );
   const [detail, setDetail] = useState<TestDetail | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);

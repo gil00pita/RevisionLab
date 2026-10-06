@@ -33,6 +33,8 @@ export interface RevisionLabConfig {
   artifactStorage?: RevisionLabArtifactStorage;
   /** Local Markdown file, relative to the host working directory or absolute. */
   aiInstructionsFile?: string;
+  /** Writable directory of Markdown ticket templates; defaults beside AI Instructions. */
+  ticketTemplatesDirectory?: string;
   /** Local Git project used for Codex proposals. Defaults to the host working directory. */
   aiProjectDirectory?: string;
 }
@@ -122,6 +124,8 @@ export interface RevisionLabElementAnchor {
 }
 
 export interface RevisionLabComment {
+  screenshot?: string | null;
+  screenshotAnchor?: RevisionLabPoint | null;
   workspace?: WorkspaceOrigin;
   id: string;
   flowId: string | null;
