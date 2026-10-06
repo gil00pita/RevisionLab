@@ -315,7 +315,9 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
         />
         {(error || actionError || boardNavigationError) && (
           <Text role="alert" px="6" py="3" color="red.700" bg="red.50">
-            {error?.message || actionError || boardNavigationError}
+            {view === "dashboard" && error
+              ? "Could not refresh workspace data."
+              : error?.message || actionError || boardNavigationError}
           </Text>
         )}
         {data.workspaces
@@ -343,6 +345,13 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             data={data}
             syncedAt={syncedAt}
             syncError={Boolean(error)}
+            onReviewComments={() => void selectView("comments")}
+            navigationDisabled={
+              completingBoard ||
+              signingOut ||
+              startingRecording ||
+              deletion.pending
+            }
           />
         ) : view === "sessions" ? (
           <TestSessions

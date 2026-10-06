@@ -42,6 +42,7 @@ export function WorkspaceNavigation({
         colorPalette="blue"
         variant="solid"
         justifyContent="flex-start"
+        minH={{ base: "11", lg: "10" }}
         flexBasis={{ base: "100%", lg: "auto" }}
         mb="2"
       >
@@ -97,7 +98,7 @@ export function WorkspaceNavigation({
             data.comments.filter(
               (comment) => !comment.parentId && comment.status === "open",
             ).length
-          }
+          } open
         </Badge>
       </NavigationButton>
       <NavigationButton

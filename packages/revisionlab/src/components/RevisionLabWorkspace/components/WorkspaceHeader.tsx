@@ -82,7 +82,12 @@ export function WorkspaceHeader({
       <Flex gap="3" align="center" flexWrap="wrap" maxW="full">
         {actions}
         {data.actor.role !== "commenter" && view !== "sessions" && (
-          <Button size="sm" variant="outline" onClick={onNewTest}>
+          <Button
+            size="sm"
+            minH={{ base: "11", lg: "9" }}
+            variant="outline"
+            onClick={onNewTest}
+          >
             New test session
           </Button>
         )}
@@ -90,6 +95,7 @@ export function WorkspaceHeader({
           {!data.actor.local && (
             <Button
               size="sm"
+              minH={{ base: "11", lg: "9" }}
               variant="ghost"
               loading={signingOut}
               onClick={() => void onSignOut()}

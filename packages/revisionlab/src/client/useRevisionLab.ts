@@ -4,12 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import type { RevisionLabState } from "../server/types.js";
 import { apiRequest, ApiError } from "./api.js";
 
-export function useRevisionLab(apiPath: string) {
+export function useRevisionLab(apiPath: string, enabled = true) {
   const [data, setData] = useState<RevisionLabState | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
+    if (!enabled) return;
     try {
       const next = await apiRequest<RevisionLabState>(apiPath, "state");
       setData(next);
@@ -22,9 +23,10 @@ export function useRevisionLab(apiPath: string) {
     } finally {
       setLoading(false);
     }
-  }, [apiPath]);
+  }, [apiPath, enabled]);
 
   useEffect(() => {
+    if (!enabled) return;
     // Deliver the first external-store update asynchronously, like later polls.
     void Promise.resolve().then(refresh);
     const interval = window.setInterval(() => {
@@ -36,7 +38,7 @@ export function useRevisionLab(apiPath: string) {
       window.clearInterval(interval);
       window.removeEventListener("focus", onFocus);
     };
-  }, [refresh]);
+  }, [enabled, refresh]);
 
   return { data, error, loading, refresh };
 }

@@ -57,7 +57,8 @@ function Widget({
   const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"comment" | "record">("comment");
-  const workspace = useRevisionLab(apiPath);
+  const reviewRoute = route === basePath || route.startsWith(`${basePath}/`);
+  const workspace = useRevisionLab(apiPath, !reviewRoute);
   const { data, refresh } = workspace;
   const settings = data?.settings ?? defaultSettings;
   const live = useLiveFeedback(route, settings.showCommentBubbles);
@@ -67,7 +68,6 @@ function Widget({
       (comment) =>
         comment.route === route && !comment.stepId && !comment.edgeId,
     ) ?? [];
-  const reviewRoute = route === basePath || route.startsWith(`${basePath}/`);
   const recorder = useRecording(
     apiPath,
     route,
