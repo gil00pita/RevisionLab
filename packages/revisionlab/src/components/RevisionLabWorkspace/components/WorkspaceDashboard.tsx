@@ -1,11 +1,4 @@
-import {
-  Badge,
-  Flex,
-  Heading,
-  SimpleGrid,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
+import { SimpleGrid, Stack } from "@chakra-ui/react";
 import {
   Accessibility,
   CircleCheck,
@@ -36,10 +29,6 @@ export function WorkspaceDashboard({
   navigationDisabled: boolean;
 }) {
   const stats = dashboardStatistics(data);
-  const scope =
-    data.selection === "all"
-      ? "All workspaces"
-      : (stats.sources[0]?.name ?? "This workspace");
   const metrics = [
     {
       label: "Accessibility issues",
@@ -103,19 +92,6 @@ export function WorkspaceDashboard({
     stats.sources.every((source) => source.status === "connected");
   return (
     <Stack gap="6" p={{ base: "4", md: "8" }} bg="gray.50" flex="1" minW="0">
-      <Stack gap="3">
-        <Flex align="center" justify="space-between" gap="4" flexWrap="wrap">
-          <Heading as="h2" size={{ base: "2xl", md: "4xl" }} letterSpacing="tight">
-            Workspace overview
-          </Heading>
-          <Badge colorPalette="blue" whiteSpace="normal" overflowWrap="anywhere">
-            {scope}
-          </Badge>
-        </Flex>
-        <Text color="gray.600">
-          {data.project.name}
-        </Text>
-      </Stack>
       <DashboardStatus
         sources={stats.sources}
         syncedAt={syncedAt}

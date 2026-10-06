@@ -259,6 +259,12 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
       />
     );
 
+  const dashboardScope =
+    data.selection === "all"
+      ? "All workspaces"
+      : (data.workspaces.find((source) => source.id === data.selection)?.name ??
+        "This workspace");
+
   return (
     <Flex minH="100dvh" bg="white" direction={{ base: "column", lg: "row" }}>
       <WorkspaceSidebar
@@ -287,6 +293,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           }}
           onSignOut={signOut}
           signingOut={signingOut}
+          dashboardScope={view === "dashboard" ? dashboardScope : undefined}
           actions={
             view === "flows" &&
             flow &&

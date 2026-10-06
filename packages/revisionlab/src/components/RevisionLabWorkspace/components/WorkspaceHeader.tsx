@@ -24,6 +24,7 @@ export function WorkspaceHeader({
   onNewTest,
   onSignOut,
   signingOut,
+  dashboardScope,
 }: {
   data: RevisionLabState;
   view: WorkspaceView;
@@ -32,6 +33,7 @@ export function WorkspaceHeader({
   onNewTest: () => void;
   onSignOut: () => Promise<void>;
   signingOut: boolean;
+  dashboardScope?: string;
 }) {
   return (
     <Flex
@@ -79,7 +81,17 @@ export function WorkspaceHeader({
           </Text>
         )}
       </Box>
-      <Flex gap="3" align="center" flexWrap="wrap" maxW="full">
+      <Flex gap="3" align="center" flexWrap="wrap" maxW="full" minW="0">
+        {view === "dashboard" && dashboardScope && (
+          <Badge
+            colorPalette="blue"
+            maxW="full"
+            whiteSpace="normal"
+            overflowWrap="anywhere"
+          >
+            {dashboardScope}
+          </Badge>
+        )}
         {actions}
         {data.actor.role !== "commenter" && view !== "sessions" && (
           <Button
