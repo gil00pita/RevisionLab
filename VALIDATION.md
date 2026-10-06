@@ -1,5 +1,13 @@
 # Release validation
 
+## Navigation menu refinement — 6 October 2026
+
+The prototype link now remains outside both sliding panels, with an application-window icon. Flow rows span the sidebar with square corners and light dividers, blue badges, accessible number-plus-screen-icon counts, persona icons, and localized creation date/time. The submenu return action says Main menu. Focus transfer now runs after React commits the panel's inert state.
+
+Local Chromium checks used an isolated database at `.context/navigation-review.db` with 12 three-screen fixtures. At 1440px and 390px, assertions verified stationary prototype-link bounds across both transitions and long-list scrolling, keyboard focus transfer and prototype-link availability, the same mounted board, full-width square rows, dividers, metadata, and no horizontal overflow. Search filtering, Select/Done, and individual selection passed; the main menu fit at 320px and 768px. Scoped WCAG A/AA axe checks found zero sidebar violations at desktop and mobile sizes, with no browser errors. Fixtures contain no captured screenshots. Evidence: `.context/check-navigation.js`, `.context/navigation-desktop.png`, `.context/navigation-mobile.png`, and `.context/navigation-a11y-{desktop,mobile}.json`. These checks cover the local interface; hosted, cross-browser, and live connected-instance behavior were not retested.
+
+Final `npm run lint`, `npm run build` (package compilation and Next.js production validation), and `git diff --check` pass. Build/lint logs are `.context/navigation-build.log` and `.context/navigation-lint.log`.
+
 ## Built-in installer dependency diagnostics — 6 October 2026
 
 Implemented locally, not yet published: failed npm installs now automatically inspect the host's installed dependency tree with `npm ls --all --json`. The CLI lists distinct direct/transitive invalid-version constraints, explains why separate single-package repairs can fail before saving, and retains the exact version/archive retry command. It preserves npm's original output, generated files, host dependency declarations, and failure exit. Empty/unavailable trees and malformed or unavailable npm diagnostics retain useful manual instructions. Inspection has a 10-second timeout, an 8 MiB capture limit, and a 20-conflict display limit; no force/legacy peer flags, registry lookups, or automatic tooling changes were added.
