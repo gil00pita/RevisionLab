@@ -1499,7 +1499,7 @@ Build this on the existing screen-capture release before introducing action repl
 - Package/CLI structure and a Next.js host fixture
 - Idempotent initialization and layout integration
 - Implemented locally, not yet published: recursively allow empty reserved route directory trees left behind by Git, including route groups, while retaining conflicts for files and symbolic links. Validate both app roots, dry-run, generated routes, idempotence, and unchanged host files on conflict.
-- Implemented locally, not yet published: preserve generated files and npm diagnostics after a failed dependency install; explain host-tree ERESOLVE conflicts and print an exact-version/archive retry command. Cover nonzero npm exits and unavailable npm without automatic peer-check bypasses.
+- Implemented locally and observed in the user's published 0.1.13 installation output: preserve generated files and npm diagnostics after a failed dependency install; explain host-tree ERESOLVE conflicts and print an exact-version/archive retry command. Cover nonzero npm exits and unavailable npm without automatic peer-check bypasses. The reported ESLint 9 / `@eslint/js` 10 conflict requires aligning the host's lint dependencies before retrying the printed install command.
 - Floating widget and full-page workspace route
 - Scoped styling, lazy loading, and server/client package boundaries
 - Dedicated review-environment gating and route protection

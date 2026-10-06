@@ -122,11 +122,11 @@ For example, `eslint@9.39.5` conflicts with `@eslint/js@10.0.1`, which requires 
 
 ```bash
 npm install --save-dev @eslint/js@9
-npm install revisionlab@0.1.1
+npm install revisionlab@0.1.13
 npm run dev
 ```
 
-Replace `revisionlab@0.1.1` with the exact version or local `.tgz` originally used. The local CLI now prints that retry command on failure; this improved guidance is not yet published. You do not need to rerun init. Resolve incompatible versions rather than bypassing peer checks with `--force` or `--legacy-peer-deps`; RevisionLab does not change host lint dependencies.
+The example uses the version from the reported failure. Use the exact version or local `.tgz` from your CLI's printed retry command. The recovery guidance is present in the reported 0.1.13 installation output. You do not need to rerun init. Resolve incompatible versions rather than bypassing peer checks with `--force` or `--legacy-peer-deps`; RevisionLab does not change host lint dependencies.
 
 ## Local recording and feedback
 
