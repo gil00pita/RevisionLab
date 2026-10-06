@@ -1,15 +1,14 @@
+import { CommentInput } from "../../CommentInput/index.js";
+import { captureDimensions, captureScreen } from "../../../client/recording.js";
 import { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
-  Field,
   Flex,
   Popover,
   Portal,
   Stack,
   Text,
-  Textarea,
-  VisuallyHidden,
 } from "@chakra-ui/react";
 import { apiRequest } from "../../../client/api.js";
 import { resolveElementAnchor } from "../../../client/element-anchor.js";
@@ -34,6 +33,7 @@ export function LiveCommentComposer({
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [captureWarning, setCaptureWarning] = useState("");
   const input = useRef<HTMLTextAreaElement>(null);
   const pending = useRef(false);
   const bounds = useElementBounds(resolveElementAnchor(anchor));
@@ -53,12 +53,45 @@ export function LiveCommentComposer({
     setBusy(true);
     setError("");
     try {
+      let screenshot: string | undefined;
+      let screenshotAnchor: { x: number; y: number } | undefined;
+      const target = resolveElementAnchor(anchor)?.getBoundingClientRect();
+      const dimensions = captureDimensions();
+      try {
+        if (!captureWarning) screenshot = await captureScreen(true);
+        if (target && screenshot)
+          screenshotAnchor = {
+            x: Math.max(
+              0,
+              Math.min(
+                1,
+                (target.x + target.width / 2 + window.scrollX) /
+                  dimensions.width,
+              ),
+            ),
+            y: Math.max(
+              0,
+              Math.min(
+                1,
+                (target.y + target.height / 2 + window.scrollY) /
+                  dimensions.height,
+              ),
+            ),
+          };
+      } catch {
+        setCaptureWarning(
+          "The screenshot could not be captured. Post without a screenshot to save the comment with its element location.",
+        );
+        return;
+      }
       await apiRequest(apiPath, "comments", {
         method: "POST",
         body: JSON.stringify({
           route,
           body: body.trim(),
           elementAnchor: anchor,
+          screenshot,
+          screenshotAnchor,
         }),
       });
       onSaved();
@@ -123,21 +156,22 @@ export function LiveCommentComposer({
             <Popover.Arrow />
             <Popover.Body p="4" maxH="calc(100dvh - 7rem)" overflowY="auto">
               <Stack gap="3">
-                <Field.Root required invalid={Boolean(error)}>
-                  <VisuallyHidden asChild>
-                    <Field.Label>Comment</Field.Label>
-                  </VisuallyHidden>
-                  <Textarea
-                    ref={input}
-                    value={body}
-                    onChange={(event) => setBody(event.target.value)}
-                    placeholder="Write a comment..."
-                    rows={4}
-                    maxLength={4000}
-                    resize="vertical"
-                    disabled={busy}
-                  />
-                </Field.Root>
+                <CommentInput
+                  apiPath={apiPath}
+                  route={route}
+                  inputRef={input}
+                  value={body}
+                  onChange={setBody}
+                  label="Comment"
+                  placeholder="Write a comment..."
+                  disabled={busy}
+                  onSubmitShortcut={() => void post()}
+                />
+                {captureWarning && (
+                  <Text role="status" fontSize="xs" color="orange.800">
+                    {captureWarning}
+                  </Text>
+                )}
                 {!bounds && (
                   <Text role="status" fontSize="xs" color="orange.800">
                     The selected element is no longer visible.
@@ -164,7 +198,7 @@ export function LiveCommentComposer({
                     loading={busy}
                     disabled={!body.trim()}
                   >
-                    Post
+                    {captureWarning ? "Post without screenshot" : "Post"}
                   </Button>
                 </Flex>
               </Stack>

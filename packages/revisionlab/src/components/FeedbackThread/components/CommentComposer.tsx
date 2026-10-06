@@ -1,15 +1,6 @@
+import { CommentInput } from "../../CommentInput/index.js";
 import { useEffect, useRef, useState } from "react";
-import {
-  Badge,
-  Box,
-  Button,
-  Field,
-  Flex,
-  Icon,
-  Stack,
-  Text,
-  Textarea,
-} from "@chakra-ui/react";
+import { Badge, Box, Button, Flex, Icon, Stack, Text } from "@chakra-ui/react";
 import { Send, X } from "lucide-react";
 import { apiRequest } from "../../../client/api.js";
 import type {
@@ -145,41 +136,33 @@ export function CommentComposer({
           void submit();
         }}
       >
-        <Field.Root>
-          <Field.Label>
-            {parentId
+        <CommentInput
+          apiPath={apiPath}
+          route={route}
+          inputRef={input}
+          value={body}
+          onChange={setBody}
+          label={
+            parentId
               ? "Your reply"
               : elementAnchor
                 ? "Comment on this element"
                 : anchor
                   ? "Comment on this area"
-                  : "Your comment"}
-          </Field.Label>
-          <Textarea
-            ref={input}
-            value={body}
-            onChange={(event) => setBody(event.target.value)}
-            placeholder={
-              parentId ? "Continue the discussion…" : "What needs attention?"
-            }
-            maxLength={4000}
-            minH="24"
-            bg="white"
-            borderColor="gray.300"
-            disabled={busy}
-            onKeyDown={(event) => {
-              if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-                event.preventDefault();
-                void submit();
-              }
-            }}
-          />
-          {stepId && !anchor && !parentId && (
-            <Field.HelperText>
-              For a precise location, click an area of the captured screen.
-            </Field.HelperText>
-          )}
-        </Field.Root>
+                  : "Your comment"
+          }
+          placeholder={
+            parentId ? "Continue the discussion…" : "What needs attention?"
+          }
+          disabled={busy}
+          suggestions={!parentId && !edgeId}
+          onSubmitShortcut={() => void submit()}
+          helperText={
+            stepId && !anchor && !parentId
+              ? "For a precise location, click an area of the captured screen."
+              : undefined
+          }
+        />
         <Button
           type="submit"
           size="sm"

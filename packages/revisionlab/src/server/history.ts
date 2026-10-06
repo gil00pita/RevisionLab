@@ -93,6 +93,8 @@ const snapshotTables = {
     "parent_id",
     "edge_id",
     "element_anchor",
+    "screenshot",
+    "screenshot_anchor",
   ],
 } as const;
 
@@ -131,7 +133,7 @@ async function captureSnapshot(transaction: Transaction): Promise<Snapshot> {
 function artifactIds(snapshot: Snapshot): string[] {
   return [
     ...new Set(
-      snapshot.steps
+      [...snapshot.steps, ...snapshot.comments]
         .map((step) => step.screenshot)
         .filter((value): value is string => typeof value === "string"),
     ),
@@ -253,6 +255,8 @@ async function pruneHistory(
     const orphaned =
       await transaction.execute(`SELECT id, storage FROM artifacts
       WHERE NOT EXISTS (SELECT 1 FROM steps WHERE steps.screenshot = artifacts.id)
+      AND NOT EXISTS (SELECT 1 FROM comments WHERE comments.screenshot = artifacts.id)
+      AND NOT EXISTS (SELECT 1 FROM feedback_ticket_evidence WHERE screenshot_id = artifacts.id)
       AND NOT EXISTS (SELECT 1 FROM workspace_history_artifacts WHERE artifact_id = artifacts.id)
       LIMIT 100`);
     return orphaned.rows.map((row) => ({
@@ -276,6 +280,8 @@ async function pruneHistory(
         await transaction.execute({
           sql: `DELETE FROM artifacts WHERE id = ?
             AND NOT EXISTS (SELECT 1 FROM steps WHERE steps.screenshot = artifacts.id)
+            AND NOT EXISTS (SELECT 1 FROM comments WHERE comments.screenshot = artifacts.id)
+            AND NOT EXISTS (SELECT 1 FROM feedback_ticket_evidence WHERE screenshot_id = artifacts.id)
             AND NOT EXISTS (SELECT 1 FROM workspace_history_artifacts WHERE artifact_id = artifacts.id)`,
           args: [id],
         });
@@ -293,7 +299,11 @@ async function insertRows(
     await transaction.execute({
       sql,
       args: columns.map((column) =>
-        column === "ai_instructions_json" ? (row[column] ?? null) : row[column],
+        ["ai_instructions_json", "screenshot", "screenshot_anchor"].includes(
+          column,
+        )
+          ? (row[column] ?? null)
+          : row[column],
       ),
     });
 }

@@ -1,28 +1,32 @@
-import { Badge, Button, Icon, Link, Stack } from "@chakra-ui/react";
+import { Badge, Icon, Stack } from "@chakra-ui/react";
 import {
   GitBranch,
   FlaskConical,
   MessageSquare,
   ContactRound,
-  ArrowLeft,
   LayoutDashboard,
+  ClipboardList,
 } from "lucide-react";
 import type { RefObject } from "react";
 import { WorkspaceNavigationButton as NavigationButton } from "./WorkspaceNavigationButton.js";
 import type { RevisionLabState } from "../../../server/types.js";
 
 export type WorkspaceView =
-  "dashboard" | "sessions" | "flows" | "comments" | "personas" | "settings";
+  | "dashboard"
+  | "sessions"
+  | "flows"
+  | "comments"
+  | "feedback"
+  | "personas"
+  | "settings";
 
 export function WorkspaceNavigation({
   data,
-  prototypeHref,
   view,
   onViewChange,
   flowsTriggerRef,
 }: {
   data: RevisionLabState;
-  prototypeHref: string;
   view: WorkspaceView;
   onViewChange: (view: WorkspaceView) => void;
   flowsTriggerRef: RefObject<HTMLButtonElement | null>;
@@ -37,23 +41,6 @@ export function WorkspaceNavigation({
       pb="4"
       flexWrap="wrap"
     >
-      <Button
-        asChild
-        colorPalette="blue"
-        variant="solid"
-        justifyContent="flex-start"
-        minH={{ base: "11", lg: "10" }}
-        flexBasis={{ base: "100%", lg: "auto" }}
-        mb="2"
-      >
-        {/* Native navigation preserves the board's pending-save unload warning. */}
-        <Link href={prototypeHref} _hover={{ textDecoration: "none" }}>
-          <Icon>
-            <ArrowLeft />
-          </Icon>
-          Back to prototype
-        </Link>
-      </Button>
       <NavigationButton
         active={view === "dashboard"}
         onClick={() => onViewChange("dashboard")}
@@ -72,7 +59,7 @@ export function WorkspaceNavigation({
           <GitBranch />
         </Icon>
         Flows
-        <Badge ml="auto" colorPalette="gray" bg="gray.200" color="gray.800">
+        <Badge ml="auto" colorPalette="blue" bg="blue.100" color="blue.800">
           {new Set(data.flows.map((flow) => flow.familyId)).size}
         </Badge>
       </NavigationButton>
@@ -93,13 +80,22 @@ export function WorkspaceNavigation({
           <MessageSquare />
         </Icon>
         Comments
-        <Badge ml="auto" colorPalette="gray" bg="gray.200" color="gray.800">
+        <Badge ml="auto" colorPalette="blue" bg="blue.100" color="blue.800">
           {
             data.comments.filter(
               (comment) => !comment.parentId && comment.status === "open",
             ).length
           } open
         </Badge>
+      </NavigationButton>
+      <NavigationButton
+        active={view === "feedback"}
+        onClick={() => onViewChange("feedback")}
+      >
+        <Icon>
+          <ClipboardList />
+        </Icon>
+        Feedback Review
       </NavigationButton>
       <NavigationButton
         active={view === "personas"}
