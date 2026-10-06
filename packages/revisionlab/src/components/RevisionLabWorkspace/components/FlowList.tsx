@@ -171,7 +171,7 @@ export function FlowList({
           </Text>
         )}
       </Stack>
-      <Stack gap="1" p="2">
+      <Stack gap="0" borderTopWidth="1px" borderColor="gray.200">
         {filtered.map((flow) => (
           <FlowListItem
             key={flow.familyId}
