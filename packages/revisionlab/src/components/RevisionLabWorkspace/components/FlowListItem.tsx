@@ -7,7 +7,7 @@ import {
   Icon,
   Text,
 } from "@chakra-ui/react";
-import { GitBranch } from "lucide-react";
+import { ContactRound, GitBranch, Monitor } from "lucide-react";
 import type { RevisionLabFlow } from "../../../server/types.js";
 
 export function FlowListItem({
@@ -29,13 +29,25 @@ export function FlowListItem({
   onCheck: (checked: boolean) => void;
   onSelect: () => void;
 }) {
+  const createdAt = new Date(flow.createdAt);
+  const recordedAt = Number.isNaN(createdAt.getTime())
+    ? "Date unavailable"
+    : createdAt.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
   return (
     <Flex
       align="start"
       gap="1"
-      borderRadius="md"
+      w="full"
+      borderBottomWidth="1px"
+      borderColor="gray.200"
       bg={current ? "blue.50" : "transparent"}
-      px="2"
+      px={selecting ? "2" : "0"}
     >
       {selecting && (
         <Checkbox.Root
@@ -58,21 +70,25 @@ export function FlowListItem({
       <Button
         variant="ghost"
         flex="1"
+        borderRadius="0"
         minW="0"
         h="auto"
         py="3"
-        px="2"
+        px={selecting ? "2" : "4"}
         alignItems="start"
         textAlign="left"
         whiteSpace="normal"
         justifyContent="start"
         color="gray.900"
+        _hover={{ bg: current ? "blue.100" : "blue.50" }}
+        focusRing="inside"
+        focusRingColor="blue.700"
         disabled={disabled}
         onClick={onSelect}
         aria-pressed={current}
       >
         {!selecting && (
-          <Icon mt="1" flexShrink="0" color={current ? "blue.700" : "gray.500"}>
+          <Icon asChild mt="1" flexShrink="0" color={current ? "blue.700" : "gray.500"}>
             <GitBranch />
           </Icon>
         )}
@@ -84,6 +100,8 @@ export function FlowListItem({
             <Badge
               mt="1"
               colorPalette="blue"
+              bg="blue.100"
+              color="blue.800"
               maxW="full"
               whiteSpace="normal"
               overflowWrap="anywhere"
@@ -91,17 +109,47 @@ export function FlowListItem({
               {flow.workspace.name}
             </Badge>
           )}
-          <Text fontSize="xs" color="gray.600" mt="1" overflowWrap="anywhere">
-            {flow.persona}
-          </Text>
-          <Flex gap="2" mt="2" flexWrap="wrap">
-            <Badge colorPalette="gray">v{flow.version}</Badge>
-            <Text fontSize="xs" color="gray.600">
-              {flow.steps.length}{" "}
-              {flow.steps.length === 1 ? "screen" : "screens"}
+          <Flex align="center" gap="1" color="gray.600" mt="1">
+            <Icon asChild boxSize="3.5" flexShrink="0">
+              <ContactRound />
+            </Icon>
+            <Text fontSize="xs" overflowWrap="anywhere">
+              {flow.persona}
             </Text>
-            {active && <Badge colorPalette="orange">Recording</Badge>}
           </Flex>
+          <Flex gap="2" mt="2" flexWrap="wrap" align="center">
+            <Badge colorPalette="blue" bg="blue.100" color="blue.800">
+              v{flow.version}
+            </Badge>
+            <Text
+              as="span"
+              display="inline-flex"
+              alignItems="center"
+              gap="1"
+              fontSize="xs"
+              color="gray.600"
+              aria-label={`${flow.steps.length} ${flow.steps.length === 1 ? "screen" : "screens"}`}
+            >
+              {flow.steps.length}
+              <Icon asChild boxSize="3.5">
+                <Monitor />
+              </Icon>
+            </Text>
+            {active && (
+              <Badge colorPalette="blue" bg="blue.100" color="blue.800">
+                Recording
+              </Badge>
+            )}
+          </Flex>
+          <Text
+            fontSize="xs"
+            color="gray.600"
+            mt="2"
+            title="Recording created"
+            overflowWrap="anywhere"
+          >
+            {recordedAt}
+          </Text>
         </Box>
       </Button>
     </Flex>

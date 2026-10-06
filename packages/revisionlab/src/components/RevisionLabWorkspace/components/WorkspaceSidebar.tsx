@@ -1,8 +1,8 @@
 import type { WorkspaceInstance } from "../../../workspace-instances.js";
 import { WorkspaceSelector } from "./WorkspaceSelector.js";
-import { useRef, useState } from "react";
-import { Box, Button, Flex, Icon } from "@chakra-ui/react";
-import { ArrowLeft } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Box, Button, Flex, Icon, Link } from "@chakra-ui/react";
+import { AppWindow, ArrowLeft } from "lucide-react";
 import type {
   RevisionLabFlow,
   RevisionLabState,
@@ -41,12 +41,19 @@ export function WorkspaceSidebar({
   const [showFlows, setShowFlows] = useState(false);
   const back = useRef<HTMLButtonElement>(null);
   const flows = useRef<HTMLButtonElement>(null);
+  const previousPanel = useRef(showFlows);
+  useEffect(() => {
+    if (previousPanel.current === showFlows) return;
+    previousPanel.current = showFlows;
+    // Wait for React to remove inert from the newly visible panel.
+    const frame = requestAnimationFrame(() => {
+      (showFlows ? back : flows).current?.focus();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [showFlows]);
   async function navigate(next: WorkspaceView) {
     if (!(await onViewChange(next))) return;
     setShowFlows(next === "flows");
-    if (next === "flows") {
-      requestAnimationFrame(() => back.current?.focus());
-    }
   }
   return (
     <Flex
@@ -72,6 +79,32 @@ export function WorkspaceSidebar({
         disabled={disabled}
         onChange={onWorkspaceChange}
       />
+      <Box px="3" pb="4" flexShrink="0">
+        <Button
+          asChild
+          w="full"
+          colorPalette="blue"
+          variant="solid"
+          justifyContent="flex-start"
+          focusRing="inside"
+        >
+          {/* Native navigation preserves the board's pending-save unload warning. */}
+          <Link
+            href={
+              selection !== "local" && selection !== "all"
+                ? (workspaces.find((source) => source.id === selection)?.url ??
+                  "/")
+                : "/"
+            }
+            _hover={{ textDecoration: "none" }}
+          >
+            <Icon asChild>
+              <AppWindow />
+            </Icon>
+            Back to prototype
+          </Link>
+        </Button>
+      </Box>
       <Box
         position="relative"
         flex={{ base: "none", lg: "1" }}
@@ -96,12 +129,6 @@ export function WorkspaceSidebar({
           overflowY="auto"
         >
           <WorkspaceNavigation
-            prototypeHref={
-              selection !== "local" && selection !== "all"
-                ? (workspaces.find((source) => source.id === selection)?.url ??
-                  "/")
-                : "/"
-            }
             data={data}
             view={view}
             onViewChange={navigate}
@@ -133,15 +160,12 @@ export function WorkspaceSidebar({
               variant="ghost"
               size="sm"
               disabled={disabled}
-              onClick={() => {
-                setShowFlows(false);
-                requestAnimationFrame(() => flows.current?.focus());
-              }}
+              onClick={() => setShowFlows(false)}
             >
-              <Icon>
+              <Icon asChild>
                 <ArrowLeft />
               </Icon>
-              Back
+              Main menu
             </Button>
           </Box>
           <FlowList

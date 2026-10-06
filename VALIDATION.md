@@ -1,5 +1,11 @@
 # Release validation
 
+## Feedback Review and main navigation merge — 6 October 2026
+
+Merged `origin/main` at `198c4747`, preserving Feedback Review and its existing responsive navigation space while incorporating the stationary prototype link, Main menu focus handling, blue badges, and flow-row metadata from main. Retained both sets of validation notes and the product/plan updates. The working tree was clean before merging.
+
+Package compilation, lint, production build, all 279 package tests, and `git diff --check` pass. Chrome checks using an isolated temporary database and real API handlers verified desktop/mobile submenu transitions, stationary prototype-link positioning within the sidebar, keyboard focus transfer, accessible screen counts, creation timestamps, square flow rows, and Feedback Review navigation. They also verified unchanged equal-width desktop columns, full-height/uncapped timelines, fixed floating actions, and a 320px stacked layout without horizontal overflow. The main region has zero axe violations for WCAG 2 A/AA and 2.1 AA tags; browser JavaScript and console errors are empty. No live model or external service was called. Evidence: `.context/main-merge-{compile,lint,build,tests,browser}.log`, `.context/main-merge-results.json`, `.context/main-merge.png`, and `.context/main-merge-mobile.png`.
+
 ## Feedback list height correction — 6 October 2026
 
 Implemented locally, not yet published: restored the original equal-width desktop inbox and ticket-drafts columns after the user clarified that only the list height should change. Retained the desktop minimum height and uncapped timeline with page scrolling. Narrow screens retain the existing stacked layout. Removed the temporary drafts jump link and automatic draft scrolling introduced with the full-width layout.
@@ -55,6 +61,14 @@ Production build, lint, package compilation, all 272 package tests, and `git dif
 Chrome at 1440px and 320px verified grouped and individual selection (including mixed state), search/filter preservation, failure/retry, generation/save/reload, unsaved-edit navigation protection, clipboard/manual-copy fallback, concurrent-edit retention and loading the latest saved draft, commenter read-only controls, empty states, combined-source isolation, first-50 batching, removed-source labels, keyboard activation, and session deep-link replay. The added navigation entry remains visible in the narrow-screen menu and there is no horizontal overflow. The current light-mode main region has zero axe violations for WCAG 2 A/AA and 2.1 AA tags; this is a focused automated check, not a conformance certification. Browser JavaScript errors were empty.
 
 Browser API requests used the real route handlers with an isolated temporary database and a deterministic fake Codex CLI; role presentation was simulated in the browser and enforced with real authenticated roles in server tests. No real model, Jira account, remote installation, or package publication was used. The final narrow-navigation sizing adjustment was followed by package compilation, targeted lint, all package tests, and the complete browser checks. Evidence: `.context/feedback-review-build.log`, `.context/feedback-review-lint.log`, `.context/feedback-review-tests.log`, `.context/feedback-review-browser-results.json`, `.context/feedback-review-desktop.png`, and `.context/feedback-review-mobile.png`. Screenshots show fixture feedback rather than existing project data.
+
+## Navigation menu refinement — 6 October 2026
+
+The prototype link now remains outside both sliding panels, with an application-window icon. Flow rows span the sidebar with square corners and light dividers, blue badges, accessible number-plus-screen-icon counts, persona icons, and localized creation date/time. The submenu return action says Main menu. Focus transfer now runs after React commits the panel's inert state.
+
+Local Chromium checks used an isolated database at `.context/navigation-review.db` with 12 three-screen fixtures. At 1440px and 390px, assertions verified stationary prototype-link bounds across both transitions and long-list scrolling, keyboard focus transfer and prototype-link availability, the same mounted board, full-width square rows, dividers, metadata, and no horizontal overflow. Search filtering, Select/Done, and individual selection passed; the main menu fit at 320px and 768px. Scoped WCAG A/AA axe checks found zero sidebar violations at desktop and mobile sizes, with no browser errors. Fixtures contain no captured screenshots. Evidence: `.context/check-navigation.js`, `.context/navigation-desktop.png`, `.context/navigation-mobile.png`, and `.context/navigation-a11y-{desktop,mobile}.json`. These checks cover the local interface; hosted, cross-browser, and live connected-instance behavior were not retested.
+
+Final `npm run lint`, `npm run build` (package compilation and Next.js production validation), and `git diff --check` pass. Build/lint logs are `.context/navigation-build.log` and `.context/navigation-lint.log`.
 
 ## Built-in installer dependency diagnostics — 6 October 2026
 

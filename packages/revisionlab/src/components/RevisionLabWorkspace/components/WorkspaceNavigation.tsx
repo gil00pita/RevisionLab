@@ -1,10 +1,9 @@
-import { Badge, Button, Icon, Link, Stack } from "@chakra-ui/react";
+import { Badge, Icon, Stack } from "@chakra-ui/react";
 import {
   GitBranch,
   FlaskConical,
   MessageSquare,
   ContactRound,
-  ArrowLeft,
   ClipboardList,
 } from "lucide-react";
 import type { RefObject } from "react";
@@ -16,13 +15,11 @@ export type WorkspaceView =
 
 export function WorkspaceNavigation({
   data,
-  prototypeHref,
   view,
   onViewChange,
   flowsTriggerRef,
 }: {
   data: RevisionLabState;
-  prototypeHref: string;
   view: WorkspaceView;
   onViewChange: (view: WorkspaceView) => void;
   flowsTriggerRef: RefObject<HTMLButtonElement | null>;
@@ -37,22 +34,6 @@ export function WorkspaceNavigation({
       pb="4"
       flexWrap="wrap"
     >
-      <Button
-        asChild
-        colorPalette="blue"
-        variant="solid"
-        justifyContent="flex-start"
-        flexBasis={{ base: "100%", lg: "auto" }}
-        mb="2"
-      >
-        {/* Native navigation preserves the board's pending-save unload warning. */}
-        <Link href={prototypeHref} _hover={{ textDecoration: "none" }}>
-          <Icon>
-            <ArrowLeft />
-          </Icon>
-          Back to prototype
-        </Link>
-      </Button>
       <NavigationButton
         buttonRef={flowsTriggerRef}
         active={view === "flows"}
@@ -62,7 +43,7 @@ export function WorkspaceNavigation({
           <GitBranch />
         </Icon>
         Flows
-        <Badge ml="auto" colorPalette="gray" bg="gray.200" color="gray.800">
+        <Badge ml="auto" colorPalette="blue" bg="blue.100" color="blue.800">
           {new Set(data.flows.map((flow) => flow.familyId)).size}
         </Badge>
       </NavigationButton>
@@ -83,7 +64,7 @@ export function WorkspaceNavigation({
           <MessageSquare />
         </Icon>
         Comments
-        <Badge ml="auto" colorPalette="gray" bg="gray.200" color="gray.800">
+        <Badge ml="auto" colorPalette="blue" bg="blue.100" color="blue.800">
           {
             data.comments.filter(
               (comment) => !comment.parentId && comment.status === "open",
