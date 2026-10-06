@@ -118,6 +118,8 @@ npx revisionlab --help
 
 If init reports **Files are ready, but npm install failed**, the generated integration files and `.revisionlab/backups/` remain in place. npm checks the host's entire dependency tree, including development tools, when adding RevisionLab. An `ERESOLVE` error can therefore come from an existing host dependency conflict.
 
+New projects use the normal `npx revisionlab init` command; they do not need the project-specific repair helper described in the validation notes. The local CLI now automatically runs a bounded `npm ls --all --json` check after a failed install and prints distinct installed version conflicts with their required ranges, including transitive conflicts. When dependencies are not installed or npm's diagnostic report is unavailable, it retains the original failure and explains the manual checks. This automatic diagnosis is not yet published; the reported 0.1.13 release provides the original recovery message and retry command. Diagnosis preserves the host's dependency declarations; review project-specific version choices before changing tooling.
+
 Fix all incompatible declarations before installing. A command that repairs one dependency can fail on another conflict before saving the first repair. In the reported host project, the conflicts were:
 
 - `eslint@9.39.5` with `@eslint/js@10.0.1`, which requires ESLint 10.

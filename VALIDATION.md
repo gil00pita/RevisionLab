@@ -1,5 +1,11 @@
 # Release validation
 
+## Built-in installer dependency diagnostics — 6 October 2026
+
+Implemented locally, not yet published: failed npm installs now automatically inspect the host's installed dependency tree with `npm ls --all --json`. The CLI lists distinct direct/transitive invalid-version constraints, explains why separate single-package repairs can fail before saving, and retains the exact version/archive retry command. It preserves npm's original output, generated files, host dependency declarations, and failure exit. Empty/unavailable trees and malformed or unavailable npm diagnostics retain useful manual instructions. Inspection has a 10-second timeout, an 8 MiB capture limit, and a 20-conflict display limit; no force/legacy peer flags, registry lookups, or automatic tooling changes were added.
+
+Package compilation, all 44 CLI tests, lint, and `git diff --check` pass. Tests cover nested/deduplicated constraints, older npm summaries, multiple conflicts, malformed/healthy/missing trees, a diagnostic executable disappearing after the failed install, unchanged host devDependencies, exact retry commands, and retained generated files. An npm pack dry-run confirms the diagnostics module is included and its tests excluded. A read-only invocation against the reported host lists ESLint, three Storybook/Vitest peer constraints, TypeScript, and a stale AJV peer conflict together; evidence is `.context/init-diagnostics-host.log`, `.context/init-diagnostics-tests.log`, and `.context/init-diagnostics-pack.json`. No host files, package publication, or application UI were changed. This reports an installed snapshot; npm's attempted new resolution can involve additional constraints.
+
 ## Host dependency recovery — 6 October 2026
 
 Inspected the complete `nicts-tribunals` manifest without changing the host. The initial single-package ESLint repair failed on Storybook/Vitest before saving, leaving the original ESLint conflict in place. Strict full-tree resolution then exposed mixed Tiptap patch versions, and an installed-tree check exposed TypeScript 6 conflicting with the TypeScript 5 peer of Storybook's transitive `tsconfck` dependency.
