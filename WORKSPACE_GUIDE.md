@@ -14,6 +14,8 @@ RevisionLab is an installable Next.js App Router integration. The floating widge
 
 ## Connected workspace instances
 
+The workspace opens on **Dashboard**, with accessibility issues across recorded screens, comment/resolved-thread counts, flow families, all test sessions, active personas, and distinct prototype URLs. Counts follow the selected workspace or All workspaces. Tickets created counts only tickets created by RevisionLab: currently zero, since Jira drafts are copied manually. Deployment status shows workspace reachability rather than deployment-provider build status. Latest sync shows the time since the last successful refresh of every selected source and updates automatically; hover the time for its exact timestamp. Failed sources retain clearly marked last-loaded figures when available; missing source data/totals show Unavailable.
+
 Owners can connect deployed versions of the same project without copying or merging their databases:
 
 1. On the source installation, open **Settings → General**, name an API key, choose **Editor** or **Commenter**, and generate it. Copy the key while it is visible; it cannot be retrieved later.

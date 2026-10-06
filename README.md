@@ -42,6 +42,7 @@ The RevisionLab diagram shows the intended end-to-end workflow; planned steps ar
 
 | Work together | What RevisionLab provides |
 | --- | --- |
+| **Start with an overview** | Default workspace dashboard with review counts, workspace reachability, and relative sync time. Jira tickets still use a manual draft handoff. |
 | **See the same journey** | Recorded screens, flow whiteboards, personas, versions, and connected workspaces for the same project. |
 | **Keep feedback in context** | Comments and replies on live components, captured screens, and flow paths. |
 | **Learn from real people** | Share expiring test links, record participant sessions, inspect time/click metrics, and replay their journeys. Structured findings are planned. |

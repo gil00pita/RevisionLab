@@ -31,6 +31,7 @@ import { SetupWizard } from "./components/SetupWizard.js";
 import { defaultSettings } from "../../comment-settings.js";
 import { useFlowDeletion } from "./hooks/useFlowDeletion.js";
 import { workspaceViewTitles } from "./constants.js";
+import { WorkspaceDashboard } from "./components/WorkspaceDashboard.js";
 
 export interface RevisionLabWorkspaceProps {
   apiPath?: string;
@@ -70,14 +71,19 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
     error,
     loading,
     refresh,
+    syncedAt,
   } = useWorkspaceData(apiPath, selection);
   const view: WorkspaceView =
+    requestedView === "dashboard" ||
+    requestedView === "flows" ||
     requestedView === "sessions" ||
     requestedView === "comments" ||
     requestedView === "personas" ||
     requestedView === "settings"
       ? requestedView
-      : "flows";
+      : searchParams.has("flow")
+        ? "flows"
+        : "dashboard";
   const [flowId, setFlowId] = useState<string | null>(() =>
     searchParams.get("flow"),
   );
@@ -332,7 +338,13 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             Finishing board autosave…
           </Text>
         )}
-        {view === "sessions" ? (
+        {view === "dashboard" ? (
+          <WorkspaceDashboard
+            data={data}
+            syncedAt={syncedAt}
+            syncError={Boolean(error)}
+          />
+        ) : view === "sessions" ? (
           <TestSessions
             key={String(createTest)}
             apiPath={apiPath}

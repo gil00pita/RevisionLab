@@ -5,13 +5,14 @@ import {
   MessageSquare,
   ContactRound,
   ArrowLeft,
+  LayoutDashboard,
 } from "lucide-react";
 import type { RefObject } from "react";
 import { WorkspaceNavigationButton as NavigationButton } from "./WorkspaceNavigationButton.js";
 import type { RevisionLabState } from "../../../server/types.js";
 
 export type WorkspaceView =
-  "sessions" | "flows" | "comments" | "personas" | "settings";
+  "dashboard" | "sessions" | "flows" | "comments" | "personas" | "settings";
 
 export function WorkspaceNavigation({
   data,
@@ -52,6 +53,15 @@ export function WorkspaceNavigation({
           Back to prototype
         </Link>
       </Button>
+      <NavigationButton
+        active={view === "dashboard"}
+        onClick={() => onViewChange("dashboard")}
+      >
+        <Icon>
+          <LayoutDashboard />
+        </Icon>
+        Dashboard
+      </NavigationButton>
       <NavigationButton
         buttonRef={flowsTriggerRef}
         active={view === "flows"}

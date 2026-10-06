@@ -1,5 +1,9 @@
 # Build Instructions — RevisionLab Embedded Review
 
+## Default workspace dashboard — 6 October 2026
+
+Implemented locally, not yet published: a default Dashboard section in the embedded workspace preserves setup, prototype navigation, guarded section changes, and explicit flow deep links. It shows the eight requested counts, selected-scope workspace reachability, and a ticking human-readable latest successful complete sync. Authenticated state includes database test-session totals with optional validated federation summaries; cached metrics survive outages and missing legacy metrics are identified. Jira retains the manual draft handoff and reachability is distinguished from provider build status. All 269 package tests, lint, and production build pass; desktop/mobile browser checks cover count accuracy, default/deep-link navigation, full and partial sync failure/recovery, and accessible statistic markup. PRODUCT.md defines the accepted request and implementation assumptions; VALIDATION.md records checks and limits.
+
 ## Current refinement — White workspace navbar
 
 Implemented locally 3 October 2026, not yet published: use Chakra's white token for the workspace sidebar and submenus, including the Your flows Back area, flow-list section, and remaining panel space. This replaces the earlier light-grey background decision. Retain dark text/icons and count badges, pale-blue selected items, and visible dark-blue keyboard focus. Navbar menu items, including Settings, use a light-blue hover background: blue.50 for unselected items and blue.200 for selected items. Update the workspace selector and reviewer footer for contrast while preserving navigation and responsive layout. PRODUCT.md defines contrast acceptance criteria.

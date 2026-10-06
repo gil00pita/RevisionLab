@@ -76,7 +76,7 @@ export function WorkspaceSidebar({
         position="relative"
         flex={{ base: "none", lg: "1" }}
         h={{
-          base: showFlows ? "96" : "40",
+          base: showFlows ? "96" : "52",
           md: showFlows ? "96" : "28",
           lg: "auto",
         }}

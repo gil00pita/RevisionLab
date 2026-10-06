@@ -22,6 +22,7 @@ export async function readWorkspaceState(
     settings,
     memberships,
     accessSettings,
+    sessionCount,
   ] = await Promise.all([
     readSetup(client),
     readFlows(client, config.apiPath),
@@ -31,8 +32,14 @@ export async function readWorkspaceState(
     readSettings(client),
     actor.role === "owner" ? readMemberships(client) : [],
     actor.role === "owner" ? readAccessSettings(client, config) : null,
+    client.execute("SELECT COUNT(*) AS count FROM test_sessions"),
   ]);
   return {
+    dashboard: {
+      testSessions: Number(sessionCount.rows[0].count),
+      // Jira handoff currently prepares drafts; it does not create remote tickets.
+      ticketsCreated: 0,
+    },
     setup,
     project: { id: config.projectId, name: config.projectName },
     actor,

@@ -186,6 +186,8 @@ export interface RevisionLabAccessSettings {
 }
 
 export interface RevisionLabState {
+  /** Optional for backwards-compatible connections to earlier installations. */
+  dashboard?: { testSessions: number; ticketsCreated: number };
   setup: import("../setup.js").SetupProgress;
   settings: RevisionLabSettings;
   project: { id: string; name: string };

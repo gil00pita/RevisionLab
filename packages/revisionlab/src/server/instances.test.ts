@@ -332,6 +332,66 @@ test("connected data stays isolated, editable at source, and usable when another
   assert.equal((await f.remote.state()).flows.length, 1);
 });
 
+test("dashboard summaries respect individual and combined scopes, support legacy sources, and fail honestly offline", async (t) => {
+  const f = await pair(t);
+  async function session(source: typeof f.local) {
+    const persona =
+      (await source.state()).personas[0] ??
+      (await (
+        await source.call("personas", "POST", {
+          name: "Tester",
+          description: "",
+        })
+      ).json());
+    const response = await source.call("test-sessions", "POST", {
+      name: "Test",
+      route: "/",
+      personaId: persona.id,
+      maxMinutes: 5,
+    });
+    assert.equal(response.status, 201, await response.clone().text());
+  }
+  await session(f.local);
+  await session(f.remote);
+  await session(f.remote);
+  assert.equal((await f.workspace("local")).dashboard?.testSessions, 1);
+  assert.equal((await f.workspace(f.connection.id)).dashboard?.testSessions, 2);
+  const all = await f.workspace();
+  assert.equal(all.dashboard?.testSessions, 3);
+  assert.equal(
+    all.workspaces.find((source) => source.id === f.connection.id)?.dashboard
+      ?.testSessions,
+    2,
+  );
+  const raw = await f.remote.state();
+  const parsed = remoteStateSchema.safeParse({
+    ...raw,
+    instanceId: randomUUID(),
+    dashboard: undefined,
+  });
+  assert.equal(parsed.success, true);
+  assert.equal(
+    remoteStateSchema.safeParse({
+      ...raw,
+      instanceId: randomUUID(),
+      dashboard: { testSessions: -1, ticketsCreated: 0 },
+    }).success,
+    false,
+  );
+  f.setOnline(false);
+  const offline = await f.workspace();
+  assert.equal(offline.dashboard, undefined);
+  assert.equal(
+    offline.workspaces.find((source) => source.id === f.connection.id)
+      ?.dashboard,
+    undefined,
+  );
+  assert.equal(
+    offline.workspaces.find((source) => source.id === f.connection.id)?.status,
+    "unavailable",
+  );
+});
+
 test("connections reject invalid keys, other projects, duplicate instances and self links", async (t) => {
   const f = await pair(t);
   assert.equal((await f.local.call("instances", "POST", f.input)).status, 409);

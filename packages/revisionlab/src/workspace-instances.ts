@@ -8,6 +8,9 @@ export interface WorkspaceOrigin {
   role: RevisionLabRole;
 }
 export interface WorkspaceInstance extends WorkspaceOrigin {
+  dashboard?: RevisionLabState["dashboard"];
+  /** Client-side evidence timestamp, retained only for successfully loaded sources. */
+  lastLoadedAt?: number;
   instanceId: string;
   apiPath: string;
   status: "connected" | "unavailable";

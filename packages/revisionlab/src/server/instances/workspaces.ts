@@ -36,6 +36,7 @@ export async function connectedState(
       "This workspace connection no longer exists. Choose This workspace.",
     );
   const home: WorkspaceInstance = {
+    dashboard: local.dashboard,
     id: "local",
     name: "This workspace",
     url: new URL(request.url).origin,
@@ -88,6 +89,7 @@ export async function connectedState(
               "The source workspace identity or response changed. Reconnect it in Settings.",
             );
           workspace.role = parsed.data.actor.role;
+          workspace.dashboard = parsed.data.dashboard;
           selectedStates.push(
             sourceState(
               parsed.data,
@@ -117,6 +119,20 @@ export async function connectedState(
       : undefined;
   const result: WorkspaceState = {
     ...local,
+    dashboard:
+      states.length === (selection === "all" ? rows.length + 1 : 1) &&
+      states.every((state) => state.dashboard)
+        ? {
+            testSessions: states.reduce(
+              (total, state) => total + state.dashboard!.testSessions,
+              0,
+            ),
+            ticketsCreated: states.reduce(
+              (total, state) => total + state.dashboard!.ticketsCreated,
+              0,
+            ),
+          }
+        : undefined,
     selection,
     workspaces,
     settingsWorkspace,
