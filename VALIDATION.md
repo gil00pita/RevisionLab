@@ -1,5 +1,13 @@
 # Release validation
 
+## Host dependency recovery — 6 October 2026
+
+Inspected the complete `nicts-tribunals` manifest without changing the host. The initial single-package ESLint repair failed on Storybook/Vitest before saving, leaving the original ESLint conflict in place. Strict full-tree resolution then exposed mixed Tiptap patch versions, and an installed-tree check exposed TypeScript 6 conflicting with the TypeScript 5 peer of Storybook's transitive `tsconfck` dependency.
+
+Validated an isolated copy under `.context/dependency-check/` with `@eslint/js@9.39.5`, the three declared Vitest packages at `4.1.11`, all Tiptap dependencies previously at `3.31.3` or `^3.31.3` pinned to `3.31.4`, TypeScript `5.9.3`, and RevisionLab `0.1.13`. Retained `eslint@9.39.5`, Storybook `10.6.0`, and `@tiptap/y-tiptap@^3.0.9`. With Node `26.3.1` and npm `11.16.0`, strict package-lock resolution passed, a fresh `npm ci --strict-peer-deps --no-audit --no-fund` installed 1,099 packages, and `npm ls --all --json` exited zero with no dependency problems. The published RevisionLab CLI help and installed ESLint, Vitest, and TypeScript version commands succeeded.
+
+Prepared `.context/repair-nicts-dependencies.cjs` to apply the validated declarations and copy the tested lockfile for a subsequent host `npm ci`. It reproduces the validated manifest/lockfile exactly, is idempotent, and refuses unexpected manifest changes before writing. Logs and the lockfile are saved under `.context/dependency-check/`. `git diff --check` passes. This validates the inspected dependency tree, not arbitrary future package updates or the host's application behavior; the host build and browser flow were not run. npm emitted deprecation warnings and withheld three pending dependency install scripts under its default script policy; no script approvals or peer-check bypasses were used.
+
 ## Audit tab integration and latest main merge — 2 October 2026
 
 Merged `origin/main` at `9d99002`, preserving the setup wizard, users/roles, connected workspaces, history, and widget/audit controls. AI Instructions and design-system settings now live inside Settings → Audit; the separate AI tab is removed. Both instruction-file and design-system saves target the selected workspace. History includes saved AI configuration and accepts older snapshots without it; the external Markdown file remains outside history, as explained in the interface and documentation.
