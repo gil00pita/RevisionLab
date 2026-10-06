@@ -1,4 +1,5 @@
 import { handleTestSessions } from "./test-sessions/routes.js";
+import { handleFeedbackReview } from "./feedback-review/routes.js";
 import { handleTestParticipant } from "./test-sessions/participant.js";
 import { handleNotifications } from "./notifications/routes.js";
 import { handleApiKeys } from "./instances/keys.js";
@@ -14,6 +15,7 @@ import { handleAutomation } from "./automation/routes.js";
 import { handleAuth } from "./auth-routes.js";
 import { readArtifact } from "./artifacts.js";
 import { handleComments, handleInvitations } from "./collaboration-routes.js";
+import { handleCommentSuggestions } from "./comment-suggestions.js";
 import { resolveConfig } from "./config.js";
 import { consumeRateLimit, getDatabase } from "./database.js";
 import { handleFlows } from "./flow-routes.js";
@@ -48,8 +50,12 @@ export function createRevisionLabHandler(
       if (path[0] === "test-participant")
         return await handleTestParticipant(request, path, client, config);
       const actor = await authenticate(request, client, config);
+      if (request.method === "GET" && path.length === 1 && path[0] === "comment-suggestions")
+        return await handleCommentSuggestions(request, client);
       if (request.method !== "GET")
         await consumeRateLimit(client, `mutate:${actor.id}`, 120, 60_000);
+      if (path[0] === "feedback-review")
+        return await handleFeedbackReview(request, path, client, config, actor);
       if (path[0] === "test-sessions")
         return await handleTestSessions(request, path, client, config, actor);
       if (path[0] === "settings" && path[1] === "notifications")

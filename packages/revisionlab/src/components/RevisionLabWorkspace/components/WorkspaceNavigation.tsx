@@ -4,13 +4,14 @@ import {
   FlaskConical,
   MessageSquare,
   ContactRound,
+  ClipboardList,
 } from "lucide-react";
 import type { RefObject } from "react";
 import { WorkspaceNavigationButton as NavigationButton } from "./WorkspaceNavigationButton.js";
 import type { RevisionLabState } from "../../../server/types.js";
 
 export type WorkspaceView =
-  "sessions" | "flows" | "comments" | "personas" | "settings";
+  "sessions" | "flows" | "comments" | "feedback" | "personas" | "settings";
 
 export function WorkspaceNavigation({
   data,
@@ -70,6 +71,15 @@ export function WorkspaceNavigation({
             ).length
           }
         </Badge>
+      </NavigationButton>
+      <NavigationButton
+        active={view === "feedback"}
+        onClick={() => onViewChange("feedback")}
+      >
+        <Icon>
+          <ClipboardList />
+        </Icon>
+        Feedback Review
       </NavigationButton>
       <NavigationButton
         active={view === "personas"}

@@ -120,7 +120,7 @@ export function SetupWizard({
               tabIndex={-1}
               as="h2"
               size="xl"
-              focusRing="outside"
+              focusRing="none"
             >
               {titles[wizard.step]}
             </Heading>

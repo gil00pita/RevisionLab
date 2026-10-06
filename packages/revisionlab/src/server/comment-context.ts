@@ -4,45 +4,62 @@ import { syncBoardEdges } from "./board-edges.js";
 import { readBoard } from "./board.js";
 import { routeSchema } from "./flow-routes.js";
 import { HttpError } from "./security.js";
+import { MAX_CAPTURE_BODY_BYTES } from "./artifacts.js";
 
-export const commentSchema = z
-  .strictObject({
-    body: z.string().trim().min(1).max(4_000),
-    route: routeSchema.optional(),
-    flowId: z.string().uuid().nullable().optional(),
-    stepId: z.string().uuid().nullable().optional(),
-    edgeId: z
-      .string()
-      .min(1)
-      .max(160)
-      .regex(/^[a-zA-Z0-9_-]+$/)
-      .nullable()
-      .optional(),
-    anchor: z
-      .strictObject({
-        x: z.number().finite().min(0).max(1),
-        y: z.number().finite().min(0).max(1),
-      })
-      .nullable()
-      .optional(),
-    parentId: z.string().uuid().nullable().optional(),
-    elementAnchor: z
-      .strictObject({
-        selector: z.string().trim().min(1).max(2000),
-        tag: z
-          .string()
-          .regex(/^[a-z][a-z0-9-]*$/)
-          .max(80),
-        label: z.string().trim().min(1).max(160),
-      })
-      .nullable()
-      .optional(),
-  });
+export const commentSchema = z.strictObject({
+  body: z.string().trim().min(1).max(4_000),
+  screenshot: z.string().max(MAX_CAPTURE_BODY_BYTES).optional(),
+  screenshotAnchor: z
+    .strictObject({
+      x: z.number().finite().min(0).max(1),
+      y: z.number().finite().min(0).max(1),
+    })
+    .optional(),
+  route: routeSchema.optional(),
+  flowId: z.string().uuid().nullable().optional(),
+  stepId: z.string().uuid().nullable().optional(),
+  edgeId: z
+    .string()
+    .min(1)
+    .max(160)
+    .regex(/^[a-zA-Z0-9_-]+$/)
+    .nullable()
+    .optional(),
+  anchor: z
+    .strictObject({
+      x: z.number().finite().min(0).max(1),
+      y: z.number().finite().min(0).max(1),
+    })
+    .nullable()
+    .optional(),
+  parentId: z.string().uuid().nullable().optional(),
+  elementAnchor: z
+    .strictObject({
+      selector: z.string().trim().min(1).max(2000),
+      tag: z
+        .string()
+        .regex(/^[a-z][a-z0-9-]*$/)
+        .max(80),
+      label: z.string().trim().min(1).max(160),
+    })
+    .nullable()
+    .optional(),
+});
 
 export async function commentContext(
   transaction: Transaction,
   input: z.infer<typeof commentSchema>,
 ) {
+  if (input.screenshotAnchor && !input.screenshot)
+    throw new HttpError(400, "A screenshot location needs an image.");
+  if (
+    input.screenshot &&
+    (input.parentId || input.flowId || input.stepId || input.edgeId)
+  )
+    throw new HttpError(
+      400,
+      "Only new page comments can attach a live screenshot.",
+    );
   if (input.parentId) {
     const result = await transaction.execute({
       sql: "SELECT flow_id, step_id, edge_id, route, parent_id FROM comments WHERE id = ?",
@@ -50,6 +67,15 @@ export async function commentContext(
     });
     const parent = result.rows[0];
     if (!parent) throw new HttpError(404, "Comment thread not found.");
+    const fixed = await transaction.execute({
+      sql: `SELECT 1 FROM feedback_ticket_evidence source JOIN feedback_tickets ticket ON ticket.id=source.ticket_id WHERE source.comment_id=? AND json_extract(ticket.ticket_json,'$.status')='fixed' LIMIT 1`,
+      args: [input.parentId],
+    });
+    if (fixed.rows.length)
+      throw new HttpError(
+        409,
+        "This discussion belongs to a fixed ticket. Reopen the ticket before replying.",
+      );
     if (parent.parent_id != null)
       throw new HttpError(400, "Reply to the original comment in this thread.");
     if (input.anchor != null || input.elementAnchor != null)

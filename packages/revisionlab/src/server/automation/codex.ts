@@ -40,6 +40,17 @@ export async function runCodex(
   signal: AbortSignal,
   image?: ScreenImage | null,
 ) {
+  return runCodexOutput(root, prompt, signal, proposalSchema, image);
+}
+
+export async function runCodexOutput<T>(
+  root: string,
+  prompt: string,
+  signal: AbortSignal,
+  outputSchema: z.ZodType<T>,
+  image?: ScreenImage | null,
+  invalidMessage = "Codex returned an invalid fix. No source files were changed.",
+) {
   const directory = await mkdtemp(join(tmpdir(), "revisionlab-codex-"));
   const schemaFile = join(directory, "schema.json");
   const resultFile = join(directory, "result.json");
@@ -49,11 +60,9 @@ export async function runCodex(
       : null;
     if (image && imageFile)
       await writeFile(imageFile, image.bytes, { mode: 0o600 });
-    await writeFile(
-      schemaFile,
-      JSON.stringify(z.toJSONSchema(proposalSchema)),
-      { mode: 0o600 },
-    );
+    await writeFile(schemaFile, JSON.stringify(z.toJSONSchema(outputSchema)), {
+      mode: 0o600,
+    });
     await new Promise<void>((resolve, reject) => {
       const child = spawn(
         "codex",
@@ -91,12 +100,11 @@ export async function runCodex(
           /* Already exited. */
         }
       };
-      const cancel = () => stop("Codex was cancelled. No fix was applied.");
+      const cancel = () =>
+        stop("Codex was cancelled. No result was saved or applied.");
       const timer = setTimeout(
         () =>
-          stop(
-            "Codex took longer than five minutes. Try a single comment or issue.",
-          ),
+          stop("Codex took longer than five minutes. Try a smaller selection."),
         300_000,
       );
       signal.addEventListener("abort", cancel, { once: true });
@@ -138,12 +146,9 @@ export async function runCodex(
     if (output.length > 1_700_000)
       throw new HttpError(503, "Codex returned a result that is too large.");
     try {
-      return proposalSchema.parse(JSON.parse(output));
+      return outputSchema.parse(JSON.parse(output));
     } catch {
-      throw new HttpError(
-        503,
-        "Codex returned an invalid fix. No source files were changed.",
-      );
+      throw new HttpError(503, invalidMessage);
     }
   } finally {
     await rm(directory, { recursive: true, force: true });

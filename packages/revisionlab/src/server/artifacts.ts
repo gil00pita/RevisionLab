@@ -164,7 +164,9 @@ export async function readArtifact(
   const result = await client.execute({
     sql: `SELECT * FROM artifacts WHERE id = ?${
       requireCurrentReference
-        ? " AND EXISTS (SELECT 1 FROM steps WHERE steps.screenshot = artifacts.id)"
+        ? ` AND (EXISTS (SELECT 1 FROM steps WHERE steps.screenshot = artifacts.id)
+          OR EXISTS (SELECT 1 FROM comments WHERE comments.screenshot = artifacts.id)
+          OR EXISTS (SELECT 1 FROM feedback_ticket_evidence WHERE screenshot_id = artifacts.id))`
         : ""
     }`,
     args: [id],

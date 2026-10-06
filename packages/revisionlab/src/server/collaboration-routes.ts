@@ -14,6 +14,12 @@ import {
   readJson,
 } from "./security.js";
 import type { RevisionLabActor } from "./types.js";
+import {
+  discardArtifact,
+  insertArtifact,
+  MAX_CAPTURE_BODY_BYTES,
+  prepareArtifact,
+} from "./artifacts.js";
 
 const invitationSchema = z.object({
   email: z.string().trim().email().max(254).nullable().optional(),
@@ -30,29 +36,51 @@ export async function handleComments(
   notificationDeadline?: number,
 ): Promise<Response> {
   if (request.method === "POST" && path.length === 1) {
-    const input = commentSchema.parse(await readJson(request));
+    const value = await readJson(request, MAX_CAPTURE_BODY_BYTES);
+    if (
+      !(value as { screenshot?: unknown } | null)?.screenshot &&
+      Buffer.byteLength(JSON.stringify(value)) > 16_384
+    )
+      throw new HttpError(413, "This request is too large.");
+    const input = commentSchema.parse(value);
+    if (input.screenshot && !config)
+      throw new HttpError(503, "Screenshot storage is unavailable.");
+    const artifact = input.screenshot
+      ? await prepareArtifact(input.screenshot, config!)
+      : null;
     const id = randomUUID();
-    await write(client, async (transaction) => {
-      const context = await commentContext(transaction, input);
-      await transaction.execute({
-        sql: `INSERT INTO comments (id, flow_id, step_id, edge_id, route, body, status, author_id, created_at, anchor_x, anchor_y, parent_id, element_anchor)
-          VALUES (?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?)`,
-        args: [
-          id,
-          context.flowId,
-          context.stepId,
-          context.edgeId,
-          context.route,
-          input.body,
-          actor.id,
-          new Date().toISOString(),
-          input.anchor?.x ?? null,
-          input.anchor?.y ?? null,
-          input.parentId ?? null,
-          input.elementAnchor ? JSON.stringify(input.elementAnchor) : null,
-        ],
+    try {
+      await write(client, async (transaction) => {
+        const context = await commentContext(transaction, input);
+        await insertArtifact(transaction, artifact);
+        await transaction.execute({
+          sql: `INSERT INTO comments (id, flow_id, step_id, edge_id, route, body, status, author_id, created_at, anchor_x, anchor_y, parent_id, element_anchor, screenshot, screenshot_anchor)
+          VALUES (?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?, ?, ?)`,
+          args: [
+            id,
+            context.flowId,
+            context.stepId,
+            context.edgeId,
+            context.route,
+            input.body,
+            actor.id,
+            new Date().toISOString(),
+            input.anchor?.x ?? null,
+            input.anchor?.y ?? null,
+            input.parentId ?? null,
+            input.elementAnchor ? JSON.stringify(input.elementAnchor) : null,
+            artifact?.id ?? null,
+            input.screenshotAnchor
+              ? JSON.stringify(input.screenshotAnchor)
+              : null,
+          ],
+        });
       });
-    });
+    } catch (error) {
+      if (config)
+        await discardArtifact(artifact, config).catch(() => undefined);
+      throw error;
+    }
     if (config)
       await notifyReviewEvent(
         client,
