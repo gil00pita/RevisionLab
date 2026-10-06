@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import path from "node:path";
+import { diagnoseDependencies } from "./dependency-diagnostics.js";
 import { initialize } from "./install.js";
 import { resolvePackageSpec } from "./package-spec.js";
 
@@ -18,6 +19,7 @@ Usage: npx revisionlab init [options]
 Requires Next.js 15/16, React 19, and Node.js 20.9+. --protect needs Next.js 15.5+.
 Existing conflicting files are never overwritten. Re-running init preserves your edits.
 Conventional Next.js dev/build scripts are adapted to Webpack for Chakra compatibility.
+Failed installs include a dependency diagnosis and an exact package retry command.
 `;
 
 async function main() {
@@ -81,6 +83,9 @@ async function main() {
       },
     );
     if (child.error || child.status !== 0) {
+      const diagnosis = child.error
+        ? ""
+        : await diagnoseDependencies(result.project.root);
       const quotedSpec =
         process.platform === "win32"
           ? JSON.stringify(packageSpec)
@@ -90,6 +95,7 @@ async function main() {
           "Files are ready, but npm install failed. Generated files and backups have been kept.",
           child.error ? `Could not run npm: ${child.error.message}` : "",
           "npm resolves the host project's entire dependency tree, including devDependencies. If npm reported ERESOLVE, fix the conflicting versions shown above in the host project's package.json first.",
+          diagnosis,
           `Then retry from ${result.project.root}:\n  npm install ${quotedSpec}`,
           "After installation succeeds, run your development server and visit /revisionlab. Re-running init is optional; it preserves customized integration files.",
         ]

@@ -118,15 +118,32 @@ npx revisionlab --help
 
 If init reports **Files are ready, but npm install failed**, the generated integration files and `.revisionlab/backups/` remain in place. npm checks the host's entire dependency tree, including development tools, when adding RevisionLab. An `ERESOLVE` error can therefore come from an existing host dependency conflict.
 
-For example, `eslint@9.39.5` conflicts with `@eslint/js@10.0.1`, which requires ESLint 10. To keep ESLint 9, run these commands in the host project:
+New projects use the normal `npx revisionlab init` command; they do not need the project-specific repair helper described in the validation notes. The local CLI now automatically runs a bounded `npm ls --all --json` check after a failed install and prints distinct installed version conflicts with their required ranges, including transitive conflicts. When dependencies are not installed or npm's diagnostic report is unavailable, it retains the original failure and explains the manual checks. This automatic diagnosis is not yet published; the reported 0.1.13 release provides the original recovery message and retry command. Diagnosis preserves the host's dependency declarations; review project-specific version choices before changing tooling.
+
+Fix all incompatible declarations before installing. A command that repairs one dependency can fail on another conflict before saving the first repair. In the reported host project, the conflicts were:
+
+- `eslint@9.39.5` with `@eslint/js@10.0.1`, which requires ESLint 10.
+- `@storybook/addon-vitest@10.6.0` with Vitest 5; that addon accepts Vitest 3 or 4.
+- Mixed Tiptap 3.31.3/3.31.4 packages whose peers require the same exact patch version.
+- TypeScript 6 with Storybook's transitive `tsconfck` dependency, which accepts TypeScript 5. This remained visible through `npm ls --all` even after an installation succeeded.
+
+The complete host manifest was checked with these declarations together:
+
+| Manifest entries | Version |
+| --- | --- |
+| Development dependency `@eslint/js` | `9.39.5`, retaining `eslint@9.39.5` |
+| Development dependencies `vitest`, `@vitest/browser-playwright`, `@vitest/coverage-v8` | `4.1.11` for all three |
+| Dependencies `@tiptap/*` previously declared as `3.31.3` or `^3.31.3` | `3.31.4` for all of them |
+| Development dependency `typescript` | `5.9.3` |
+| Dependency `revisionlab` | `0.1.13` |
+
+`@tiptap/y-tiptap` uses its own version scheme and remains at the host's existing `^3.0.9`. Edit the declarations in the host's `package.json` together, then run:
 
 ```bash
-npm install --save-dev @eslint/js@9
-npm install revisionlab@0.1.1
-npm run dev
+npm install --strict-peer-deps && npm ls --all && npm run dev
 ```
 
-Replace `revisionlab@0.1.1` with the exact version or local `.tgz` originally used. The local CLI now prints that retry command on failure; this improved guidance is not yet published. You do not need to rerun init. Resolve incompatible versions rather than bypassing peer checks with `--force` or `--legacy-peer-deps`; RevisionLab does not change host lint dependencies.
+These versions apply to the reported host manifest; other projects may need different compatible versions. Use the exact RevisionLab version or local `.tgz` from your CLI's printed retry command. The recovery guidance is present in the reported 0.1.13 installation output. You do not need to rerun init. Resolve incompatible versions rather than bypassing peer checks with `--force` or `--legacy-peer-deps`; RevisionLab does not rewrite host lint, test, editor, or compiler dependencies. The `&&` prevents starting development when installation or the dependency-tree check fails.
 
 ## Local recording and feedback
 

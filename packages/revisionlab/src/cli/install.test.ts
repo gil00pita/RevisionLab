@@ -515,3 +515,115 @@ test("CLI explains when npm cannot be started and retains generated files", asyn
   assert.match(result.stderr, /npm install ["']revisionlab@/);
   assert.equal(await exists(path.join(project.root, "revisionlab.config.ts")), true);
 });
+
+for (const report of [
+  "conflicts",
+  "malformed",
+  "healthy",
+  "unavailable",
+] as const) {
+  test(
+    `CLI diagnoses a failed install with ${report} npm ls output without rewriting host dependencies`,
+    { skip: process.platform === "win32" },
+    async (t) => {
+      const project = await fixture(t);
+      const packageFile = path.join(project.root, "package.json");
+      const manifest = JSON.parse(await readFile(packageFile, "utf8"));
+      manifest.devDependencies = {
+        eslint: "9.39.5",
+        "@eslint/js": "^10.0.1",
+        vitest: "5.0.1",
+        "@storybook/addon-vitest": "10.6.0",
+      };
+      await writeFile(packageFile, JSON.stringify(manifest));
+      await mkdir(path.join(project.root, "node_modules"));
+      const bin = path.join(project.root, "test-bin");
+      await mkdir(bin);
+      const calls = path.join(project.root, "npm-calls.jsonl");
+      const output =
+        report === "malformed"
+          ? "not JSON"
+          : JSON.stringify({
+              dependencies:
+                report === "healthy"
+                  ? {}
+                  : {
+                      eslint: {
+                        version: "9.39.5",
+                        invalid: '"^10.0.0" from node_modules/@eslint/js',
+                      },
+                      "@storybook/addon-vitest": {
+                        dependencies: {
+                          vitest: {
+                            version: "5.0.1",
+                            invalid:
+                              '"^3.0.0 || ^4.0.0" from node_modules/@storybook/addon-vitest',
+                          },
+                        },
+                      },
+                    },
+            });
+      const npm = path.join(bin, "npm");
+      await writeFile(
+        npm,
+        `#!${process.execPath}
+const { appendFileSync, unlinkSync } = require("node:fs");
+appendFileSync(${JSON.stringify(calls)}, JSON.stringify(process.argv.slice(2)) + "\\n");
+if (process.argv[2] === "ls") console.log(${JSON.stringify(output)});
+else {
+  console.error("npm error code ERESOLVE");
+  ${report === "unavailable" ? "unlinkSync(process.argv[1]);" : ""}
+}
+process.exitCode = 1;
+`,
+      );
+      await chmod(npm, 0o755);
+      const cli = fileURLToPath(new URL("./index.js", import.meta.url));
+      const result = spawnSync(
+        process.execPath,
+        [cli, "init", "--cwd", project.root, "--package", "revisionlab@next"],
+        { encoding: "utf8", env: { ...process.env, PATH: bin } },
+      );
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /npm error code ERESOLVE/);
+      assert.match(
+        result.stderr,
+        /Update all conflicting declarations together/,
+      );
+      assert.match(result.stderr, /npm ls --all before starting development/);
+      assert.match(result.stderr, /npm install 'revisionlab@next'/);
+      assert.doesNotMatch(result.stdout, /Run your development server/);
+      if (report === "conflicts") {
+        assert.match(result.stderr, /eslint@9\.39\.5 does not satisfy/);
+        assert.match(result.stderr, /vitest@5\.0\.1 does not satisfy/);
+        assert.match(result.stderr, /\^3\.0\.0 \|\| \^4\.0\.0/);
+      } else if (report === "malformed") {
+        assert.match(result.stderr, /could not read npm's report/);
+      } else if (report === "unavailable") {
+        assert.match(result.stderr, /could not complete/);
+      } else {
+        assert.match(result.stderr, /no annotated version conflicts/);
+      }
+      assert.deepEqual(
+        JSON.parse(await readFile(packageFile, "utf8")).devDependencies,
+        manifest.devDependencies,
+      );
+      assert.deepEqual(
+        (await readFile(calls, "utf8"))
+          .trim()
+          .split("\n")
+          .map((line) => JSON.parse(line)),
+        report === "unavailable"
+          ? [["install", "revisionlab@next"]]
+          : [
+              ["install", "revisionlab@next"],
+              ["ls", "--all", "--json"],
+            ],
+      );
+      assert.equal(
+        await exists(path.join(project.root, "revisionlab.config.ts")),
+        true,
+      );
+    },
+  );
+}
