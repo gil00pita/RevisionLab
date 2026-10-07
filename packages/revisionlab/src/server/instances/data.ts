@@ -81,6 +81,12 @@ const comment = z.object({
   parentId: id.nullable(),
 });
 export const remoteStateSchema = z.object({
+  dashboard: z
+    .object({
+      testSessions: z.number().int().nonnegative().safe(),
+      ticketsCreated: z.number().int().nonnegative().safe(),
+    })
+    .optional(),
   instanceId: z.string().uuid(),
   setup: z.object({
     step: z.number(),

@@ -22,6 +22,7 @@ export function PersonaForm({
   onSaved,
   onCancel,
   canManageCredentials,
+  cancelable = false,
 }: {
   onBusyChange?: (busy: boolean) => void;
   apiPath: string;
@@ -29,6 +30,7 @@ export function PersonaForm({
   onSaved: () => Promise<void>;
   onCancel: () => void;
   canManageCredentials: boolean;
+  cancelable?: boolean;
 }) {
   const [name, setName] = useState(persona?.name ?? "");
   const [description, setDescription] = useState(persona?.description ?? "");
@@ -93,6 +95,7 @@ export function PersonaForm({
             <Field.RequiredIndicator />
           </Field.Label>
           <Input
+            autoFocus={cancelable}
             value={name}
             maxLength={120}
             onChange={(event) => setName(event.target.value)}
@@ -151,10 +154,15 @@ export function PersonaForm({
             {error}
           </Text>
         )}
-        <Flex gap="2">
+        <Flex gap="2" flexWrap="wrap">
           <Button
             type="submit"
             size="sm"
+            minH="11"
+            h="auto"
+            py="2"
+            maxW="full"
+            whiteSpace="normal"
             colorPalette="blue"
             loading={busy}
             disabled={!name.trim() || busy}
@@ -162,9 +170,14 @@ export function PersonaForm({
             <Icon>{persona ? <Save /> : <Plus />}</Icon>
             {persona ? "Save persona" : "Add persona"}
           </Button>
-          {persona && (
+          {(persona || cancelable) && (
             <Button
               size="sm"
+              minH="11"
+              h="auto"
+              py="2"
+              maxW="full"
+              whiteSpace="normal"
               variant="ghost"
               onClick={onCancel}
               disabled={busy}

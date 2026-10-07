@@ -20,6 +20,7 @@ export function WorkspaceNavigationButton({
       disabled={disabled}
       variant="ghost"
       justifyContent="flex-start"
+      minH={{ base: "11", lg: "10" }}
       bg={active ? "blue.100" : "transparent"}
       color={active ? "blue.800" : "gray.800"}
       _hover={{ bg: active ? "blue.200" : "blue.50" }}

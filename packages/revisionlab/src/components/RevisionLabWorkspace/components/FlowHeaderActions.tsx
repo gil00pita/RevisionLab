@@ -84,9 +84,9 @@ export function FlowHeaderActions({
   }
 
   return (
-    <Flex gap="2" align="center" flexWrap="wrap" maxW="full">
+    <Flex gap="2" align="center" flexWrap="wrap" maxW="full" minW="0">
       {flow.workspace && flow.workspace.id !== "local" ? (
-        <Button asChild size="sm" colorPalette="blue">
+        <Button asChild size="sm" minH="11" h="auto" maxW="full" whiteSpace="normal" colorPalette="blue">
           <Link
             href={`${flow.workspace.url}${flow.workspace.basePath}?flow=${encodeURIComponent(rawSourceId(flow.id))}`}
             target="_blank"
@@ -96,12 +96,16 @@ export function FlowHeaderActions({
           </Link>
         </Button>
       ) : flow.testSessionId && flow.status === "recording" ? (
-        <Button asChild size="sm" variant="outline">
+        <Button asChild size="sm" minH="11" h="auto" maxW="full" whiteSpace="normal" variant="outline">
           <Link href={`${basePath}?view=sessions`}>View live test</Link>
         </Button>
       ) : (
         <Button
           size="sm"
+          minH="11"
+          h="auto"
+          maxW="full"
+          whiteSpace="normal"
           colorPalette="blue"
           onClick={() => void recordVersion()}
           loading={busy}

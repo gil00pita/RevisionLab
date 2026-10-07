@@ -1,7 +1,7 @@
 "use client";
 
 import { TestParticipant } from "../TestParticipant/index.js";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Button, Link, Stack, Text } from "@chakra-ui/react";
 import { useRevisionLab } from "../../client/useRevisionLab.js";
@@ -25,6 +25,7 @@ import { RecordingControls } from "./components/RecordingControls.js";
 import { RecordingLeaveDialog } from "./components/RecordingLeaveDialog.js";
 import { useRecording } from "./hooks/useRecording.js";
 import { useRecordingNavigation } from "./hooks/useRecordingNavigation.js";
+import { useRecordingLaunch } from "./hooks/useRecordingLaunch.js";
 
 export interface RevisionLabWidgetProps {
   apiPath?: string;
@@ -57,8 +58,18 @@ function Widget({
   const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"comment" | "record">("comment");
-  const workspace = useRevisionLab(apiPath);
+  const reviewRoute = route === basePath || route.startsWith(`${basePath}/`);
+  const workspace = useRevisionLab(apiPath, !reviewRoute);
   const { data, refresh } = workspace;
+  const openRecordingSetup = useCallback(() => {
+    setTab("record");
+    setOpen(true);
+    setExpanded(false);
+  }, []);
+  useRecordingLaunch(
+    Boolean(data?.setup.completed && data.actor.role !== "commenter" && !reviewRoute),
+    openRecordingSetup,
+  );
   const settings = data?.settings ?? defaultSettings;
   const live = useLiveFeedback(route, settings.showCommentBubbles);
   const commentsHref = `${basePath}?${new URLSearchParams({ view: "comments", route })}`;
@@ -67,7 +78,6 @@ function Widget({
       (comment) =>
         comment.route === route && !comment.stepId && !comment.edgeId,
     ) ?? [];
-  const reviewRoute = route === basePath || route.startsWith(`${basePath}/`);
   const recorder = useRecording(
     apiPath,
     route,

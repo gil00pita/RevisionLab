@@ -114,6 +114,7 @@ export function NewTestSession({
           <Field.Root required>
             <Field.Label>Session name</Field.Label>
             <Input
+              autoFocus
               value={name}
               maxLength={100}
               onChange={(event) => setName(event.target.value)}
@@ -173,8 +174,13 @@ export function NewTestSession({
               test ends automatically.
             </Field.HelperText>
           </Field.Root>
-          <Flex gap="2">
+          <Flex gap="2" flexWrap="wrap">
             <Button
+              minH="11"
+              h="auto"
+              py="2"
+              maxW="full"
+              whiteSpace="normal"
               onClick={() => void create()}
               loading={busy}
               disabled={
@@ -186,7 +192,7 @@ export function NewTestSession({
             >
               Create test link
             </Button>
-            <Button variant="ghost" disabled={busy} onClick={onCancel}>
+            <Button minH="11" h="auto" py="2" maxW="full" whiteSpace="normal" variant="ghost" disabled={busy} onClick={onCancel}>
               Cancel
             </Button>
           </Flex>

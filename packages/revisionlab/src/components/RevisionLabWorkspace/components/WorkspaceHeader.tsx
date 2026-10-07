@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 import {
   Badge,
   Box,
@@ -8,7 +8,7 @@ import {
   Icon,
   Text,
 } from "@chakra-ui/react";
-import { LogOut } from "lucide-react";
+import { LogOut, Plus } from "lucide-react";
 import type {
   RevisionLabFlow,
   RevisionLabState,
@@ -21,17 +21,27 @@ export function WorkspaceHeader({
   view,
   flow,
   actions,
-  onNewTest,
+  syncControl,
+  creationAction,
+  creationTriggerRef,
   onSignOut,
   signingOut,
+  dashboardScope,
 }: {
   data: RevisionLabState;
   view: WorkspaceView;
   flow?: RevisionLabFlow;
   actions?: ReactNode;
-  onNewTest: () => void;
+  syncControl?: ReactNode;
+  creationAction?: {
+    kind: "persona" | "test";
+    disabled: boolean;
+    onClick: () => void;
+  };
+  creationTriggerRef?: RefObject<HTMLButtonElement | null>;
   onSignOut: () => Promise<void>;
   signingOut: boolean;
+  dashboardScope?: string;
 }) {
   return (
     <Flex
@@ -79,17 +89,47 @@ export function WorkspaceHeader({
           </Text>
         )}
       </Box>
-      <Flex gap="3" align="center" flexWrap="wrap" maxW="full">
+      <Flex gap="3" align="center" flexWrap="wrap" maxW="full" minW="0">
+        {view === "dashboard" && dashboardScope && (
+          <Badge
+            colorPalette="blue"
+            maxW="full"
+            whiteSpace="normal"
+            overflowWrap="anywhere"
+          >
+            {dashboardScope}
+          </Badge>
+        )}
         {actions}
-        {data.actor.role !== "commenter" && view !== "sessions" && (
-          <Button size="sm" variant="outline" onClick={onNewTest}>
-            New test session
+        {syncControl}
+        {creationAction && (
+          <Button
+            ref={creationTriggerRef}
+            size="sm"
+            minH="11"
+            h="auto"
+            py="2"
+            maxW="full"
+            whiteSpace="normal"
+            colorPalette="blue"
+            variant="outline"
+            color="blue.700"
+            borderColor="blue.600"
+            _hover={{ bg: "blue.50" }}
+            focusRing="outside"
+            focusRingColor="blue.600"
+            disabled={creationAction.disabled}
+            onClick={creationAction.onClick}
+          >
+            <Icon aria-hidden="true"><Plus /></Icon>
+            {creationAction.kind === "persona" ? "New persona" : "Create a test session"}
           </Button>
         )}
         <Flex gap="2" flexWrap="wrap">
           {!data.actor.local && (
             <Button
               size="sm"
+              minH={{ base: "11", lg: "9" }}
               variant="ghost"
               loading={signingOut}
               onClick={() => void onSignOut()}

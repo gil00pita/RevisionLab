@@ -7,7 +7,8 @@ export function useWorkspaceData(apiPath: string, selection: string) {
     selection: string;
     data: WorkspaceState | null;
     error: Error | null;
-  }>({ selection: "", data: null, error: null });
+    syncedAt: number | null;
+  }>({ selection: "", data: null, error: null, syncedAt: null });
   const gate = useRef({ generation: 0, pending: 0 });
   const refresh = useCallback(async () => {
     const state = gate.current;
@@ -18,8 +19,25 @@ export function useWorkspaceData(apiPath: string, selection: string) {
         apiPath,
         `workspace-state?workspace=${encodeURIComponent(selection)}`,
       );
+      const loadedAt = Date.now();
+      data.workspaces = data.workspaces.map((source) => ({
+        ...source,
+        lastLoadedAt:
+          source.status === "connected" &&
+          (selection === "all" || source.id === selection)
+            ? loadedAt
+            : undefined,
+      }));
       if (current === state.generation)
         setSnapshot((previous) => {
+          const complete = data.workspaces
+            .filter((source) => selection === "all" || source.id === selection)
+            .every((source) => source.status === "connected");
+          const syncedAt = complete
+            ? Date.now()
+            : previous.selection === selection
+              ? previous.syncedAt
+              : null;
           if (previous.selection === selection && previous.data) {
             const unavailable = new Set(
               data.workspaces
@@ -30,8 +48,22 @@ export function useWorkspaceData(apiPath: string, selection: string) {
             return {
               selection,
               error: null,
+              syncedAt,
               data: {
                 ...data,
+                workspaces: data.workspaces.map((source) => ({
+                  ...source,
+                  dashboard: unavailable.has(source.id)
+                    ? previous.data?.workspaces.find(
+                        (item) => item.id === source.id,
+                      )?.dashboard
+                    : source.dashboard,
+                  lastLoadedAt: unavailable.has(source.id)
+                    ? previous.data?.workspaces.find(
+                        (item) => item.id === source.id,
+                      )?.lastLoadedAt
+                    : source.lastLoadedAt,
+                })),
                 flows: [
                   ...data.flows,
                   ...previous.data.flows.filter((item) =>
@@ -53,7 +85,7 @@ export function useWorkspaceData(apiPath: string, selection: string) {
               },
             };
           }
-          return { selection, data, error: null };
+          return { selection, data, error: null, syncedAt };
         });
     } catch (cause) {
       if (current !== state.generation) return;
@@ -69,6 +101,7 @@ export function useWorkspaceData(apiPath: string, selection: string) {
             ? previous.data
             : null,
         error,
+        syncedAt: previous.selection === selection ? previous.syncedAt : null,
       }));
     } finally {
       state.pending--;
@@ -98,6 +131,7 @@ export function useWorkspaceData(apiPath: string, selection: string) {
     data: current ? snapshot.data : null,
     error: current ? snapshot.error : null,
     loading: !current || (!snapshot.data && !snapshot.error),
+    syncedAt: current ? snapshot.syncedAt : null,
     refresh,
   };
 }

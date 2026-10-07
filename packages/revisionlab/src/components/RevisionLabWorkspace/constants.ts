@@ -1,6 +1,7 @@
 import type { WorkspaceView } from "./components/WorkspaceNavigation.js";
 
 export const workspaceViewTitles: Record<WorkspaceView, string> = {
+  dashboard: "Overview",
   sessions: "Test sessions",
   flows: "Flows",
   comments: "Comments",
@@ -10,6 +11,8 @@ export const workspaceViewTitles: Record<WorkspaceView, string> = {
 };
 
 export const workspaceViewSubtitles: Record<WorkspaceView, string> = {
+  dashboard:
+    "Review counts, workspace connections, and the last successful sync.",
   sessions:
     "Invite participants, follow live tests, and replay their journeys.",
   flows: "Review recorded journeys, screens, and versions.",

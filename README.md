@@ -42,6 +42,7 @@ The RevisionLab diagram shows the intended end-to-end workflow; planned steps ar
 
 | Work together | What RevisionLab provides |
 | --- | --- |
+| **Start with an overview** | Default workspace Overview presents the same review/inventory counts in an integrated neutral layout with blue accents, with a segmented comment-resolution gauge and tickets in a right rail. The sidebar workspace dropdown stays visible even with one workspace, labels this installation Local workspace, and shows connection-status dots. A shared navbar button shows relative successful sync time, refreshes the selected scope manually, and exposes the exact timestamp in a tooltip. Brief update cues respect reduced motion. Resolved threads earn a quiet acknowledgement with a View comments shortcut. Jira drafts are copied manually and do not create tickets. |
 | **See the same journey** | Recorded screens, flow whiteboards, personas, versions, and connected workspaces for the same project. |
 | **Keep feedback in context** | Comments and replies on live components, captured screens, and flow paths. |
 | **Learn from real people** | Share expiring test links, record participant sessions, inspect time/click metrics, and replay their journeys. Structured findings are planned. |
@@ -50,7 +51,7 @@ The RevisionLab diagram shows the intended end-to-end workflow; planned steps ar
 
 **Status:** this describes the repository's local build; some features are not yet published. Test sessions, replay, and Feedback Review ticket drafts are implemented locally; full structured findings and report-based prioritisation remain planned. Jira drafts are copied into Jira manually. Codex fixes and ticket generation require owner/editor access on localhost in development and a signed-in Codex CLI.
 
-Create a **New test session** with a time limit, share its link, and review the saved flow and replay in **Test sessions**; see the [test-session guide](WORKSPACE_GUIDE.md#prototype-test-sessions) for privacy and recording limits.
+Open **Test sessions** and choose **Create a test session** in its header to set a time limit, share its link, and review the saved flow and replay in **Test sessions**; see the [test-session guide](WORKSPACE_GUIDE.md#prototype-test-sessions) for privacy and recording limits.
 
 ## A look inside
 

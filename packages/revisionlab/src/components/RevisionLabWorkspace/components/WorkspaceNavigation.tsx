@@ -4,6 +4,7 @@ import {
   FlaskConical,
   MessageSquare,
   ContactRound,
+  LayoutDashboard,
   ClipboardList,
 } from "lucide-react";
 import type { RefObject } from "react";
@@ -11,7 +12,13 @@ import { WorkspaceNavigationButton as NavigationButton } from "./WorkspaceNaviga
 import type { RevisionLabState } from "../../../server/types.js";
 
 export type WorkspaceView =
-  "sessions" | "flows" | "comments" | "feedback" | "personas" | "settings";
+  | "dashboard"
+  | "sessions"
+  | "flows"
+  | "comments"
+  | "feedback"
+  | "personas"
+  | "settings";
 
 export function WorkspaceNavigation({
   data,
@@ -34,6 +41,15 @@ export function WorkspaceNavigation({
       pb="4"
       flexWrap="wrap"
     >
+      <NavigationButton
+        active={view === "dashboard"}
+        onClick={() => onViewChange("dashboard")}
+      >
+        <Icon>
+          <LayoutDashboard />
+        </Icon>
+        Overview
+      </NavigationButton>
       <NavigationButton
         buttonRef={flowsTriggerRef}
         active={view === "flows"}
@@ -69,7 +85,7 @@ export function WorkspaceNavigation({
             data.comments.filter(
               (comment) => !comment.parentId && comment.status === "open",
             ).length
-          }
+          } open
         </Badge>
       </NavigationButton>
       <NavigationButton

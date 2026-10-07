@@ -1,24 +1,31 @@
-import { Box, createListCollection, Portal, Select } from "@chakra-ui/react";
+import { Box, createListCollection, Flex, Portal, Select } from "@chakra-ui/react";
 import type { WorkspaceInstance } from "../../../workspace-instances.js";
+import { WorkspaceConnectionStatus, workspaceConnectionStatus } from "./WorkspaceConnectionStatus.js";
 export function WorkspaceSelector({
   workspaces,
   value,
   disabled,
+  syncError,
   onChange,
 }: {
   workspaces: WorkspaceInstance[];
   value: string;
   disabled: boolean;
+  syncError: boolean;
   onChange: (value: string) => void;
 }) {
-  if (workspaces.length < 2) return null;
-  const collection = createListCollection({
+  const collection = createListCollection<{
+    value: string;
+    label: string;
+    status: ReturnType<typeof workspaceConnectionStatus>;
+  }>({
     items: [
       ...workspaces.map((workspace) => ({
         value: workspace.id,
         label: workspace.name,
+        status: workspaceConnectionStatus([workspace], syncError),
       })),
-      { value: "all", label: "All workspaces" },
+      { value: "all", label: "All workspaces", status: workspaceConnectionStatus(workspaces, syncError) },
     ],
   });
   return (
@@ -38,6 +45,10 @@ export function WorkspaceSelector({
         <Select.HiddenSelect />
         <Select.Control>
           <Select.Trigger
+            minH="11"
+            h="auto"
+            py="2"
+            minW="0"
             bg="white"
             color="gray.900"
             borderColor="gray.500"
@@ -45,7 +56,8 @@ export function WorkspaceSelector({
             focusRing="inside"
             focusRingColor="blue.700"
           >
-            <Select.ValueText truncate />
+            <WorkspaceConnectionStatus status={collection.items.find((item) => item.value === value)?.status ?? "Not connected"} />
+            <Select.ValueText flex="1" minW="0" textAlign="start" whiteSpace="normal" overflowWrap="anywhere" />
           </Select.Trigger>
           <Select.IndicatorGroup color="gray.700">
             <Select.Indicator />
@@ -55,9 +67,12 @@ export function WorkspaceSelector({
           <Select.Positioner data-revisionlab-ui zIndex="popover">
             <Select.Content maxW="calc(100vw - 2rem)">
               {collection.items.map((item) => (
-                <Select.Item key={item.value} item={item}>
+                <Select.Item key={item.value} item={item} minH="11">
                   <Select.ItemText overflowWrap="anywhere">
-                    {item.label}
+                    <Flex as="span" align="center" gap="2">
+                      <WorkspaceConnectionStatus status={item.status} />
+                      {item.label}
+                    </Flex>
                   </Select.ItemText>
                   <Select.ItemIndicator />
                 </Select.Item>

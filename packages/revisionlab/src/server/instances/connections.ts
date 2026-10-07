@@ -101,7 +101,7 @@ export async function handleConnections(
   )
     throw new HttpError(
       400,
-      "This installation is already included as This workspace.",
+      "This installation is already included as Local workspace.",
     );
   const result = await remoteResponse(
     new URL(`${input.apiPath}/federation/manifest`, origin),
@@ -122,7 +122,7 @@ export async function handleConnections(
   if (manifest.instanceId === (await installationId(client)))
     throw new HttpError(
       400,
-      "This installation is already included as This workspace.",
+      "This installation is already included as Local workspace.",
     );
   if (manifest.apiPath !== input.apiPath)
     throw new HttpError(

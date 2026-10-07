@@ -19,11 +19,13 @@ import { apiRequest, ApiError } from "../../client/api.js";
 import { useWorkspaceData } from "./hooks/useWorkspaceData.js";
 import { sourceApiPath, sourceCanEdit } from "../../workspace-instances.js";
 import { WorkspaceHeader } from "./components/WorkspaceHeader.js";
+import { WorkspaceSyncControl } from "./components/WorkspaceSyncControl.js";
 import { FlowHeaderActions } from "./components/FlowHeaderActions.js";
+import { RecordFlowAction } from "./components/RecordFlowAction.js";
 import { RevisionLabProvider } from "../RevisionLabProvider/index.js";
 import type { WorkspaceView } from "./components/WorkspaceNavigation.js";
 import { WorkspaceSidebar } from "./components/WorkspaceSidebar.js";
-import { WorkspacePersonas } from "./components/WorkspacePersonas.js";
+import { WorkspacePersonas, type WorkspacePersonaEditor } from "./components/WorkspacePersonas.js";
 import { AllComments } from "./components/AllComments.js";
 import { FlowReview } from "./components/FlowReview.js";
 import { EmptyWorkspace } from "./components/EmptyWorkspace.js";
@@ -32,6 +34,7 @@ import { SetupWizard } from "./components/SetupWizard.js";
 import { defaultSettings } from "../../comment-settings.js";
 import { useFlowDeletion } from "./hooks/useFlowDeletion.js";
 import { workspaceViewTitles } from "./constants.js";
+import { WorkspaceDashboard } from "./components/WorkspaceDashboard.js";
 
 export interface RevisionLabWorkspaceProps {
   apiPath?: string;
@@ -71,19 +74,27 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
     error,
     loading,
     refresh,
+    syncedAt,
   } = useWorkspaceData(apiPath, selection);
   const view: WorkspaceView =
+    requestedView === "dashboard" ||
+    requestedView === "flows" ||
     requestedView === "sessions" ||
     requestedView === "comments" ||
     requestedView === "feedback" ||
     requestedView === "personas" ||
     requestedView === "settings"
       ? requestedView
-      : "flows";
+      : searchParams.has("flow")
+        ? "flows"
+        : "dashboard";
   const [flowId, setFlowId] = useState<string | null>(() =>
     searchParams.get("flow"),
   );
   const [createTest, setCreateTest] = useState(false);
+  const [personaEditor, setPersonaEditor] = useState<WorkspacePersonaEditor | null>(null);
+  const [personaBusy, setPersonaBusy] = useState(false);
+  const creationTrigger = useRef<HTMLButtonElement>(null);
   const [setupFinished, setSetupFinished] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [startingRecording, setStartingRecording] = useState(false);
@@ -118,6 +129,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   if (flow && flowId !== flow.id) setFlowId(flow.id);
 
   async function canLeaveBoard(): Promise<boolean> {
+    if (personaBusy) return false;
     if (feedbackDirty) {
       setBoardNavigationError(
         "Save or discard your Feedback Review edits, or finish/cancel Codex, before leaving this section.",
@@ -167,6 +179,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
       !(await canLeaveBoard())
     )
       return;
+    setPersonaEditor(null);
     const query = new URLSearchParams(searchParams.toString());
     query.set("workspace", next);
     query.delete("flow");
@@ -184,6 +197,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
     )
       return false;
     if (next !== view) {
+      setPersonaEditor(null);
       // Sections share this mounted workspace; sync search params without a
       // server navigation or replacing the sidebar and its local state.
       const query = new URLSearchParams(searchParams.toString());
@@ -266,6 +280,15 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
       />
     );
 
+  const navigationPending = completingBoard || signingOut || startingRecording || deletion.pending || personaBusy;
+  const personaSource = data.workspaces.find((source) => source.id === (selection === "all" ? "local" : selection));
+
+  const dashboardScope =
+    data.selection === "all"
+      ? "All workspaces"
+      : (data.workspaces.find((source) => source.id === data.selection)?.name ??
+        "Local workspace");
+
   return (
     <Flex minH="100dvh" bg="white" direction={{ base: "column", lg: "row" }}>
       <WorkspaceSidebar
@@ -278,22 +301,38 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
         onViewChange={selectView}
         onFlowSelect={selectFlow}
         onDeleteFlows={deletion.remove}
-        disabled={
-          completingBoard || signingOut || startingRecording || deletion.pending
-        }
+        disabled={navigationPending}
+        syncError={Boolean(error)}
       />
       <Flex as="main" direction="column" flex="1" minW="0">
         <WorkspaceHeader
           data={data}
           view={view}
           flow={view === "flows" ? flow : undefined}
-          onNewTest={() => {
-            void selectView("sessions").then((selected) => {
-              if (selected) setCreateTest(true);
-            });
-          }}
+          creationTriggerRef={creationTrigger}
+          syncControl={
+            <WorkspaceSyncControl
+              key={selection}
+              sources={data.workspaces.filter((source) => selection === "all" || source.id === selection)}
+              syncedAt={syncedAt}
+              syncError={Boolean(error)}
+              onRefresh={refresh}
+            />
+          }
+          creationAction={
+            view === "personas" && personaSource && sourceCanEdit(data.actor.role, personaSource)
+              ? {
+                  kind: "persona",
+                  disabled: navigationPending || personaEditor !== null || personaSource.status === "unavailable",
+                  onClick: () => setPersonaEditor({ sourceId: personaSource.id }),
+                }
+              : view === "sessions" && data.actor.role !== "commenter"
+                ? { kind: "test", disabled: navigationPending || createTest, onClick: () => setCreateTest(true) }
+                : undefined
+          }
           onSignOut={signOut}
           signingOut={signingOut}
+          dashboardScope={view === "dashboard" ? dashboardScope : undefined}
           actions={
             view === "flows" &&
             flow &&
@@ -317,12 +356,16 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
                 onRecordingTransitionChange={setStartingRecording}
                 onDeleteFlows={deletion.remove}
               />
+            ) : view === "flows" && !flow && personaSource && sourceCanEdit(data.actor.role, personaSource) ? (
+              <RecordFlowAction prototypeUrl={personaSource.url} disabled={navigationPending || personaSource.status === "unavailable"} />
             ) : undefined
           }
         />
         {(error || actionError || boardNavigationError) && (
           <Text role="alert" px="6" py="3" color="red.700" bg="red.50">
-            {error?.message || actionError || boardNavigationError}
+            {view === "dashboard" && error
+              ? "Could not refresh workspace data."
+              : error?.message || actionError || boardNavigationError}
           </Text>
         )}
         {data.workspaces
@@ -345,7 +388,20 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             Finishing board autosave…
           </Text>
         )}
-        {view === "feedback" ? (
+        {view === "dashboard" ? (
+          <WorkspaceDashboard
+            data={data}
+            syncedAt={syncedAt}
+            syncError={Boolean(error)}
+            onReviewComments={() => void selectView("comments")}
+            navigationDisabled={
+              completingBoard ||
+              signingOut ||
+              startingRecording ||
+              deletion.pending
+            }
+          />
+        ) : view === "feedback" ? (
           <FeedbackReview
             data={data}
             apiPath={apiPath}
@@ -355,11 +411,14 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           />
         ) : view === "sessions" ? (
           <TestSessions
-            key={String(createTest)}
             apiPath={apiPath}
             basePath={basePath}
             data={data}
-            initialCreate={createTest}
+            creating={createTest}
+            onCreatingChange={(creating) => {
+              setCreateTest(creating);
+              if (!creating) requestAnimationFrame(() => creationTrigger.current?.focus());
+            }}
           />
         ) : view === "settings" ? (
           <WorkspaceSettings
@@ -390,6 +449,14 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           />
         ) : view === "personas" ? (
           <WorkspacePersonas
+            key={selection}
+            editor={personaEditor}
+            onEditorChange={(editor) => {
+              setPersonaEditor(editor);
+              if (!editor) requestAnimationFrame(() => creationTrigger.current?.focus());
+            }}
+            onBusyChange={setPersonaBusy}
+            disabled={navigationPending}
             data={data}
             apiPath={apiPath}
             onRefresh={refresh}

@@ -96,7 +96,6 @@ export function useSetupWizard(
           body: JSON.stringify({ action: "finish" }),
         });
         setProgress(next);
-        window.history.replaceState(null, "", "?view=flows");
         onComplete();
         await onRefresh();
       } else {
