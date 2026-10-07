@@ -48,7 +48,7 @@ export function WorkspaceNavigation({
         <Icon>
           <LayoutDashboard />
         </Icon>
-        Dashboard
+        Overview
       </NavigationButton>
       <NavigationButton
         buttonRef={flowsTriggerRef}

@@ -26,6 +26,7 @@ export function WorkspaceSidebar({
   onFlowSelect,
   onDeleteFlows,
   disabled,
+  syncError,
 }: {
   data: RevisionLabState;
   workspaces: WorkspaceInstance[];
@@ -37,6 +38,7 @@ export function WorkspaceSidebar({
   onFlowSelect: (id: string) => Promise<void>;
   onDeleteFlows: (familyIds: string[]) => Promise<void>;
   disabled: boolean;
+  syncError: boolean;
 }) {
   const [showFlows, setShowFlows] = useState(false);
   const back = useRef<HTMLButtonElement>(null);
@@ -77,6 +79,7 @@ export function WorkspaceSidebar({
         workspaces={workspaces}
         value={selection}
         disabled={disabled}
+        syncError={syncError}
         onChange={onWorkspaceChange}
       />
       <Box px="3" pb="4" flexShrink="0">
@@ -84,6 +87,9 @@ export function WorkspaceSidebar({
           asChild
           w="full"
           minH={{ base: "11", lg: "10" }}
+          h="auto"
+          py="2"
+          whiteSpace="normal"
           colorPalette="blue"
           variant="solid"
           justifyContent="flex-start"

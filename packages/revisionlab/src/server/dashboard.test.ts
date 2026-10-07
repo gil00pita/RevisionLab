@@ -93,7 +93,7 @@ test("dashboard counts group flow versions and comment threads, count saved viol
     workspaces: [
       {
         id: "local",
-        name: "This workspace",
+        name: "Local workspace",
         url: "http://localhost:3000",
         basePath: "/revisionlab",
         apiPath: "/api/revisionlab",

@@ -1,7 +1,7 @@
 import type { WorkspaceView } from "./components/WorkspaceNavigation.js";
 
 export const workspaceViewTitles: Record<WorkspaceView, string> = {
-  dashboard: "Dashboard",
+  dashboard: "Overview",
   sessions: "Test sessions",
   flows: "Flows",
   comments: "Comments",

@@ -7,7 +7,7 @@ export function downloadReport(data: RevisionLabState) {
     `Exported ${new Date().toISOString()}`,
     ...data.flows.flatMap((flow) => [
       `\n## ${flow.name} · v${flow.version}`,
-      `Workspace: ${flow.workspace?.name ?? "This workspace"}`,
+      `Workspace: ${flow.workspace?.name ?? "Local workspace"}`,
       `Persona: ${flow.persona} · ${flow.status}`,
       ...flow.steps.map(
         (step, index) => `${index + 1}. ${step.title} (${step.route})`,

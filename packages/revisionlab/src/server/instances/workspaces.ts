@@ -33,12 +33,12 @@ export async function connectedState(
   )
     throw new HttpError(
       404,
-      "This workspace connection no longer exists. Choose This workspace.",
+      "This workspace connection no longer exists. Choose Local workspace.",
     );
   const home: WorkspaceInstance = {
     dashboard: local.dashboard,
     id: "local",
-    name: "This workspace",
+    name: "Local workspace",
     url: new URL(request.url).origin,
     basePath: config.basePath,
     apiPath: config.apiPath,

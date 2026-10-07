@@ -116,7 +116,7 @@ export function WorkspaceSettings({
     >
       <Text fontSize="sm" color="gray.600">
         Widget, Comments, and Audit settings apply to{" "}
-        {settingsWorkspace?.name ?? "This workspace"}. General, Users &amp;
+        {settingsWorkspace?.name ?? "Local workspace"}. General, Users &amp;
         Roles, Notifications, and Workspace Instances manage this installation.
         History follows the selected workspace source, or every available source
         in All workspaces.

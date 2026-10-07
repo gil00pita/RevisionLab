@@ -16,16 +16,17 @@ export function TestSessions({
   apiPath,
   basePath,
   data,
-  initialCreate,
+  creating,
+  onCreatingChange,
 }: {
   apiPath: string;
   basePath: string;
   data: RevisionLabState;
-  initialCreate: boolean;
+  creating: boolean;
+  onCreatingChange: (creating: boolean) => void;
 }) {
   const searchParams = useSearchParams();
   const [personas, setPersonas] = useState<RevisionLabPersona[]>([]);
-  const [creating, setCreating] = useState(initialCreate);
   const [sessions, setSessions] = useState<TestSession[]>([]);
   const [selected, setSelected] = useState<string | null>(() =>
     searchParams.get("session"),
@@ -99,20 +100,15 @@ export function TestSessions({
   }
   return (
     <Stack p={{ base: "4", md: "6" }} gap="6" maxW="7xl" w="full">
-      <Flex align="center" justify="space-between" gap="3" flexWrap="wrap">
-        <Text color="gray.600">
-          Tests for this installation · links, live activity, and saved replays.
-        </Text>
-        {data.actor.role !== "commenter" && !creating && (
-          <Button onClick={() => setCreating(true)}>New test session</Button>
-        )}
-      </Flex>
-      {creating && (
+      <Text color="gray.600">
+        Tests for this installation · links, live activity, and saved replays.
+      </Text>
+      {creating && data.actor.role !== "commenter" && (
         <NewTestSession
           apiPath={apiPath}
           personas={personas}
           onCreated={() => void refresh()}
-          onCancel={() => setCreating(false)}
+          onCancel={() => onCreatingChange(false)}
         />
       )}
       {error && (
