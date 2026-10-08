@@ -14,11 +14,14 @@ import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabPersona } from "../../../server/types.js";
 import { PersonaTable } from "./PersonaTable.js";
 import { PersonaForm } from "./PersonaForm.js";
+import type { PersonaTemplate } from "../persona-recommendations.js";
 
 export interface PersonaEditorControl {
-  form: { persona?: RevisionLabPersona } | null;
+  form: { persona?: RevisionLabPersona; template?: PersonaTemplate } | null;
   disabled: boolean;
-  onChange: (form: { persona?: RevisionLabPersona } | null) => void;
+  onChange: (
+    form: { persona?: RevisionLabPersona; template?: PersonaTemplate } | null,
+  ) => void;
 }
 
 export function PersonaManager({
@@ -40,8 +43,10 @@ export function PersonaManager({
 }) {
   const [inlineForm, setInlineForm] = useState<{
     persona?: RevisionLabPersona;
+    template?: PersonaTemplate;
   } | null>(null);
   const editing = editor ? editor.form?.persona : inlineForm?.persona;
+  const template = editor ? editor.form?.template : inlineForm?.template;
   const formOpen = editor ? editor.form !== null : inlineForm !== null;
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -140,9 +145,10 @@ export function PersonaManager({
       {canEdit && formOpen && (
         <PersonaForm
           onBusyChange={onBusyChange}
-          key={editing?.id ?? "new"}
+          key={editing?.id ?? template?.name ?? "new"}
           apiPath={apiPath}
           persona={editing}
+          template={template}
           onCancel={closeEditor}
           cancelable
           canManageCredentials={canManageCredentials}

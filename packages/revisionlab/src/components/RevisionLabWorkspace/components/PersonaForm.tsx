@@ -16,11 +16,13 @@ import { Plus, Save, X } from "lucide-react";
 import { PersonaAvatarPicker } from "../../PersonaAvatar/index.js";
 import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabPersona } from "../../../server/types.js";
+import type { PersonaTemplate } from "../persona-recommendations.js";
 
 export function PersonaForm({
   onBusyChange,
   apiPath,
   persona,
+  template,
   onSaved,
   onCancel,
   canManageCredentials,
@@ -29,14 +31,19 @@ export function PersonaForm({
   onBusyChange?: (busy: boolean) => void;
   apiPath: string;
   persona?: RevisionLabPersona;
+  template?: PersonaTemplate;
   onSaved: () => Promise<void>;
   onCancel: () => void;
   canManageCredentials: boolean;
   cancelable?: boolean;
 }) {
-  const [name, setName] = useState(persona?.name ?? "");
-  const [avatar, setAvatar] = useState(persona?.avatar ?? null);
-  const [description, setDescription] = useState(persona?.description ?? "");
+  const [name, setName] = useState(persona?.name ?? template?.name ?? "");
+  const [avatar, setAvatar] = useState(
+    persona?.avatar ?? template?.avatar ?? null,
+  );
+  const [description, setDescription] = useState(
+    persona?.description ?? template?.description ?? "",
+  );
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -189,8 +196,8 @@ export function PersonaForm({
             loading={busy}
             disabled={!name.trim() || busy}
           >
-            <Icon>{persona ? <Save /> : <Plus />}</Icon>
-            {persona ? "Save persona" : "Add persona"}
+            <Icon>{persona || template ? <Save /> : <Plus />}</Icon>
+            {persona || template ? "Save persona" : "Add persona"}
           </Button>
           {(persona || cancelable) && (
             <Button

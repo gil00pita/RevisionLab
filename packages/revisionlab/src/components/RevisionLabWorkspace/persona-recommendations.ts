@@ -1,3 +1,5 @@
+import { personaAvatarIds } from "../../persona-avatars.js";
+
 export const personaRecommendations = [
   {
     name: "First-time or novice user",
@@ -50,3 +52,12 @@ export const personaRecommendations = [
       "Represents accidental or deliberate misuse that could harm users, the service or the business",
   },
 ] as const;
+
+export const personaTemplates = personaRecommendations.map(
+  (recommendation, index) => ({
+    ...recommendation,
+    avatar: personaAvatarIds[index] ?? null,
+  }),
+);
+
+export type PersonaTemplate = (typeof personaTemplates)[number];

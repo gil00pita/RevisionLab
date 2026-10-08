@@ -307,6 +307,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
                   kind: "persona",
                   disabled: navigationPending || personaEditor !== null || personaSource.status === "unavailable",
                   onClick: () => setPersonaEditor({ sourceId: personaSource.id }),
+                  onSelectTemplate: (template) => setPersonaEditor({ sourceId: personaSource.id, template }),
                 }
               : view === "sessions" && data.actor.role !== "commenter"
                 ? { kind: "test", disabled: navigationPending || createTest, onClick: () => setCreateTest(true) }

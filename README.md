@@ -8,7 +8,7 @@ RevisionLab brings prototype flows, versions, and feedback into one shared revie
 
 ## First-use setup
 
-Implemented locally, not yet published: the wizard lets the owner name the workspace, optionally generate an API key under Advanced options, preview the actual widget and live-comment bubbles, choose the WCAG version and A/AA/AAA target, and add personas from a compact table. The wizard and Settings persona forms use an avatar select with portrait options. Email and Slack use segmented controls that reveal only the selected configuration. See the [package setup guide](packages/revisionlab/README.md) for details.
+Implemented locally, not yet published: the wizard lets the owner name the workspace, optionally generate an API key under Advanced options, preview the actual widget and live-comment bubbles, choose the WCAG version and A/AA/AAA target, and add personas from a compact table. The wizard and workspace persona forms use an avatar select with portrait options. On the Personas page, the chevron beside **New persona** opens the built-in templates; choosing one fills an editable form and saves only when **Save persona** is pressed. Email and Slack use segmented controls that reveal only the selected configuration. See the [package setup guide](packages/revisionlab/README.md) for details.
 
 ## Comment attachments, personas, and mentions
 

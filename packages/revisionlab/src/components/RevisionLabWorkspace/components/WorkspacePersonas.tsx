@@ -6,10 +6,12 @@ import {
 } from "../../../workspace-instances.js";
 import { PersonaManager } from "./PersonaManager.js";
 import type { RevisionLabPersona } from "../../../server/types.js";
+import type { PersonaTemplate } from "../persona-recommendations.js";
 
 export interface WorkspacePersonaEditor {
   sourceId: string;
   persona?: RevisionLabPersona;
+  template?: PersonaTemplate;
 }
 
 export function WorkspacePersonas({
@@ -55,9 +57,21 @@ export function WorkspacePersonas({
             onRefresh={onRefresh}
             onBusyChange={onBusyChange}
             editor={{
-              form: editor?.sourceId === source.id ? { persona: editor.persona } : null,
+              form:
+                editor?.sourceId === source.id
+                  ? { persona: editor.persona, template: editor.template }
+                  : null,
               disabled: disabled || editor !== null,
-              onChange: (form) => onEditorChange(form ? { sourceId: source.id, persona: form.persona } : null),
+              onChange: (form) =>
+                onEditorChange(
+                  form
+                    ? {
+                        sourceId: source.id,
+                        persona: form.persona,
+                        template: form.template,
+                      }
+                    : null,
+                ),
             }}
           />
         </Stack>

@@ -8,10 +8,12 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { PersonaAvatar } from "../../PersonaAvatar/index.js";
-import { personaAvatarIds } from "../../../persona-avatars.js";
 import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabPersona } from "../../../server/types.js";
-import { personaRecommendations } from "../persona-recommendations.js";
+import {
+  personaTemplates,
+  type PersonaTemplate,
+} from "../persona-recommendations.js";
 
 export function PersonaRecommendations({
   apiPath,
@@ -28,7 +30,7 @@ export function PersonaRecommendations({
   const pending = useRef(false);
   const [added, setAdded] = useState<string[]>([]);
   const [error, setError] = useState("");
-  async function add(persona: (typeof personaRecommendations)[number]) {
+  async function add(persona: PersonaTemplate) {
     if (pending.current) return;
     pending.current = true;
     setBusy(persona.name);
@@ -37,10 +39,7 @@ export function PersonaRecommendations({
     try {
       await apiRequest(apiPath, "personas", {
         method: "POST",
-        body: JSON.stringify({
-          ...persona,
-          avatar: personaAvatarIds[personaRecommendations.indexOf(persona)],
-        }),
+        body: JSON.stringify(persona),
       });
       setAdded((previous) => [...previous, persona.name]);
       await onRefresh();
@@ -83,7 +82,7 @@ export function PersonaRecommendations({
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                    {personaRecommendations.map((persona, index) => {
+                    {personaTemplates.map((persona) => {
                       const exists =
                         added.includes(persona.name) ||
                         personas.some(
@@ -97,7 +96,7 @@ export function PersonaRecommendations({
                             <HStack gap="3">
                               <PersonaAvatar
                                 name={persona.name}
-                                avatar={personaAvatarIds[index]}
+                                avatar={persona.avatar}
                               />
                               <Text fontWeight="medium">{persona.name}</Text>
                             </HStack>
