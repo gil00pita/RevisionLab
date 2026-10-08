@@ -100,11 +100,18 @@ export function WidgetLauncher({
           flexDirection={settings.widgetSide === "left" ? "row-reverse" : "row"}
         >
           <WidgetWorkspaceLink href={workspaceHref} />
-          {settings.auditLivePages && (
+          {settings.auditLivePages && !auditing && (
             <AccessibilityControl
               result={accessibility}
               onRerun={onRerun}
               disabled={!authorized}
+            />
+          )}
+          {settings.auditLivePages && auditing && expanded && (
+            <WidgetTool
+              label="Stop auditing"
+              variant="scanning"
+              onClick={onStopAudit}
             />
           )}
           {canRecord && !recording && (
@@ -142,13 +149,6 @@ export function WidgetLauncher({
       )}
       {commenting && (
         <WidgetTool label="Stop commenting" variant="stop" onClick={onComment} />
-      )}
-      {settings.auditLivePages && auditing && (
-        <WidgetTool
-          label="Stop auditing"
-          variant="scanning"
-          onClick={onStopAudit}
-        />
       )}
       <WidgetToggle expanded={expanded} accessibility={accessibility} />
     </Collapsible.Root>
