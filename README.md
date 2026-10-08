@@ -98,6 +98,8 @@ yarn dev
 
 Open the URL printed by Next.js, complete **Setup**, and record your first flow. The npm release may have fewer features than the local build; see the [installation guide](WORKSPACE_GUIDE.md#install-in-another-nextjs-project) for local-package instructions.
 
+The local example includes a five-page Northstar Finance prototype at `/demo` (also linked from the homepage and setup guide). Start the real widget's recording on `/demo/finance`, then continue through `/demo/applicant`, `/demo/income`, `/demo/review`, and `/demo/confirmation`. Stop and save there to review the complete flow. Fields are prefilled with fictional data, retain edits within the browser tab, and can be reset with **Restart demo**. The confirmation is simulated; no finance application or email is sent. Existing prototype access and recording permissions apply.
+
 ## Go deeper
 
 [Workspace guide](WORKSPACE_GUIDE.md) · [Package integration](packages/revisionlab/README.md) · [Product specification](PRODUCT.md) · [Roadmap](PLAN.md) · [Validation](VALIDATION.md) · [Releases](RELEASING.md)

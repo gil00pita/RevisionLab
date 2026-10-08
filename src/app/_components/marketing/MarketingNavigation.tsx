@@ -11,8 +11,8 @@ export function MarketingNavigation() {
         position="absolute"
         top="-20"
         left="5"
-        bg="blue.600"
-        color="white"
+        bg="blue.solid"
+        color="blue.contrast"
         p="3"
         zIndex="100"
         _focus={{ top: "3" }}
@@ -22,8 +22,8 @@ export function MarketingNavigation() {
 
       <Flex
         as="header"
-        bg="gray.950"
-        color="gray.100"
+        bg="bg.inverted"
+        color="fg.inverted"
         px={{ base: "5", md: "10", xl: "16" }}
         h={{ base: "20", md: "24" }}
         maxW="1600px"
@@ -32,9 +32,9 @@ export function MarketingNavigation() {
         align="center"
         gap="4"
         borderBottomWidth="1px"
-        borderColor="gray.800"
+        borderColor="fg.inverted/20"
       >
-        <Link asChild color="gray.100" textDecoration="none" minH="44px">
+        <Link asChild color="fg.inverted" textDecoration="none" minH="44px">
           <NextLink href="/" aria-label="RevisionLab home">
             <RevisionLabLogo decorative />
             <Text
@@ -54,7 +54,7 @@ export function MarketingNavigation() {
         >
           <Link
             href="#how-it-works"
-            color="gray.300"
+            color="fg.inverted/80"
             fontSize="sm"
             minH="44px"
             hideBelow="md"
@@ -63,7 +63,7 @@ export function MarketingNavigation() {
           </Link>
           <Link
             href="#review"
-            color="gray.300"
+            color="fg.inverted/80"
             fontSize="sm"
             minH="44px"
             hideBelow="lg"
@@ -72,7 +72,7 @@ export function MarketingNavigation() {
           </Link>
           <Link
             asChild
-            color="gray.300"
+            color="fg.inverted/80"
             fontSize="sm"
             minH="44px"
             hideBelow="lg"
@@ -84,12 +84,21 @@ export function MarketingNavigation() {
               </Icon>
             </NextLink>
           </Link>
+          <Link
+            asChild
+            color="fg.inverted/80"
+            fontSize="sm"
+            minH="44px"
+            hideBelow="md"
+          >
+            <NextLink href="/demo/finance">Try demo</NextLink>
+          </Link>
           <Button
             asChild
             size="sm"
             minH="44px"
             colorPalette="blue"
-            bg="blue.600"
+            bg="blue.solid"
             borderRadius="md"
             px={{ base: "3", md: "5" }}
           >

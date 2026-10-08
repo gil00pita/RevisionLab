@@ -2,6 +2,14 @@
 
 This is the living product specification. Update it as new product requests and decisions arise. Requirements describe intended behavior unless explicitly marked implemented; proposals and open questions are not accepted implementation decisions.
 
+## Recordable five-page demo flow — 8 October 2026
+
+Confirmed request: add five demo pages that a tester can record together as a flow using the real RevisionLab widget.
+
+Implemented locally, not yet published. Local implementation decision: extend the homepage's fictional Northstar Finance journey into five distinct routes: `/demo/finance`, `/demo/applicant`, `/demo/income`, `/demo/review`, and `/demo/confirmation`; `/demo` opens the first step. Provide editable, prefilled sample finance, applicant, and income fields, back/continue navigation, review with edit links, a simulated confirmation, and restart. Retain edits through navigation and reload within the browser tab. Expose the journey from the homepage and installation guide, keeping existing prototype access and widget recording permissions. Demo forms stay local and submit no finance application; saving an actual RevisionLab recording remains the widget's existing operation.
+
+Acceptance: each page has a distinct URL, title, and visible step; default sample data completes all five pages. Edited values appear on review and survive back navigation/reload. Invalid inputs provide accessible feedback and prevent continuing. Restart restores sample values. A signed-in tester can start recording on the first page, navigate through every step without losing the active recording, then stop/save it on confirmation and review captures for all five routes. The pages work by keyboard and at narrow widths with labelled controls, visible focus, and no page overflow. Implementation and actual validation are recorded separately in PLAN.md and VALIDATION.md.
+
 ## Product marketing homepage — 7 October 2026
 
 Implemented locally — 8 October 2026. The homepage, fictional demonstrations, responsive layouts, and motion controls are complete. The example host permits public GET/HEAD access to `/`, `/setup`, and its self-hosted font assets so visitors can see the sales page and installation guide in production. The review workspace and APIs retain their existing protection. This is a host-specific implementation decision for the marketing experience, not a change to the package's access rules. Actual checks and remaining validation limits are recorded in VALIDATION.md; this does not change the published npm package or external services.

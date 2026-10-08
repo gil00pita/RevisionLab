@@ -67,6 +67,14 @@ export default function SetupPage() {
           label describes the journey; it does not impersonate a user or grant
           prototype permissions.
         </Text>
+        <Link asChild color="blue.fg" fontWeight="semibold" minH="11">
+          <NextLink href="/demo/finance">Try the five-page demo flow</NextLink>
+        </Link>
+        <Text>
+          Start recording on Finance options, then continue through Applicant
+          details, Income, Review, and Confirmation. Stop and save with the
+          widget to review the complete journey in your workspace.
+        </Text>
         <Text>
           The published release captures new routes automatically and provides
           Capture screen for dialogs or validation states. The latest local

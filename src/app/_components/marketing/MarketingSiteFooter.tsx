@@ -9,10 +9,10 @@ export function MarketingSiteFooter() {
       as="footer"
       px={{ base: "5", md: "10", xl: "16" }}
       py="7"
-      bg="gray.950"
-      color="gray.400"
+      bg="bg.inverted"
+      color="fg.inverted/70"
       borderTopWidth="1px"
-      borderColor="gray.800"
+      borderColor="fg.inverted/20"
       justify="space-between"
       align="center"
       gap="5"
@@ -22,7 +22,7 @@ export function MarketingSiteFooter() {
         <RevisionLabLogo decorative />
         <Text
           fontFamily="Manrope, sans-serif"
-          color="gray.200"
+          color="fg.inverted"
           fontWeight="700"
         >
           RevisionLab
@@ -31,11 +31,20 @@ export function MarketingSiteFooter() {
           Prototype fast. Learn together.
         </Text>
       </Flex>
-      <Flex as="nav" aria-label="Footer navigation" gap="6" fontSize="xs">
-        <Link asChild color="gray.300" minH="44px">
+      <Flex
+        as="nav"
+        aria-label="Footer navigation"
+        gap="6"
+        fontSize="xs"
+        wrap="wrap"
+      >
+        <Link asChild color="fg.inverted/80" minH="44px">
           <NextLink href="/setup">Installation</NextLink>
         </Link>
-        <Link asChild color="gray.300" minH="44px">
+        <Link asChild color="fg.inverted/80" minH="44px">
+          <NextLink href="/demo/finance">Try demo flow</NextLink>
+        </Link>
+        <Link asChild color="fg.inverted/80" minH="44px">
           <NextLink href="/revisionlab">
             Open workspace
             <Icon size="xs">
@@ -43,7 +52,7 @@ export function MarketingSiteFooter() {
             </Icon>
           </NextLink>
         </Link>
-        <Link href="#main" color="gray.300" minH="44px">
+        <Link href="#main" color="fg.inverted/80" minH="44px">
           Back to top ↑
         </Link>
       </Flex>
