@@ -8,13 +8,13 @@ import {
   Link,
   Separator,
   Stack,
-  Steps,
   Text,
 } from "@chakra-ui/react";
 import type { RevisionLabState } from "../../../server/types.js";
 import { AppearanceSettings } from "../../AppearanceSettings/index.js";
 import { UsersRoleManager } from "../../UsersRoleManager/index.js";
 import { useSetupWizard } from "../hooks/useSetupWizard.js";
+import { SetupProgress } from "./SetupProgress.js";
 import { SetupIdentity } from "./SetupIdentity.js";
 import { PersonaRecommendations } from "./PersonaRecommendations.js";
 import { PersonaManager } from "./PersonaManager.js";
@@ -78,30 +78,7 @@ export function SetupWizard({
             required.
           </Text>
         </Stack>
-        <Steps.Root
-          step={wizard.step}
-          count={titles.length}
-          size={{ base: "xs", md: "sm" }}
-          colorPalette="blue"
-        >
-          <Steps.List aria-label="Setup progress" gap="1">
-            {titles.map((title, index) => (
-              <Steps.Item
-                key={title}
-                index={index}
-                title={title}
-                gap="1"
-                minW="0"
-              >
-                <Steps.Indicator />
-                <Steps.Title hideBelow="lg" fontSize="xs">
-                  {title}
-                </Steps.Title>
-                <Steps.Separator />
-              </Steps.Item>
-            ))}
-          </Steps.List>
-        </Steps.Root>
+        <SetupProgress step={wizard.step} titles={titles} />
         <Stack
           bg="bg.panel"
           borderWidth="1px"
@@ -139,6 +116,11 @@ export function SetupWizard({
           >
             {wizard.step === 0 && (
               <SetupIdentity
+                workspaceName={wizard.workspaceName}
+                onWorkspaceName={wizard.setWorkspaceName}
+                apiPath={apiPath}
+                projectName={data.project.name}
+                onBusyChange={setSavingDetails}
                 name={wizard.name}
                 email={wizard.email}
                 systemUrl={wizard.systemUrl}
@@ -170,12 +152,6 @@ export function SetupWizard({
                     ? "No personas yet. Choose a recommendation below or create your own."
                     : `${data.personas.filter((persona) => !persona.archivedAt).length} active personas in your workspace.`}
                 </Text>
-                <PersonaRecommendations
-                  apiPath={apiPath}
-                  personas={data.personas}
-                  onRefresh={onRefresh}
-                  onBusyChange={setSavingDetails}
-                />
                 <PersonaManager
                   onBusyChange={setSavingDetails}
                   apiPath={apiPath}
@@ -183,6 +159,12 @@ export function SetupWizard({
                   canEdit
                   canManageCredentials
                   onRefresh={onRefresh}
+                />
+                <PersonaRecommendations
+                  apiPath={apiPath}
+                  personas={data.personas}
+                  onRefresh={onRefresh}
+                  onBusyChange={setSavingDetails}
                 />
               </Stack>
             )}

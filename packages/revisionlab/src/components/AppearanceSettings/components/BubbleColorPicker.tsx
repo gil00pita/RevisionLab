@@ -41,12 +41,18 @@ export function BubbleColorPicker({
         }}
         w="full"
       >
-        <Grid templateColumns="repeat(5, minmax(0, 1fr))" gap="4" maxW="sm">
+        <Grid
+          templateColumns="repeat(auto-fit, minmax(64px, 1fr))"
+          gap="4"
+          w="full"
+        >
           {commentBubbleColors.map((color) => (
             <RadioGroup.Item
               key={color}
               value={color}
               flexDirection="column"
+              justifyContent="center"
+              py="2"
               gap="2"
               cursor="pointer"
               _disabled={{ cursor: "not-allowed" }}
@@ -61,6 +67,9 @@ export function BubbleColorPicker({
                 color={tokens(color).contrast}
                 borderWidth="2px"
                 borderColor={tokens(color).outline}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
                 _checked={{
                   outlineWidth: "2px",
                   outlineStyle: "solid",

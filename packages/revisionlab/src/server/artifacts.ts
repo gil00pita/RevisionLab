@@ -203,7 +203,8 @@ export async function readArtifact(
         ? ` AND (EXISTS (SELECT 1 FROM steps WHERE steps.screenshot = artifacts.id)
           OR EXISTS (SELECT 1 FROM comments WHERE comments.screenshot = artifacts.id)
           OR EXISTS (SELECT 1 FROM comments, json_each(comments.attachments_json) attachment WHERE json_extract(attachment.value, '$.id') = artifacts.id)
-          OR EXISTS (SELECT 1 FROM feedback_ticket_evidence WHERE screenshot_id = artifacts.id))`
+          OR EXISTS (SELECT 1 FROM feedback_ticket_evidence WHERE screenshot_id = artifacts.id)
+          OR EXISTS (SELECT 1 FROM persona_files WHERE artifact_id = artifacts.id))`
         : ""
     }`,
     args: [id],

@@ -6,12 +6,14 @@ import { write } from "./database.js";
 import { discardArtifact, readArtifact } from "./artifacts.js";
 import { HttpError, json, readJson } from "./security.js";
 import type { RevisionLabActor } from "./types.js";
+import { standardPersonaFields, standardPersonaSections } from "../persona-profile.js";
 
 const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 
 const snapshotTables = {
   workspace_settings: [
     "id",
+    "display_name",
     "show_comment_bubbles",
     "comment_bubble_color",
     "show_widget",
@@ -31,10 +33,26 @@ const snapshotTables = {
     "name",
     "name_key",
     "description",
+    "avatar",
+    "persona_type",
+    "template_id",
+    "research_status",
+    "confidence_level",
+    "last_validated_at",
+    "created_by",
+    "updated_by",
     "archived_at",
     "created_at",
     "updated_at",
   ],
+  persona_sections: ["id", "persona_id", "name", "description", "position", "hidden", "created_at"],
+  persona_fields: ["id", "section_id", "persona_id", "name", "description", "type", "options_json", "placeholder", "required", "hidden", "position", "validation_json", "created_at"],
+  persona_values: ["id", "persona_id", "field_id", "value_json", "position", "illustrative", "deleted_at", "created_at", "updated_at"],
+  persona_evidence: ["id", "persona_id", "title", "type", "source_reference", "url", "evidence_date", "confidence", "notes", "feedback_id", "created_at"],
+  persona_evidence_links: ["evidence_id", "value_id"],
+  persona_templates: ["id", "name", "description", "source_persona_id", "source_template_id", "profile_json", "created_at", "updated_at"],
+  persona_activity: ["id", "persona_id", "actor_id", "actor_name", "action", "created_at"],
+  persona_files: ["id", "persona_id", "artifact_id", "name", "created_at"],
   flows: [
     "id",
     "family_id",
@@ -143,18 +161,23 @@ function artifactIds(snapshot: Snapshot): string[] {
             (file: { id: string }) => file.id,
           ),
         ])
-        .filter((value): value is string => typeof value === "string"),
+        .filter((value): value is string => typeof value === "string")
+        .concat((snapshot.persona_files ?? []).map((file) => String(file.artifact_id))),
     ),
   ];
 }
 
 export function historyAction(method: string, path: string[]): string | null {
-  if (!["POST", "PATCH"].includes(method)) return null;
+  if (!["POST", "PATCH", "DELETE"].includes(method)) return null;
   if (path[0] === "settings") return "Changed workspace settings";
   if (path[0] === "comments")
     return method === "POST" ? "Added a comment" : "Changed a comment";
-  if (path[0] === "personas")
+  if (path[0] === "personas") {
+    if (path[1] === "templates") return method === "DELETE" ? "Removed a persona template" : "Saved a persona template";
+    if (path[2] === "files") return "Uploaded a persona file";
+    if (path[2] === "profile") return "Changed a persona profile";
     return method === "POST" ? "Added a persona" : "Changed a persona";
+  }
   if (path[0] !== "flows") return null;
   if (path[1] === "delete") return "Deleted flows";
   if (path[2] === "discard") return "Discarded a recording";
@@ -266,6 +289,7 @@ async function pruneHistory(
       AND NOT EXISTS (SELECT 1 FROM comments WHERE comments.screenshot = artifacts.id)
       AND NOT EXISTS (SELECT 1 FROM comments, json_each(comments.attachments_json) attachment WHERE json_extract(attachment.value, '$.id') = artifacts.id)
       AND NOT EXISTS (SELECT 1 FROM feedback_ticket_evidence WHERE screenshot_id = artifacts.id)
+      AND NOT EXISTS (SELECT 1 FROM persona_files WHERE artifact_id = artifacts.id)
       AND NOT EXISTS (SELECT 1 FROM workspace_history_artifacts WHERE artifact_id = artifacts.id)
       LIMIT 100`);
     return orphaned.rows.map((row) => ({
@@ -292,6 +316,7 @@ async function pruneHistory(
             AND NOT EXISTS (SELECT 1 FROM comments WHERE comments.screenshot = artifacts.id)
       AND NOT EXISTS (SELECT 1 FROM comments, json_each(comments.attachments_json) attachment WHERE json_extract(attachment.value, '$.id') = artifacts.id)
             AND NOT EXISTS (SELECT 1 FROM feedback_ticket_evidence WHERE screenshot_id = artifacts.id)
+            AND NOT EXISTS (SELECT 1 FROM persona_files WHERE artifact_id = artifacts.id)
             AND NOT EXISTS (SELECT 1 FROM workspace_history_artifacts WHERE artifact_id = artifacts.id)`,
           args: [id],
         });
@@ -309,12 +334,23 @@ async function insertRows(
     await transaction.execute({
       sql,
       args: columns.map((column) =>
-        ["attachments_json", "personas_json", "mentions_json"].includes(column)
+        column === "description" && table !== "personas" ? (row[column] ?? "")
+          : column === "persona_type" ? (row[column] ?? "Primary")
+          : column === "research_status" ? (row[column] ?? "Assumption-Based")
+          : column === "confidence_level" ? (row[column] ?? "Not Assessed")
+          : ["attachments_json", "personas_json", "mentions_json"].includes(column)
           ? (row[column] ?? "[]")
           : [
                 "ai_instructions_json",
+                "avatar",
+                "display_name",
                 "screenshot",
                 "screenshot_anchor",
+                "template_id",
+                "last_validated_at",
+                "created_by",
+                "updated_by",
+                "source_template_id",
               ].includes(column)
             ? (row[column] ?? null)
             : row[column],
@@ -368,10 +404,23 @@ async function restoreSnapshot(
     await transaction.execute("DELETE FROM steps");
     await transaction.execute("UPDATE flows SET previous_version_id = NULL");
     await transaction.execute("DELETE FROM flows");
+    await transaction.execute("DELETE FROM persona_evidence_links");
+    await transaction.execute("DELETE FROM persona_files");
+    await transaction.execute("DELETE FROM persona_activity");
+    await transaction.execute("DELETE FROM persona_evidence");
+    await transaction.execute("DELETE FROM persona_values");
+    await transaction.execute("DELETE FROM persona_fields");
+    await transaction.execute("DELETE FROM persona_sections");
+    await transaction.execute("DELETE FROM persona_templates");
     await transaction.execute("DELETE FROM personas");
     await transaction.execute("DELETE FROM workspace_settings");
     for (const table of Object.keys(snapshotTables) as SnapshotTable[])
-      await insertRows(transaction, table, snapshot[table]);
+      await insertRows(transaction, table, snapshot[table] ?? []);
+    const now = new Date().toISOString();
+    for (const [position, section] of standardPersonaSections.entries())
+      await transaction.execute({ sql: "INSERT OR IGNORE INTO persona_sections (id, persona_id, name, position, hidden, created_at) VALUES (?, NULL, ?, ?, 0, ?)", args: [`standard:${section.id}`, section.name, position, now] });
+    for (const [position, field] of standardPersonaFields.entries())
+      await transaction.execute({ sql: "INSERT OR IGNORE INTO persona_fields (id, section_id, persona_id, name, type, position, created_at) VALUES (?, ?, NULL, ?, ?, ?, ?)", args: [`standard:${field.id}`, `standard:${field.sectionId}`, field.name, field.type, position, now] });
   });
 }
 

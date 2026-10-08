@@ -15,6 +15,7 @@ import { WidgetToggle } from "./WidgetToggle.js";
 
 export function WidgetLauncher({
   settings,
+  contained = false,
   expanded,
   onExpandedChange,
   onStopAudit,
@@ -30,6 +31,7 @@ export function WidgetLauncher({
   onComment,
   authorized,
 }: {
+  contained?: boolean;
   settings: WidgetSettings & Pick<RevisionLabSettings, "auditLivePages">;
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
@@ -55,8 +57,14 @@ export function WidgetLauncher({
       data-revisionlab-ui
       role="group"
       aria-label="RevisionLab toolbar"
-      position="fixed"
-      {...widgetPlacement(settings)}
+      position={contained ? "absolute" : "fixed"}
+      {...(contained
+        ? {
+            left: settings.widgetSide === "left" ? "4" : undefined,
+            right: settings.widgetSide === "right" ? "4" : undefined,
+            bottom: "4",
+          }
+        : widgetPlacement(settings))}
       zIndex="popover"
       display="flex"
       alignItems="center"
@@ -99,7 +107,7 @@ export function WidgetLauncher({
           w="max-content"
           flexDirection={settings.widgetSide === "left" ? "row-reverse" : "row"}
         >
-          <WidgetWorkspaceLink href={workspaceHref} />
+          <WidgetWorkspaceLink href={workspaceHref} preview={contained} />
           {settings.auditLivePages && !auditing && (
             <AccessibilityControl
               result={accessibility}
@@ -148,7 +156,11 @@ export function WidgetLauncher({
         />
       )}
       {commenting && (
-        <WidgetTool label="Stop commenting" variant="stop" onClick={onComment} />
+        <WidgetTool
+          label="Stop commenting"
+          variant="stop"
+          onClick={onComment}
+        />
       )}
       <WidgetToggle expanded={expanded} accessibility={accessibility} />
     </Collapsible.Root>

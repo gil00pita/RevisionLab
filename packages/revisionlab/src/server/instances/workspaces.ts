@@ -39,7 +39,7 @@ export async function connectedState(
   const home: WorkspaceInstance = {
     dashboard: local.dashboard,
     id: "local",
-    name: "Local workspace",
+    name: local.workspaceName || "Local workspace",
     url: new URL(request.url).origin,
     basePath: config.basePath,
     apiPath: config.apiPath,
@@ -167,7 +167,7 @@ export async function proxyInstance(
   const resource = path.slice(3);
   if (
     resource.length < 1 ||
-    resource.length > 3 ||
+    resource.length > 4 ||
     !resource.every((segment) => /^[A-Za-z0-9_~.-]+$/.test(segment)) ||
     resource.some((segment) => segment === ".." || segment === ".")
   )
@@ -197,24 +197,30 @@ export async function proxyInstance(
       throw new HttpError(400, "This resource belongs to another workspace.");
     return segment.slice(String(row.id).length + 1);
   });
-  const body =
-    request.method === "GET"
-      ? undefined
-      : JSON.stringify(
-          scopeData(
-            await readJson(
-              request,
-              resource[0] === "comments" ? MAX_COMMENT_BODY_BYTES : 600_000,
-            ),
-            String(row.id),
-            "out",
-          ),
-        );
+  const personaDetail = resource[0] === "personas" && (["templates", "filters"].includes(resource[1]) || resource[2] === "profile");
+  const requestBody = request.method === "GET" || request.method === "DELETE"
+    ? undefined
+    : await readJson(request, resource[0] === "comments" ? MAX_COMMENT_BODY_BYTES : resource[0] === "personas" && resource[2] === "files" ? 4_200_000 : 600_000);
+  let body: string | undefined;
+  if (requestBody !== undefined) {
+    if (personaDetail) {
+      const data = requestBody as Record<string, unknown>;
+      if (typeof data.sourcePersonaId === "string") {
+        const prefix = `${row.id}~`;
+        if (!data.sourcePersonaId.startsWith(prefix)) throw new HttpError(400, "This persona belongs to another workspace.");
+        data.sourcePersonaId = data.sourcePersonaId.slice(prefix.length);
+      }
+      body = JSON.stringify(data);
+    } else body = JSON.stringify(scopeData(requestBody, String(row.id), "out"));
+  }
+  const remoteUrl = new URL(`${row.api_path}/federation/${cleanPath.join("/")}`, String(row.url));
+  if (resource[0] === "personas" && resource[1] === "filters") {
+    const search = new URL(request.url).search;
+    if (search.length > 500) throw new HttpError(413, "Filter query is too long.");
+    remoteUrl.search = search;
+  }
   const response = await remoteResponse(
-    new URL(
-      `${row.api_path}/federation/${cleanPath.join("/")}`,
-      String(row.url),
-    ),
+    remoteUrl,
     String(row.api_key),
     { method: request.method, body, role: actor.role },
   );
@@ -257,8 +263,8 @@ export async function proxyInstance(
       headers.set("Content-Disposition", "attachment");
     return new Response(response.body, { status: response.status, headers });
   }
-  return json(
-    scopeData(await response.json(), String(row.id), "in"),
-    response.status,
-  );
+  const result = await response.json();
+  if (resource[0] === "personas" && resource[1] === "filters")
+    return json({ ...result, personaIds: result.personaIds?.map((id: string) => `${row.id}~${id}`) ?? null }, response.status);
+  return json(personaDetail ? result : scopeData(result, String(row.id), "in"), response.status);
 }

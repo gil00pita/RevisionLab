@@ -14,6 +14,8 @@ import type {
   RevisionLabState,
 } from "../../../server/types.js";
 import { workspaceViewSubtitles, workspaceViewTitles } from "../constants.js";
+import type { PersonaTemplate } from "../persona-recommendations.js";
+import { PersonaCreateActions } from "./PersonaCreateActions.js";
 import type { WorkspaceView } from "./WorkspaceNavigation.js";
 
 export function WorkspaceHeader({
@@ -31,11 +33,15 @@ export function WorkspaceHeader({
   view: WorkspaceView;
   flow?: RevisionLabFlow;
   actions?: ReactNode;
-  creationAction?: {
-    kind: "persona" | "test";
-    disabled: boolean;
-    onClick: () => void;
-  };
+  creationAction?:
+    | {
+        kind: "persona";
+        apiPath: string;
+        disabled: boolean;
+        onClick: () => void;
+        onSelectTemplate: (template: PersonaTemplate) => void;
+      }
+    | { kind: "test"; disabled: boolean; onClick: () => void };
   creationTriggerRef?: RefObject<HTMLButtonElement | null>;
   sessionTabsRef?: RefObject<HTMLDivElement | null>;
   onSignOut: () => Promise<void>;
@@ -90,28 +96,40 @@ export function WorkspaceHeader({
       {(actions || creationAction || !data.actor.local) && (
         <Flex gap="3" align="center" flexWrap="wrap" maxW="full" minW="0">
           {actions}
-          {creationAction && (
-            <Button
-              ref={creationTriggerRef}
-              size="sm"
-              minH="11"
-              h="auto"
-              py="2"
-              maxW="full"
-              whiteSpace="normal"
-              colorPalette="blue"
-              variant="outline"
-              color="blue.fg"
-              borderColor="blue.border"
-              _hover={{ bg: "blue.subtle" }}
-              focusRing="outside"
-              focusRingColor="blue.focusRing"
+          {creationAction?.kind === "persona" ? (
+            <PersonaCreateActions
+              apiPath={creationAction.apiPath}
+              triggerRef={creationTriggerRef}
               disabled={creationAction.disabled}
-              onClick={creationAction.onClick}
-            >
-              <Icon aria-hidden="true"><Plus /></Icon>
-              {creationAction.kind === "persona" ? "New persona" : "Create a test session"}
-            </Button>
+              onNew={creationAction.onClick}
+              onSelectTemplate={creationAction.onSelectTemplate}
+            />
+          ) : (
+            creationAction && (
+              <Button
+                ref={creationTriggerRef}
+                size="sm"
+                minH="11"
+                h="auto"
+                py="2"
+                maxW="full"
+                whiteSpace="normal"
+                colorPalette="blue"
+                variant="outline"
+                color="blue.fg"
+                borderColor="blue.border"
+                _hover={{ bg: "blue.subtle" }}
+                focusRing="outside"
+                focusRingColor="blue.focusRing"
+                disabled={creationAction.disabled}
+                onClick={creationAction.onClick}
+              >
+                <Icon aria-hidden="true">
+                  <Plus />
+                </Icon>
+                Create a test session
+              </Button>
+            )
           )}
           {!data.actor.local && (
             <Button
@@ -129,7 +147,9 @@ export function WorkspaceHeader({
           )}
         </Flex>
       )}
-      {sessionTabsRef && <Box ref={sessionTabsRef} w="full" flexBasis="full" mb="-4" />}
+      {sessionTabsRef && (
+        <Box ref={sessionTabsRef} w="full" flexBasis="full" mb="-4" />
+      )}
     </Flex>
   );
 }

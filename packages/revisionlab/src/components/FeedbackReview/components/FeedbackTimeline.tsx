@@ -3,11 +3,14 @@ import { Badge, Box, Flex, Icon, Text, Timeline } from "@chakra-ui/react";
 import type { FeedbackTimelineEntry } from "../timeline.js";
 import { feedbackTypes } from "../constants.js";
 import { EvidenceCard } from "./EvidenceCard.js";
+import type { RevisionLabPersona } from "../../../server/types.js";
 
 export function FeedbackTimeline({
   entries,
   hasEvidence,
   basePath,
+  apiPath,
+  personas,
   selected,
   covered,
   disabled,
@@ -17,6 +20,8 @@ export function FeedbackTimeline({
   entries: FeedbackTimelineEntry[];
   hasEvidence: boolean;
   basePath: string;
+  apiPath: string;
+  personas: RevisionLabPersona[];
   selected: Set<string>;
   covered: Set<string>;
   disabled: boolean;
@@ -98,6 +103,8 @@ export function FeedbackTimeline({
                     </Badge>
                   </Flex>
                   <EvidenceCard
+                    apiPath={apiPath}
+                    personas={personas}
                     group={group}
                     basePath={basePath}
                     checked={checked}

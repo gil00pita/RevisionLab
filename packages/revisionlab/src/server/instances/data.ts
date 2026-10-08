@@ -113,6 +113,7 @@ const comment = z.object({
   parentId: id.nullable(),
 });
 export const remoteStateSchema = z.object({
+  workspaceName: z.string().max(100).optional(),
   dashboard: z
     .object({
       testSessions: z.number().int().nonnegative().safe(),
@@ -144,8 +145,16 @@ export const remoteStateSchema = z.object({
       id,
       name: text,
       description: text,
+      avatar: z.string().max(80).nullable().optional(),
       archivedAt: text.nullable(),
       hasCredentials: z.boolean(),
+      personaType: text.optional(),
+      templateId: text.nullable().optional(),
+      researchStatus: text.optional(),
+      confidenceLevel: text.optional(),
+      lastValidatedAt: text.nullable().optional(),
+      createdBy: text.nullable().optional(),
+      updatedBy: text.nullable().optional(),
       createdAt: text,
       updatedAt: text,
     }),

@@ -70,6 +70,7 @@ export function FeedbackReview({
       basePath={basePath}
       canEdit={data.actor.role !== "commenter"}
       flowIds={data.flows.map((flow) => flow.id)}
+      personas={data.personas}
       onDirtyChange={onDirtyChange}
       onRefresh={onRefresh}
     />
@@ -81,6 +82,7 @@ function LocalFeedbackReview({
   basePath,
   canEdit,
   flowIds,
+  personas,
   onDirtyChange,
   onRefresh,
 }: {
@@ -88,6 +90,7 @@ function LocalFeedbackReview({
   basePath: string;
   canEdit: boolean;
   flowIds: string[];
+  personas: import("../../server/types.js").RevisionLabPersona[];
   onDirtyChange: (dirty: boolean) => void;
   onRefresh: () => Promise<void>;
 }) {
@@ -170,6 +173,8 @@ function LocalFeedbackReview({
             alignItems="start"
           >
             <FeedbackInbox
+              apiPath={apiPath}
+              personas={personas}
               evidence={review.data.evidence}
               tickets={review.data.tickets}
               basePath={basePath}

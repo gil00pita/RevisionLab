@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import test from "node:test";
 import { createClient } from "@libsql/client";
+import { remoteStateSchema } from "./instances/data.js";
 import { readPersonas } from "./persona-routes.js";
 import { reviewFixture } from "./review-test-fixture.js";
 
@@ -165,4 +166,46 @@ test("concurrent persona creation cannot create duplicate names", async (t) => {
     [201, 409],
   );
   assert.equal((await f.state()).personas.length, 1);
+});
+
+test("persona avatar persists through edits, archive, history and federation validation", async (t) => {
+  const f = await reviewFixture(t);
+  const created = await f.call("personas", "POST", {
+    name: "Reviewer",
+    avatar: "Avatar-126",
+  });
+  assert.equal(created.status, 201);
+  const { id } = await created.json();
+  assert.equal((await f.state()).personas[0].avatar, "Avatar-126");
+  const remote = remoteStateSchema.parse({
+    ...(await f.state()),
+    instanceId: randomUUID(),
+  });
+  assert.equal(remote.personas[0].avatar, "Avatar-126");
+  assert.equal(
+    (
+      await f.call(`personas/${id}`, "PATCH", {
+        name: "Reviewer",
+        avatar: "https://untrusted.example/avatar.png",
+      })
+    ).status,
+    400,
+  );
+  await f.call(`personas/${id}`, "PATCH", { name: "Legacy client edit" });
+  assert.equal((await f.state()).personas[0].avatar, "Avatar-126");
+  await f.call(`personas/${id}`, "PATCH", { archived: true });
+  assert.equal((await f.state()).personas[0].avatar, "Avatar-126");
+  await f.call(`personas/${id}`, "PATCH", { archived: false });
+  await f.call(`personas/${id}`, "PATCH", {
+    name: "Reviewer",
+    avatar: "Avatar-01",
+  });
+  const history = (await (await f.call("history")).json()).history;
+  assert.equal(
+    (await f.call(`history/${history[0].id}/restore`, "POST", {})).status,
+    200,
+  );
+  assert.equal((await f.state()).personas[0].avatar, "Avatar-126");
+  await f.call(`personas/${id}`, "PATCH", { name: "Reviewer", avatar: null });
+  assert.equal((await f.state()).personas[0].avatar, null);
 });

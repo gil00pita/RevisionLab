@@ -5,6 +5,7 @@ import { createClient, type Client, type Transaction } from "@libsql/client";
 import type { RevisionLabConfig } from "./types.js";
 import { HttpError } from "./security.js";
 import { schema } from "./schema.js";
+import { standardPersonaFields, standardPersonaSections } from "../persona-profile.js";
 
 const clients = new Map<string, Promise<Client>>();
 const writes = new WeakMap<Client, Promise<unknown>>();
@@ -71,7 +72,21 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
       ],
       installation: [["instance_id", "TEXT"]],
       workspace_history: [["committed_at", "TEXT"]],
+      personas: [
+        ["avatar", "TEXT"],
+        ["persona_type", "TEXT NOT NULL DEFAULT 'Primary'"],
+        ["template_id", "TEXT"],
+        ["research_status", "TEXT NOT NULL DEFAULT 'Assumption-Based'"],
+        ["confidence_level", "TEXT NOT NULL DEFAULT 'Not Assessed'"],
+        ["last_validated_at", "TEXT"],
+        ["created_by", "TEXT"],
+        ["updated_by", "TEXT"],
+      ],
+      persona_templates: [["source_template_id", "TEXT"]],
+      persona_sections: [["description", "TEXT NOT NULL DEFAULT ''"]],
+      persona_fields: [["description", "TEXT NOT NULL DEFAULT ''"]],
       workspace_settings: [
+        ["display_name", "TEXT"],
         ["ai_instructions_json", "TEXT"],
         [
           "wcag_version",
@@ -173,6 +188,19 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
     await transaction.execute(
       "CREATE INDEX IF NOT EXISTS idx_comments_edge ON comments(flow_id, edge_id, created_at)",
     );
+    const now = new Date().toISOString();
+    for (const [position, section] of standardPersonaSections.entries())
+      await transaction.execute({
+        sql: "INSERT OR IGNORE INTO persona_sections (id, persona_id, name, position, hidden, created_at) VALUES (?, NULL, ?, ?, 0, ?)",
+        args: [`standard:${section.id}`, section.name, position, now],
+      });
+    for (const [position, field] of standardPersonaFields.entries())
+      await transaction.execute({
+        sql: `INSERT OR IGNORE INTO persona_fields
+          (id, section_id, persona_id, name, type, position, created_at)
+          VALUES (?, ?, NULL, ?, ?, ?, ?)`,
+        args: [`standard:${field.id}`, `standard:${field.sectionId}`, field.name, field.type, position, now],
+      });
   });
 }
 

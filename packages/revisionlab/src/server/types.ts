@@ -162,6 +162,7 @@ export interface RevisionLabInvitation {
 }
 
 export interface RevisionLabPersona {
+  avatar?: string | null;
   workspace?: WorkspaceOrigin;
   id: string;
   name: string;
@@ -170,6 +171,13 @@ export interface RevisionLabPersona {
   createdAt: string;
   updatedAt: string;
   hasCredentials: boolean;
+  personaType?: string;
+  templateId?: string | null;
+  researchStatus?: string;
+  confidenceLevel?: string;
+  lastValidatedAt?: string | null;
+  createdBy?: string | null;
+  updatedBy?: string | null;
 }
 
 export type RevisionLabMembershipStatus =
@@ -193,6 +201,7 @@ export interface RevisionLabAccessSettings {
 }
 
 export interface RevisionLabState {
+  workspaceName?: string;
   /** Optional for backwards-compatible connections to earlier installations. */
   dashboard?: { testSessions: number; ticketsCreated: number };
   setup: import("../setup.js").SetupProgress;

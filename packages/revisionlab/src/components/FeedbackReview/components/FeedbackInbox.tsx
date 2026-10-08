@@ -12,11 +12,14 @@ import { FeedbackSortControl } from "./FeedbackSortControl.js";
 import { FeedbackTimeline } from "./FeedbackTimeline.js";
 import { sortFeedbackTimeline, type FeedbackSort } from "../timeline.js";
 import { TicketGeneration } from "./TicketGeneration.js";
+import type { RevisionLabPersona } from "../../../server/types.js";
 
 export function FeedbackInbox({
   evidence,
   tickets,
   basePath,
+  apiPath,
+  personas,
   canGenerate,
   busy,
   editing,
@@ -31,6 +34,8 @@ export function FeedbackInbox({
   evidence: ReviewEvidence[];
   tickets: ReviewTicket[];
   basePath: string;
+  apiPath: string;
+  personas: RevisionLabPersona[];
   canGenerate: boolean;
   busy: boolean;
   editing: boolean;
@@ -160,6 +165,8 @@ export function FeedbackInbox({
         </Flex>
       </Flex>
       <FeedbackTimeline
+        apiPath={apiPath}
+        personas={personas}
         entries={entries}
         hasEvidence={Boolean(evidence.length)}
         basePath={basePath}

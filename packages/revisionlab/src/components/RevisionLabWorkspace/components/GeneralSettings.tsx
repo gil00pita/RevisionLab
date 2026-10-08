@@ -16,9 +16,15 @@ import type { WorkspaceApiKey } from "../../../workspace-instances.js";
 export function GeneralSettings({
   apiPath,
   projectName,
+  embedded = false,
+  disabled = false,
+  onBusyChange,
 }: {
   apiPath: string;
   projectName: string;
+  embedded?: boolean;
+  disabled?: boolean;
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const [keys, setKeys] = useState<WorkspaceApiKey[]>([]);
   const [name, setName] = useState("");
@@ -27,6 +33,11 @@ export function GeneralSettings({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  useEffect(() => {
+    onBusyChange?.(busy);
+    return () => onBusyChange?.(false);
+  }, [busy, onBusyChange]);
+  const locked = busy || disabled;
   const load = useCallback(async () => {
     try {
       setKeys(await apiRequest<WorkspaceApiKey[]>(apiPath, "api-keys"));
@@ -41,7 +52,7 @@ export function GeneralSettings({
     void Promise.resolve().then(load);
   }, [load]);
   async function generate() {
-    if (busy) return;
+    if (locked) return;
     setBusy(true);
     setError("");
     setNotice("");
@@ -66,7 +77,7 @@ export function GeneralSettings({
     }
   }
   async function revokeKey(id: string) {
-    if (busy) return;
+    if (locked) return;
     setBusy(true);
     setError("");
     try {
@@ -98,30 +109,30 @@ export function GeneralSettings({
         management.
       </Text>
       <Stack
-        as="form"
+        as={embedded ? "section" : "form"}
         gap="4"
         onSubmit={(event) => {
           event.preventDefault();
           void generate();
         }}
       >
-        <Field.Root required>
+        <Field.Root required={!embedded} disabled={locked}>
           <Field.Label>Key name</Field.Label>
           <Input
             value={name}
             onChange={(event) => setName(event.target.value)}
             maxLength={80}
             placeholder="Design review workspace"
-            disabled={busy}
+            disabled={locked}
           />
         </Field.Root>
-        <Field.Root disabled={busy}>
+        <Field.Root disabled={locked}>
           <RadioGroup.Root
             value={role}
             onValueChange={(event) =>
               setRole(event.value === "commenter" ? "commenter" : "editor")
             }
-            disabled={busy}
+            disabled={locked}
             colorPalette="blue"
           >
             <RadioGroup.Label>Connection permissions</RadioGroup.Label>
@@ -143,7 +154,9 @@ export function GeneralSettings({
           </Field.HelperText>
         </Field.Root>
         <Button
-          type="submit"
+          type={embedded ? "button" : "submit"}
+          onClick={embedded ? () => void generate() : undefined}
+          disabled={locked || !name.trim()}
           alignSelf="start"
           colorPalette="blue"
           loading={busy}
@@ -196,7 +209,7 @@ export function GeneralSettings({
       <Text role="status" color="fg.muted">
         {notice}
       </Text>
-      <WorkspaceApiKeyList keys={keys} busy={busy} onRevoke={revokeKey} />
+      <WorkspaceApiKeyList keys={keys} busy={locked} onRevoke={revokeKey} />
     </Stack>
   );
 }

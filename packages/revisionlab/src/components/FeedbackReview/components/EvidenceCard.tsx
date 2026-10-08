@@ -11,6 +11,8 @@ import {
 } from "@chakra-ui/react";
 import type { EvidenceGroup } from "../../../feedback-review.js";
 import { EvidenceSources } from "./EvidenceSources.js";
+import type { RevisionLabPersona } from "../../../server/types.js";
+import { FeedbackPersonaLink } from "./FeedbackPersonaLink.js";
 
 export function EvidenceCard({
   group,
@@ -18,6 +20,8 @@ export function EvidenceCard({
   disabled,
   drafted,
   basePath,
+  apiPath,
+  personas,
   onCheck,
   selectedIds,
   onSourceCheck,
@@ -27,6 +31,8 @@ export function EvidenceCard({
   disabled: boolean;
   drafted: number;
   basePath: string;
+  apiPath: string;
+  personas: RevisionLabPersona[];
   onCheck: (checked: boolean) => void;
   selectedIds: Set<string>;
   onSourceCheck: (id: string, checked: boolean) => void;
@@ -115,6 +121,7 @@ export function EvidenceCard({
           />
         </Box>
       )}
+      {!disabled && personas.length > 0 && <FeedbackPersonaLink group={group} personas={personas} apiPath={apiPath} basePath={basePath} />}
     </Stack>
   );
 }

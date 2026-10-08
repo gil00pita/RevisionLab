@@ -26,6 +26,9 @@ export function useSetupWizard(
         ? ""
         : detectLiveUrl(window.location.origin)),
   );
+  const [workspaceName, setWorkspaceName] = useState(
+    data.workspaceName || "Local workspace",
+  );
   const [settings, setSettings] = useState(data.settings);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -58,7 +61,13 @@ export function useSetupWizard(
       if (step === 0) {
         next = await apiRequest<SetupProgress>(apiPath, "setup", {
           method: "PATCH",
-          body: JSON.stringify({ action: "identity", name, email, systemUrl }),
+          body: JSON.stringify({
+            action: "identity",
+            name,
+            email,
+            systemUrl,
+            workspaceName,
+          }),
         });
         setProgress(next);
       }
@@ -82,6 +91,8 @@ export function useSetupWizard(
                   commentBubbleColor: settings.commentBubbleColor,
                 }
               : {
+                  wcagVersion: settings.wcagVersion,
+                  wcagLevel: settings.wcagLevel,
                   auditLivePages: settings.auditLivePages,
                   auditRecordings: settings.auditRecordings,
                 };
@@ -130,6 +141,8 @@ export function useSetupWizard(
     setEmail,
     systemUrl,
     setSystemUrl,
+    workspaceName,
+    setWorkspaceName,
     settings,
     changeSettings,
     error,

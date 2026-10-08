@@ -6,6 +6,10 @@
 
 RevisionLab brings prototype flows, versions, and feedback into one shared review workspace inside your Next.js project.
 
+## First-use setup
+
+Implemented locally, not yet published: the wizard lets the owner name the workspace, optionally generate an API key under Advanced options, preview the actual widget and live-comment bubbles, choose the WCAG version and A/AA/AAA target, and add personas from a compact table. The wizard and workspace persona forms use an avatar select with portrait options. On the Personas page, the chevron beside **New persona** opens the built-in templates; choosing one fills an editable form and saves only when **Save persona** is pressed. Email and Slack use segmented controls that reveal only the selected configuration. See the [package setup guide](packages/revisionlab/README.md) for details.
+
 ## Comment attachments, personas, and mentions
 
 Implemented locally 8 October 2026; not yet published. Use the compact paperclip to upload files, or paste files/images into the comment field. Attach up to five files (3 MB each, 10 MB combined), preview/remove them before posting, and download saved attachments. An attachment can be posted without text. The people icon links multiple personas; type `@` or use the @ icon to select a persona or workspace user. Selecting a persona links it to the comment; selecting a user notifies them when posted. Ordinary `@` text without a selected identity does not notify anyone. Uploads and mentions also work in replies and live-element comments.
@@ -93,6 +97,8 @@ yarn dev
 ```
 
 Open the URL printed by Next.js, complete **Setup**, and record your first flow. The npm release may have fewer features than the local build; see the [installation guide](WORKSPACE_GUIDE.md#install-in-another-nextjs-project) for local-package instructions.
+
+The local example includes a five-page Northstar Finance prototype at `/demo` (also linked from the homepage and setup guide). Start the real widget's recording on `/demo/finance`, then continue through `/demo/applicant`, `/demo/income`, `/demo/review`, and `/demo/confirmation`. Stop and save there to review the complete flow. Fields are prefilled with fictional data, retain edits within the browser tab, and can be reset with **Restart demo**. The confirmation is simulated; no finance application or email is sent. Existing prototype access and recording permissions apply.
 
 ## Go deeper
 

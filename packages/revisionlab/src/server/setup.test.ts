@@ -278,3 +278,48 @@ test("notification wizard step preserves configuration through finish and migrat
     }
   }
 });
+
+test("wizard display name persists independently of project identity and validates atomically", async (t) => {
+  const f = await reviewFixture(t);
+  const project = (await f.state()).project;
+  assert.equal(
+    (
+      await f.call("setup", "PATCH", {
+        ...identity,
+        workspaceName: "  Design review  ",
+      })
+    ).status,
+    200,
+  );
+  assert.equal((await f.state()).workspaceName, "Design review");
+  assert.deepEqual((await f.state()).project, project);
+  const connected = await (await f.call("workspace-state")).json();
+  assert.equal(connected.workspaces[0].name, "Design review");
+  for (const workspaceName of ["", " ", "x".repeat(101)]) {
+    assert.equal(
+      (
+        await f.call("setup", "PATCH", {
+          ...identity,
+          name: "Must not save",
+          workspaceName,
+        })
+      ).status,
+      400,
+    );
+    assert.equal((await f.state()).workspaceName, "Design review");
+    assert.equal((await f.state()).actor.name, identity.name);
+  }
+});
+
+test("advanced API key generation before identity does not advance setup", async (t) => {
+  const f = await reviewFixture(t);
+  const created = await f.call("api-keys", "POST", {
+    name: "Setup connection",
+    role: "commenter",
+  });
+  assert.equal(created.status, 201);
+  const key = await created.json();
+  assert.ok(key.token);
+  assert.equal((await f.state()).setup.step, 0);
+  assert.ok(!(await (await f.call("api-keys")).text()).includes(key.token));
+});

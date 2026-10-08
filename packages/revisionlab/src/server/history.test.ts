@@ -239,3 +239,31 @@ test("history restores design-system choices and accepts snapshots predating AI 
     "File stays authoritative",
   );
 });
+
+test("history snapshots predating workspace names and avatars remain restorable", async (t) => {
+  const f = await reviewFixture(t);
+  await f.call("settings", "PATCH", { widgetColor: "purple" });
+  await f.call("personas", "POST", { name: "Reviewer", avatar: "Avatar-01" });
+  await f.call("settings", "PATCH", { widgetColor: "pink" });
+  const entry = (await (await f.call("history")).json()).history[0];
+  const row = (
+    await f.client.execute({
+      sql: "SELECT snapshot_json FROM workspace_history WHERE id = ?",
+      args: [entry.id],
+    })
+  ).rows[0];
+  const snapshot = JSON.parse(String(row.snapshot_json));
+  delete snapshot.workspace_settings[0].display_name;
+  delete snapshot.personas[0].avatar;
+  await f.client.execute({
+    sql: "UPDATE workspace_history SET snapshot_json = ? WHERE id = ?",
+    args: [JSON.stringify(snapshot), entry.id],
+  });
+  assert.equal(
+    (await f.call(`history/${entry.id}/restore`, "POST", {})).status,
+    200,
+  );
+  assert.equal((await f.state()).workspaceName, "Local workspace");
+  assert.equal((await f.state()).personas[0].avatar, null);
+  assert.equal((await f.state()).settings.widgetColor, "purple");
+});
