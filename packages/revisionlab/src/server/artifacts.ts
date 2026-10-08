@@ -1,3 +1,4 @@
+import { MAX_COMMENT_FILE_BYTES } from "../comment-rich.js";
 import { randomUUID } from "node:crypto";
 import { constants } from "node:fs";
 import { lstat, mkdir, open, unlink, writeFile } from "node:fs/promises";
@@ -12,6 +13,7 @@ export const MAX_CAPTURE_BODY_BYTES = 4_100_000;
 
 interface PreparedArtifact {
   id: string;
+  filename?: string;
   contentType: string;
   bytes: Buffer;
   storage: "file" | "database" | "custom";
@@ -89,6 +91,13 @@ export async function prepareArtifact(
 ): Promise<PreparedArtifact | null> {
   if (!value) return null;
   const image = decodeImage(value);
+  return storeArtifact(image, config);
+}
+
+async function storeArtifact(
+  image: { bytes: Buffer; contentType: string; filename?: string },
+  config: ResolvedConfig,
+): Promise<PreparedArtifact> {
   const artifact: PreparedArtifact = {
     ...image,
     id: randomUUID(),
@@ -99,11 +108,17 @@ export async function prepareArtifact(
         : "database",
   };
   if (artifact.storage === "custom") {
-    await config.artifactStorage!.put(
-      artifact.id,
-      artifact.bytes,
-      artifact.contentType,
-    );
+    try {
+      await config.artifactStorage!.put(
+        artifact.id,
+        artifact.bytes,
+        artifact.contentType,
+      );
+    } catch (error) {
+      // Adapters may persist bytes before reporting a failed write.
+      await config.artifactStorage!.delete(artifact.id).catch(() => undefined);
+      throw error;
+    }
   } else if (artifact.storage === "file") {
     const directory = await artifactDirectory(config, true);
     await writeFile(join(directory, artifact.id), artifact.bytes, {
@@ -114,13 +129,33 @@ export async function prepareArtifact(
   return artifact;
 }
 
+export async function prepareCommentAttachment(
+  name: string,
+  data: string,
+  config: ResolvedConfig,
+): Promise<PreparedArtifact> {
+  const match = /^data:([^;,]*);base64,([A-Za-z0-9+/]+={0,2})$/.exec(data);
+  if (!match)
+    throw new HttpError(400, "Attachments must contain valid file data.");
+  const bytes = Buffer.from(match[2], "base64");
+  if (bytes.length > MAX_COMMENT_FILE_BYTES)
+    throw new HttpError(413, "Each attachment must be 3 MB or smaller.");
+  if (!bytes.length || bytes.toString("base64") !== match[2])
+    throw new HttpError(400, "The attachment is empty or invalid.");
+  // Only signature-validated raster formats are displayed inline. All other formats are downloads.
+  const image = /^image\/(png|jpeg|webp)$/.test(match[1])
+    ? decodeImage(data)
+    : { bytes, contentType: "application/octet-stream" };
+  return storeArtifact({ ...image, filename: name }, config);
+}
+
 export async function insertArtifact(
   transaction: Transaction,
   artifact: PreparedArtifact | null,
 ): Promise<void> {
   if (!artifact) return;
   await transaction.execute({
-    sql: "INSERT INTO artifacts (id, content_type, size, storage, bytes, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+    sql: "INSERT INTO artifacts (id, content_type, size, storage, bytes, created_at, filename) VALUES (?, ?, ?, ?, ?, ?, ?)",
     args: [
       artifact.id,
       artifact.contentType,
@@ -128,6 +163,7 @@ export async function insertArtifact(
       artifact.storage,
       artifact.storage === "database" ? artifact.bytes : null,
       new Date().toISOString(),
+      artifact.filename ?? null,
     ],
   });
 }
@@ -166,6 +202,7 @@ export async function readArtifact(
       requireCurrentReference
         ? ` AND (EXISTS (SELECT 1 FROM steps WHERE steps.screenshot = artifacts.id)
           OR EXISTS (SELECT 1 FROM comments WHERE comments.screenshot = artifacts.id)
+          OR EXISTS (SELECT 1 FROM comments, json_each(comments.attachments_json) attachment WHERE json_extract(attachment.value, '$.id') = artifacts.id)
           OR EXISTS (SELECT 1 FROM feedback_ticket_evidence WHERE screenshot_id = artifacts.id))`
         : ""
     }`,
@@ -210,6 +247,12 @@ export async function readArtifact(
     headers: {
       "Content-Type": String(artifact.content_type),
       "Content-Length": String(bytes.byteLength),
+      ...(artifact.filename &&
+      artifact.content_type === "application/octet-stream"
+        ? {
+            "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(String(artifact.filename))}`,
+          }
+        : {}),
       "Cache-Control": "private, no-store",
       "X-Content-Type-Options": "nosniff",
       "Content-Security-Policy": "default-src 'none'; sandbox",

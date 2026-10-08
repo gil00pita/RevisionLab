@@ -101,7 +101,7 @@ export function WorkspaceInstancesSettings({
           </Button>
         )}
       </Flex>
-      <Text color="gray.600">
+      <Text color="fg.muted">
         Connect live versions of this project. All workspaces brings their
         flows, comments, personas, and saved evidence together; edits are saved
         to their source.
@@ -116,11 +116,11 @@ export function WorkspaceInstancesSettings({
         />
       )}
       {error && (
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {error}
         </Text>
       )}
-      <Text role="status" color="gray.600">
+      <Text role="status" color="fg.muted">
         {notice}
       </Text>
       {workspaces.map((workspace) => (
@@ -152,13 +152,13 @@ export function WorkspaceInstancesSettings({
             href={workspace.url}
             target="_blank"
             rel="noopener noreferrer"
-            color="blue.700"
+            color="blue.fg"
             overflowWrap="anywhere"
           >
             {workspace.url}
           </Link>
           {workspace.error && (
-            <Text color="orange.800" fontSize="sm">
+            <Text color="orange.fg" fontSize="sm">
               {workspace.error}
             </Text>
           )}

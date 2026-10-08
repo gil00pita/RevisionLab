@@ -71,7 +71,7 @@ export function EmailProviders({
             {emailProviders.map((provider) => (
               <RadioGroup.Item key={provider} value={provider}>
                 <RadioGroup.ItemHiddenInput />
-                <RadioGroup.ItemIndicator borderColor="gray.500" />
+                <RadioGroup.ItemIndicator borderColor="fg.muted" />
                 <RadioGroup.ItemText>
                   {emailProviderLabels[provider]}
                 </RadioGroup.ItemText>
@@ -85,20 +85,20 @@ export function EmailProviders({
         </Field.HelperText>
       </Field.Root>
       {settings.defaultProvider === "environment" && (
-        <Text fontSize="sm" color="gray.600">
+        <Text fontSize="sm" color="fg.muted">
           {configuration.environmentEmailConfigured
             ? "Resend delivery is configured by the host."
             : "No host email provider is configured. Local development can show login links; deployed email needs a configured provider."}
         </Text>
       )}
       {settings.defaultProvider === "disabled" && (
-        <Text fontSize="sm" color="orange.800">
+        <Text fontSize="sm" color="orange.fg">
           Email, including passwordless login links and invitations, will not be
           sent.
         </Text>
       )}
       {settings.defaultProvider === "smtpdev" && (
-        <Text fontSize="sm" color="orange.800">
+        <Text fontSize="sm" color="orange.fg">
           SMTP.dev delivers only inside its sandbox. External recipients will
           not receive login links or notifications.
         </Text>
@@ -135,7 +135,7 @@ export function EmailProviders({
               href="https://resend.com/signup"
               target="_blank"
               rel="noopener noreferrer"
-              color="blue.700"
+              color="blue.fg"
             >
               Sign up for Resend
             </Link>
@@ -156,11 +156,11 @@ export function EmailProviders({
               href="https://smtp.dev/"
               target="_blank"
               rel="noopener noreferrer"
-              color="blue.700"
+              color="blue.fg"
             >
               Sign up for SMTP.dev
             </Link>
-            <Text color="orange.800" fontSize="sm">
+            <Text color="orange.fg" fontSize="sm">
               Testing sandbox only. Sending uses send.smtp.dev on port 587 with
               STARTTLS and your SMTP account credentials. The optional API key
               is saved for account management; it is not used to send emails.

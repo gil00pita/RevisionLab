@@ -38,7 +38,7 @@ export function BoardConnector({
               <Box
                 borderTopWidth="2px"
                 borderStyle={edge.kind === "manual" ? "dashed" : "solid"}
-                borderColor={edge.kind === "manual" ? "blue.600" : "gray.600"}
+                borderColor={edge.kind === "manual" ? "blue.border" : "fg.muted"}
               />
               {index === 2 && (
                 <Icon
@@ -47,7 +47,7 @@ export function BoardConnector({
                   top="-11px"
                   w="24px"
                   h="24px"
-                  color={edge.kind === "manual" ? "blue.600" : "gray.600"}
+                  color={edge.kind === "manual" ? "blue.fg" : "fg.muted"}
                 >
                   <ArrowRight />
                 </Icon>
@@ -61,11 +61,11 @@ export function BoardConnector({
           top={`${middle.y}px`}
           transform="translate(-50%, -50%)"
           maxW="48"
-          bg="gray.50"
+          bg="bg.subtle"
           px="2"
           py="1"
           fontSize="xs"
-          color="blue.700"
+          color="blue.fg"
           borderRadius="sm"
           textAlign="center"
           lineClamp={2}
@@ -77,7 +77,7 @@ export function BoardConnector({
   }
   const geometry = connectionGeometry(source, target);
   if (!geometry) return null;
-  const color = "gray.600";
+  const color = "fg.muted";
   return (
     <Box aria-hidden="true" pointerEvents="none">
       <Box
@@ -116,7 +116,7 @@ export function BoardConnector({
           top={`${geometry.midpoint.y - 16}px`}
           transform="translate(-50%, -50%)"
           maxW="48"
-          bg="gray.50"
+          bg="bg.subtle"
           px="2"
           py="1"
           fontSize="xs"

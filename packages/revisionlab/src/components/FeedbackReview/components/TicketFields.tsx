@@ -18,7 +18,7 @@ export function TicketFields({
           value={fields.summary}
           maxLength={255}
           readOnly={disabled}
-          borderColor="gray.500"
+          borderColor="fg.muted"
           onChange={(event) =>
             onChange({ ...fields, summary: event.target.value })
           }
@@ -31,7 +31,7 @@ export function TicketFields({
           value={fields.description}
           maxLength={20_000}
           readOnly={disabled}
-          borderColor="gray.500"
+          borderColor="fg.muted"
           onChange={(event) =>
             onChange({ ...fields, description: event.target.value })
           }
@@ -44,7 +44,7 @@ export function TicketFields({
           value={fields.acceptanceCriteria}
           maxLength={10_000}
           readOnly={disabled}
-          borderColor="gray.500"
+          borderColor="fg.muted"
           onChange={(event) =>
             onChange({ ...fields, acceptanceCriteria: event.target.value })
           }

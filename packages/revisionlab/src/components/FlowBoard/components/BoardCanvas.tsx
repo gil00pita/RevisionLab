@@ -94,10 +94,10 @@ export function BoardCanvas({
         minW="0"
         minH={{ base: "420px", md: "560px" }}
         alignSelf="stretch"
-        bg="gray.50"
+        bg="bg.subtle"
         focusRing="inset"
         borderTopWidth="1px"
-        borderColor="gray.200"
+        borderColor="border"
       >
         <Box position="relative" w="full" h="full">
           <Button
@@ -112,7 +112,7 @@ export function BoardCanvas({
             borderRadius="0"
             cursor="grab"
             touchAction="none"
-            bg="gray.50"
+            bg="bg.subtle"
             _active={{ cursor: "grabbing" }}
             onPointerDown={startPan}
             onPointerMove={pan}

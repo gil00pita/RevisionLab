@@ -1,3 +1,5 @@
+import { EmptyStateIllustration } from "../../EmptyStateIllustration/index.js";
+import { IllustratedEmptyState } from "../../IllustratedEmptyState/index.js";
 import type { ReactNode, RefObject } from "react";
 import {
   Badge,
@@ -10,7 +12,7 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { ArrowUpRight, Camera, ImageOff } from "lucide-react";
+import { ArrowUpRight, Camera } from "lucide-react";
 import type {
   RevisionLabFlow,
   RevisionLabStep,
@@ -52,7 +54,7 @@ export function ScreenCanvas({
   onSelectComment: (id: string) => void;
 }) {
   return (
-    <Stack gap="0" flex="1" minW="0" bg="gray.50">
+    <Stack gap="0" flex="1" minW="0" bg="bg.subtle">
       <Flex
         as="nav"
         aria-label="Screens in this flow"
@@ -60,7 +62,7 @@ export function ScreenCanvas({
         gap="3"
         p="5"
         borderBottomWidth="1px"
-        borderColor="gray.200"
+        borderColor="border"
       >
         {flow.steps.map((screen, index) => (
           <Button
@@ -70,9 +72,9 @@ export function ScreenCanvas({
             h="auto"
             p="3"
             maxW="60"
-            bg={screen.id === step?.id ? "blue.50" : "white"}
-            borderColor={screen.id === step?.id ? "blue.600" : "gray.300"}
-            color="gray.900"
+            bg={screen.id === step?.id ? "blue.subtle" : "bg.panel"}
+            borderColor={screen.id === step?.id ? "blue.border" : "border.emphasized"}
+            color="fg"
             onClick={() => onSelect(screen.id)}
             aria-pressed={screen.id === step?.id}
           >
@@ -83,7 +85,7 @@ export function ScreenCanvas({
           </Button>
         ))}
         {flow.steps.length === 0 && (
-          <Flex gap="2" align="center" color="gray.600">
+          <Flex gap="2" align="center" color="fg.muted">
             <Icon>
               <Camera />
             </Icon>
@@ -99,7 +101,7 @@ export function ScreenCanvas({
                 {step.title}
               </Heading>
               <Text
-                color="gray.600"
+                color="fg.muted"
                 fontFamily="mono"
                 fontSize="xs"
                 mt="2"
@@ -117,7 +119,7 @@ export function ScreenCanvas({
                     ).toString()
                   : safePrototypeRoute(step.route, basePath)
               }
-              color="blue.700"
+              color="blue.fg"
               fontSize="sm"
               flexShrink="0"
             >
@@ -143,26 +145,14 @@ export function ScreenCanvas({
               onSelectComment={onSelectComment}
             />
           ) : (
-            <Flex
-              minH="64"
-              align="center"
-              justify="center"
-              direction="column"
-              gap="3"
-              color="gray.600"
-            >
-              <Icon size="xl">
-                <ImageOff />
-              </Icon>
-              <Text>This step has no captured image.</Text>
-            </Flex>
+            <IllustratedEmptyState illustration="images" description="This step has no captured image." />
           )}
           {step.screenshot && (
             <Link
               href={step.screenshot}
               target="_blank"
               rel="noopener noreferrer"
-              color="blue.700"
+              color="blue.fg"
               fontSize="sm"
               alignSelf="start"
             >
@@ -172,7 +162,7 @@ export function ScreenCanvas({
               </Icon>
             </Link>
           )}
-          <Text fontSize="xs" color="gray.600">
+          <Text fontSize="xs" color="fg.muted">
             Captured {new Date(step.createdAt).toLocaleString()} ·{" "}
             {flow.persona} · version {flow.version}
           </Text>
@@ -186,13 +176,11 @@ export function ScreenCanvas({
           textAlign="center"
           gap="3"
         >
-          <Icon size="2xl" color="gray.500">
-            <Camera />
-          </Icon>
+          <EmptyStateIllustration variant="images" />
           <Heading as="h2" size="lg">
             Continue your recording
           </Heading>
-          <Text color="gray.600" maxW="sm">
+          <Text color="fg.muted" maxW="sm">
             Open the prototype and use the RevisionLab widget to capture the
             screens in this flow.
           </Text>

@@ -84,11 +84,11 @@ export function ScreenCommentBubbles({
               transform="translate(-50%, -50%)"
               borderRadius="full"
               borderWidth="2px"
-              borderColor="white"
+              borderColor="bg.panel"
               colorPalette={comment.status === "resolved" ? "green" : "blue"}
               outlineWidth={selected ? "2px" : "0"}
               outlineStyle="solid"
-              outlineColor="blue.700"
+              outlineColor="blue.border"
               outlineOffset="2px"
               aria-label={`Pin ${number}: ${comment.body.slice(0, 90)}${comment.status === "resolved" ? " (resolved)" : ""}`}
               aria-pressed={selected}
@@ -124,7 +124,7 @@ export function ScreenCommentBubbles({
         <Popover.Positioner
           data-revisionlab-ui
           colorPalette="blue"
-          color="gray.900"
+          color="fg"
           fontFamily="body"
           zIndex="popover"
         >
@@ -137,12 +137,12 @@ export function ScreenCommentBubbles({
             _motionReduce={{ animation: "none" }}
           >
             <Popover.Arrow>
-              <Popover.ArrowTip borderColor="gray.200" />
+              <Popover.ArrowTip borderColor="border" />
             </Popover.Arrow>
             <Popover.Header
               pb="3"
               borderBottomWidth="1px"
-              borderColor="gray.200"
+              borderColor="border"
             >
               <Flex align="center" justify="space-between" gap="3">
                 <Popover.Title fontWeight="semibold">

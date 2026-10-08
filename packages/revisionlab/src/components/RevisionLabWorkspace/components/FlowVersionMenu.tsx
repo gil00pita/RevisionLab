@@ -30,7 +30,7 @@ export function FlowVersionMenu({
         </IconButton>
       </Menu.Trigger>
       <Portal>
-        <Menu.Positioner data-revisionlab-ui>
+        <Menu.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
           <Menu.Content
             aria-label="Flow versions"
             minW="48"

@@ -1,6 +1,30 @@
-## Connection and sync in workspace chrome — 7 October 2026
+## Personas page width — 8 October 2026
 
-Implemented locally: Local workspace naming, green/amber selector status dots, and a shared navbar relative-sync/manual-refresh button with exact-timestamp tooltip. The two Overview status cards are removed while count/sync/cache/guard semantics remain. Browser checks cover selected-scope manual refresh, success/pending/failure/recovery/partial/never-synced states, keyboard tooltip access, and narrow/enlarged-text chrome. Dashboard/connected-workspace suites pass all 11 tests. Final lint and production validation are recorded in VALIDATION.md; no publication or external connection changes. PRODUCT.md defines acceptance.
+Implemented locally: remove the PersonaManager width cap when used by the workspace page's controlled editor, while retaining the contained setup-wizard layout. Match the Comments page's available content width, padding and heading size; preserve form readability and existing persona operations. PRODUCT.md records the requirement; VALIDATION.md records actual checks.
+
+## Rich comments and mentions — 8 October 2026
+
+Implemented locally: extended shared comment composition with compact uploads/paste, multiple persona links and identity-backed user/persona mentions. Persist private attachments and metadata; provide recipient-owned in-app notifications with configured email delivery. Preserve replies, screenshot context, source boundaries and history. All 292 package tests, lint, production build, and isolated browser checks pass, including upload/paste, keyboard mentions, multiple persona links, failed/pending submission, notification navigation, live-page context, both themes, narrow screens and enlarged text. PRODUCT.md defines acceptance; VALIDATION.md records evidence and limits.
+
+## Workspace selector and inline connection modal — 7 October 2026
+
+Implemented locally: align status dots and labels, offer owner-only Add workspace from the dropdown, hide All workspaces for one source, and reuse the connection form/endpoint in a Chakra dialog without navigating away. Successful saves refresh options while retaining the current scope; errors retain form values. Preserve Settings management, selection/departure guards, keyboard focus, source permissions, themes, and responsive layout. Verify the one/multiple-source menus, keyboard opening/closing, save failure/retry, duplicate-submit prevention, new-option refresh, role visibility, and narrow/enlarged-text rendering. PRODUCT.md defines acceptance; VALIDATION.md records actual checks.
+
+## Test session header tabs — 7 October 2026
+
+Implemented locally: replaced stacked Current/Previous session groups with counted Chakra tabs in the shared page header. Keep session data, selected details, replay, and creation form owned by TestSessions; render its tabs into the header with Chakra Portal. Preserve session status classification, polling, permissions, controls, and deep links. Browser checks cover tab selection/counts, keyboard behavior, replay/form retention, historical links, and narrow layouts in both themes. PRODUCT.md defines the accepted request; VALIDATION.md records evidence.
+
+## Dashboard-shaped workspace loading — 7 October 2026
+
+Implemented locally: both initial spinner states now use an Overview-shaped loading shell matching the sidebar/header, review/activity grids, resolution arc, and tickets layout. Semantic Chakra skeletons retain browser theme selection, expose one accessible loading status, and respect reduced motion. Browser checks cover delayed success, error/authentication/retry, explicit sections, first-use setup, mobile/enlarged-text layouts, and retained content during refresh. PRODUCT.md defines the confirmed request; VALIDATION.md records the checks.
+
+## Theme-aware colors and sidebar theme switcher — 7 October 2026
+
+Implemented locally: AGENTS.md requires semantic color roles; existing component colors now use theme-aware text, surface, border, accent, status, and focus roles. A next-themes light/dark toggle beside Settings persists the browser preference and stays visible in both sidebar panels and on mobile. Retain the root Chakra provider and embedded CSS boundary; explicit portal foreground/palette props keep overlays readable. Central semantic definitions preserve the white widget mark and improve comment/focus contrast. PRODUCT.md defines the confirmed scope; VALIDATION.md records compilation, type generation, browser checks, and the 283-test package suite.
+
+## Workspace scope and sync-error notifications — 7 October 2026
+
+Implemented locally: removed the top scope badge and shared relative-sync/refresh button, including their loading placeholders. Retain the sidebar scope/status selector, background polling, cached data, and guarded page actions. Add one dismissible, theme-aware Chakra error toast per selected-scope interruption; handle request and partial-source failure, suppress repeat notifications until recovery, and clear notifications on recovery/scope changes. Initial retry/sign-in screens and source-specific unavailable guidance remain. PRODUCT.md defines the updated requirements; VALIDATION.md records failure/retry/recovery cycles, header actions, keyboard dismissal, themes, and narrow/enlarged-text layouts.
 
 # Build Instructions — RevisionLab Embedded Review
 
@@ -1670,7 +1694,7 @@ Record a pre-change workspace snapshot for flows, screens, recording state, boar
 
 ## Completed increment — Connected workspace instances
 
-Add owner-managed General API keys and Workspace Instances connections, a workspace/all selector, bounded authenticated federation, namespaced review data/artifacts, source-aware editing, failure feedback, and departure guards. Validate key lifecycle, same-project identity, SSRF boundaries, role restrictions, collision isolation, partial failures, and desktop/mobile workflows with isolated installations. The selector is always visible, including a single-workspace installation (7 October 2026 refinement supersedes the prior two-workspace threshold), while preserving permission-limited remote editing and existing departure guards. Trigger/options have 44px targets and wrapping workspace names. PRODUCT.md records these decisions; VALIDATION.md records checks and remaining deployment verification.
+Add owner-managed General API keys and Workspace Instances connections, a workspace/all selector, bounded authenticated federation, namespaced review data/artifacts, source-aware editing, failure feedback, and departure guards. Validate key lifecycle, same-project identity, SSRF boundaries, role restrictions, collision isolation, partial failures, and desktop/mobile workflows with isolated installations. The selector is always visible, including a single-workspace installation (7 October 2026 refinement supersedes the prior two-workspace threshold), while preserving permission-limited remote editing and existing departure guards. Trigger/options have 44px targets and wrapping workspace names. The visible Workspace label is removed (7 October 2026 refinement); a screen-reader-only label preserves the accessible control name. PRODUCT.md records these decisions; VALIDATION.md records checks and remaining deployment verification.
 
 ## Prototype test sessions — 3 October 2026
 
@@ -1679,3 +1703,7 @@ Implemented locally: single-use participant links, server-enforced deadlines and
 ## Completed local increment — Notification delivery
 
 Implemented owner-managed Custom SMTP, Resend, and SMTP.dev tabs with independent saved settings and an explicit default email provider, reused in the initial setup wizard before user invitations. Preserve host Resend configuration and passwordless access. Encrypt and redact credentials, exclude them from history/federation, validate provider readiness, and provide test delivery. Add opt-in email recipients and Slack incoming-webhook notifications for new comments/replies and accessibility issues on new saved screens. Preserve feedback on delivery failure, expose delivery status, and verify authorization, secret handling, provider selection, setup migration, failure paths, first-test status persistence, concurrent-owner edits, and stalled providers within the federation deadline. SMTP.dev is a sandbox using SMTP credentials to send; its API key is for its management API. PRODUCT.md records the acceptance criteria and scope assumptions. VALIDATION.md records the automated and browser checks; live provider receipt and hosted deployment remain unverified.
+
+## Illustrated empty states — 7 October 2026
+
+Implemented locally, not yet published: render all ten supplied illustrations as focused TSX components through a shared decorative Chakra Icon. The 8 October refinement replaces fixed-color image assets with semantic-token SVG fills/strokes and removes white canvas rectangles; retain shape geometry and independent mask IDs for repeated instances. Match artwork to the existing flow, comments, sessions, Feedback Review, personas, history, access-management, missing-capture, and initial-error states. Use Done only for a genuinely completed clean automated accessibility report; retain its certification caveat. Reserve the commerce artwork until relevant pages exist. Preserve empty-state guidance/actions, loading branches, theme semantics, and populated content. Verify packaged TSX, transparent backgrounds, theme-driven colors, repeated mask references, responsive rendering, decorative accessibility, and existing state transitions. PRODUCT.md defines acceptance; VALIDATION.md records actual results.

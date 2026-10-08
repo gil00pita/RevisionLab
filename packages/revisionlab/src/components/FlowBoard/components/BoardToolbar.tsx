@@ -34,9 +34,9 @@ export function BoardToolbar({
       align="center"
       justify="space-between"
       flexWrap="wrap"
-      bg="white"
+      bg="bg.panel"
       borderBottomWidth="1px"
-      borderColor="gray.200"
+      borderColor="border"
     >
       <Flex
         gap="1"

@@ -44,7 +44,7 @@ export function DesignSystemPicker({
               gap="2"
               px="3"
               py="2"
-              bg={value === system.id ? "blue.50" : "bg"}
+              bg={value === system.id ? "blue.subtle" : "bg"}
             >
               <RadioGroup.Item
                 value={system.id}
@@ -54,8 +54,8 @@ export function DesignSystemPicker({
               >
                 <RadioGroup.ItemHiddenInput />
                 <RadioGroup.ItemIndicator
-                  borderColor="gray.500"
-                  _checked={{ borderColor: "blue.600" }}
+                  borderColor="fg.muted"
+                  _checked={{ borderColor: "blue.border" }}
                 />
                 <RadioGroup.ItemText fontSize="sm">
                   {system.name}
@@ -83,7 +83,7 @@ export function DesignSystemPicker({
                 target="_blank"
                 rel="noopener noreferrer"
                 p="2"
-                color="blue.700"
+                color="blue.fg"
                 aria-label={`Open ${system.name} documentation (new tab)`}
                 focusRing="outside"
               >
@@ -98,12 +98,12 @@ export function DesignSystemPicker({
             px="3"
             py="3"
             cursor="pointer"
-            bg={value === "manual" ? "blue.50" : "bg"}
+            bg={value === "manual" ? "blue.subtle" : "bg"}
           >
             <RadioGroup.ItemHiddenInput />
             <RadioGroup.ItemIndicator
-              borderColor="gray.500"
-              _checked={{ borderColor: "blue.600" }}
+              borderColor="fg.muted"
+              _checked={{ borderColor: "blue.border" }}
             />
             <RadioGroup.ItemText fontSize="sm">
               Add a manual design system

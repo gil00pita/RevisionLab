@@ -37,7 +37,7 @@ export function NotificationSettings({
   if (!form.configuration || !form.draft)
     return (
       <Stack gap="3">
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {form.error}
         </Text>
         <Button variant="outline" onClick={() => void form.load()}>
@@ -66,13 +66,13 @@ export function NotificationSettings({
               Notifications
             </Heading>
           )}
-          <Text color="gray.600">
+          <Text color="fg.muted">
             Set up email delivery and choose where new review activity is sent.
             These settings apply to this installation.
           </Text>
         </Stack>
         {!form.configuration.encryptionAvailable && (
-          <Text role="status" color="orange.800">
+          <Text role="status" color="orange.fg">
             Before saving credentials, set
             REVISIONLAB_NOTIFICATION_ENCRYPTION_KEY on the host to a 32-byte
             base64url secret.
@@ -108,7 +108,7 @@ export function NotificationSettings({
           Save notification settings
         </Button>
         {form.dirty && (
-          <Text fontSize="sm" color="gray.600">
+          <Text fontSize="sm" color="fg.muted">
             You have unsaved notification settings. Save before testing.
           </Text>
         )}
@@ -153,11 +153,11 @@ export function NotificationSettings({
             Refresh delivery status
           </Button>
         </HStack>
-        <Text fontSize="sm" color="gray.600">
+        <Text fontSize="sm" color="fg.muted">
           Email:{" "}
           {form.configuration.lastDelivery.email ?? "No delivery attempt yet."}
         </Text>
-        <Text fontSize="sm" color="gray.600">
+        <Text fontSize="sm" color="fg.muted">
           Slack:{" "}
           {form.configuration.lastDelivery.slack ?? "No delivery attempt yet."}
         </Text>
@@ -173,12 +173,12 @@ export function NotificationSettings({
         </Button>
       )}
       {form.error && (
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {form.error}
         </Text>
       )}
       {form.message && (
-        <Text role="status" color="green.700">
+        <Text role="status" color="green.fg">
           {form.message}
         </Text>
       )}

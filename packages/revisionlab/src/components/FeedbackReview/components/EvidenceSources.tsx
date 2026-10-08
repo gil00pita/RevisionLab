@@ -35,7 +35,7 @@ export function EvidenceSources({
                 <Checkbox.HiddenInput />
                 <Checkbox.Control
                   borderColor={
-                    selection.ids.has(item.id) ? "blue.600" : "gray.500"
+                    selection.ids.has(item.id) ? "blue.border" : "fg.muted"
                   }
                 >
                   <Checkbox.Indicator />
@@ -49,14 +49,14 @@ export function EvidenceSources({
             {item.kind !== "test" &&
             item.flowId &&
             unavailableFlowIds?.has(item.flowId) ? (
-              <Text color="gray.600">
+              <Text color="fg.muted">
                 {item.screen ?? item.title} · Source recording removed; saved
                 evidence retained.
               </Text>
             ) : (
               <Link
                 href={evidenceReviewPath(item, basePath)}
-                color="blue.700"
+                color="blue.fg"
                 overflowWrap="anywhere"
               >
                 {item.kind === "test"
@@ -65,10 +65,22 @@ export function EvidenceSources({
                 {item.flowName && ` · ${item.flowName} · v${item.version}`}
               </Link>
             )}
-            <Text color="gray.600" fontSize="xs" overflowWrap="anywhere">
+            <Text color="fg.muted" fontSize="xs" overflowWrap="anywhere">
               {item.route} · {new Date(item.capturedAt).toLocaleString()}
             </Text>
             <EvidenceScreenshot item={item} />
+            {item.attachments?.map((file) => (
+              <Link
+                key={file.id}
+                href={file.href}
+                download={file.name}
+                color="blue.fg"
+                minH="11"
+                overflowWrap="anywhere"
+              >
+                Attachment: {file.name}
+              </Link>
+            ))}
             <Text whiteSpace="pre-wrap" overflowWrap="anywhere">
               {item.body}
             </Text>

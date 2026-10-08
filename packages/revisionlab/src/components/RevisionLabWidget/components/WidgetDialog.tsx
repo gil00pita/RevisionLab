@@ -53,17 +53,17 @@ export function WidgetDialog({
     >
       <Portal>
         <Dialog.Backdrop data-revisionlab-ui />
-        <Dialog.Positioner data-revisionlab-ui colorPalette="blue">
+        <Dialog.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
           <Dialog.Content
-            bg="white"
-            color="gray.900"
+            bg="bg.panel"
+            color="fg"
             fontFamily="body"
             borderRadius="lg"
           >
             <Dialog.Header pb="3" display="block" pr="10">
               <Dialog.Title>{title}</Dialog.Title>
               <Dialog.Description
-                color="gray.600"
+                color="fg.muted"
                 overflowWrap="anywhere"
                 fontSize="xs"
                 mt="1"
@@ -72,14 +72,14 @@ export function WidgetDialog({
               </Dialog.Description>
             </Dialog.Header>
             <Dialog.Body>{children}</Dialog.Body>
-            <Dialog.Footer borderTopWidth="1px" borderColor="gray.200">
+            <Dialog.Footer borderTopWidth="1px" borderColor="border">
               <Stack gap="3" w="full">
                 {actions}
                 <Link
                   href={basePath}
                   fontWeight="semibold"
                   fontSize="sm"
-                  color="blue.700"
+                  color="blue.fg"
                 >
                   Open full workspace
                   <Icon>

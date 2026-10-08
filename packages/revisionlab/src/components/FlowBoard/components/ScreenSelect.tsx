@@ -40,7 +40,7 @@ export function ScreenSelect({
           </Select.IndicatorGroup>
         </Select.Control>
         <Portal>
-          <Select.Positioner data-revisionlab-ui="" zIndex="popover">
+          <Select.Positioner data-revisionlab-ui="" color="fg" colorPalette="blue" zIndex="popover">
             <Select.Content>
               {collection.items.map((item) => (
                 <Select.Item key={item.value} item={item}>

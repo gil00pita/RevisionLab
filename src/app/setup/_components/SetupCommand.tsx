@@ -7,8 +7,8 @@ export function SetupCommand({ children }: { children: string }) {
       whiteSpace="pre-wrap"
       overflowWrap="anywhere"
       p="4"
-      bg="gray.900"
-      color="gray.100"
+      bg="bg.inverted"
+      color="fg.inverted"
     >
       {children}
     </Code>

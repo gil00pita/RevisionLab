@@ -32,7 +32,7 @@ export function CommentBubblePreview({
         top={`${anchorY}px`}
         w={`${distance}px`}
         h="0.5"
-        bg="blue.600"
+        bg="blue.solid"
         transformOrigin="left center"
         transform={`rotate(${angle}rad)`}
       />
@@ -45,9 +45,9 @@ export function CommentBubblePreview({
         top={`${tailY}px`}
         w="3"
         h="3"
-        bg="white"
+        bg="bg.panel"
         borderWidth="1px"
-        borderColor={selected ? "blue.600" : "gray.400"}
+        borderColor={selected ? "blue.border" : "fg.muted"}
         transform="translate(-50%, -50%) rotate(45deg)"
       />
       <Button
@@ -65,14 +65,14 @@ export function CommentBubblePreview({
         p="3"
         textAlign="left"
         whiteSpace="normal"
-        bg="white"
-        color="gray.900"
+        bg="bg.panel"
+        color="fg"
         borderWidth="1px"
-        borderColor={selected ? "blue.600" : "gray.400"}
+        borderColor={selected ? "blue.border" : "fg.muted"}
         borderRadius="xl"
         cursor="pointer"
         focusRing="outside"
-        _hover={{ bg: "blue.50", borderColor: "blue.600" }}
+        _hover={{ bg: "blue.subtle", borderColor: "blue.border" }}
         aria-label={`Open comment bubble ${number}: ${comment.body.slice(0, 90)}`}
         aria-haspopup="dialog"
         aria-expanded={selected}

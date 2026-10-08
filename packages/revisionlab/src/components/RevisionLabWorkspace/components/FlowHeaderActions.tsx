@@ -128,7 +128,7 @@ export function FlowHeaderActions({
       {error && (
         <Text
           role="alert"
-          color="red.700"
+          color="red.fg"
           fontSize="sm"
           flexBasis="full"
           overflowWrap="anywhere"

@@ -1,3 +1,4 @@
+import { CommentContent } from "../../CommentContent/index.js";
 import { Badge, Button, Card, Flex, Icon, Stack, Text } from "@chakra-ui/react";
 import { Check, MapPin, MessageSquare, Undo2 } from "lucide-react";
 import type { RevisionLabComment } from "../../../server/types.js";
@@ -6,6 +7,7 @@ import type { ReactNode } from "react";
 export function CommentMessage({
   presentation = "card",
   comment,
+  apiPath,
   pinNumber,
   replyCount = 0,
   canResolve = false,
@@ -16,6 +18,7 @@ export function CommentMessage({
 }: {
   presentation?: "card" | "plain";
   comment: RevisionLabComment;
+  apiPath: string;
   pinNumber?: number;
   replyCount?: number;
   canResolve?: boolean;
@@ -30,11 +33,12 @@ export function CommentMessage({
   return (
     <Card.Root
       as="article"
+      id={`comment-${comment.id}`}
       size="sm"
       variant="outline"
-      bg="white"
+      bg="bg.panel"
       borderWidth={isPlain ? "0" : undefined}
-      borderColor="gray.300"
+      borderColor="border.emphasized"
       borderRadius={isPlain ? "none" : "xl"}
       overflow={isPlain ? "visible" : "hidden"}
       aria-label={`Comment by ${comment.authorName}`}
@@ -47,7 +51,7 @@ export function CommentMessage({
           <Text
             fontSize="sm"
             fontWeight="semibold"
-            color="gray.900"
+            color="fg"
             overflowWrap="anywhere"
             minW="0"
           >
@@ -68,34 +72,26 @@ export function CommentMessage({
             )}
           </Flex>
         </Flex>
-        <Text fontSize="xs" color="gray.600" overflowWrap="anywhere">
+        <Text fontSize="xs" color="fg.muted" overflowWrap="anywhere">
           {new Date(comment.createdAt).toLocaleString()}
         </Text>
       </Card.Header>
       <Card.Body px={isPlain ? "0" : undefined} py={isPlain ? "3" : undefined}>
         {comment.elementAnchor && !comment.parentId && (
-          <Text fontSize="xs" color="blue.700" mb="2" overflowWrap="anywhere">
+          <Text fontSize="xs" color="blue.fg" mb="2" overflowWrap="anywhere">
             Live element · {comment.elementAnchor.tag}:{" "}
             {comment.elementAnchor.label}
           </Text>
         )}
-        <Text
-          fontSize="md"
-          lineHeight="tall"
-          color="gray.900"
-          whiteSpace="pre-wrap"
-          overflowWrap="anywhere"
-        >
-          {comment.body}
-        </Text>
+        <CommentContent comment={comment} apiPath={apiPath} />
       </Card.Body>
       {(onOpen || showResolve || actions) && (
         <Card.Footer
           p={isPlain ? "0" : "3"}
           pt={isPlain ? "2" : undefined}
           borderTopWidth="1px"
-          borderColor="gray.200"
-          bg={isPlain ? "white" : "gray.50"}
+          borderColor="border"
+          bg={isPlain ? "bg.panel" : "bg.subtle"}
         >
           <Stack direction="row" gap="2" flexWrap="wrap">
             {actions}

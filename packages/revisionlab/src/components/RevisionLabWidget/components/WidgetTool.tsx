@@ -19,8 +19,8 @@ export function WidgetTool({
   children?: ReactNode;
 }) {
   const active = variant !== "default";
-  const background = variant === "scanning" ? "blue.700" : "red.700";
-  const hoverBackground = variant === "scanning" ? "blue.800" : "red.800";
+  const background = variant === "scanning" ? "blue.solid" : "red.solid";
+  const hoverBackground = variant === "scanning" ? "blue.solid/90" : "red.solid/90";
   return (
     <Box position="relative" flexShrink="0">
       <ToolHint label={label}>
@@ -37,14 +37,14 @@ export function WidgetTool({
           }}
           disabled={disabled}
           variant="plain"
-          color="white"
+          color="colorPalette.contrast"
           bg={active ? background : "transparent"}
           size="sm"
           boxSize="9"
           minW="9"
           borderRadius="full"
           mx="1"
-          _hover={{ bg: active ? hoverBackground : "blackAlpha.200" }}
+          _hover={{ bg: active ? hoverBackground : "fg/12" }}
           focusRing="inset"
         >
           {variant === "scanning" ? (
@@ -69,8 +69,8 @@ export function WidgetTool({
           right="1"
           pointerEvents="none"
           borderRadius="full"
-          bg="white"
-          color="blue.800"
+          bg="bg.panel"
+          color="blue.fg"
           minW="4"
           justifyContent="center"
           fontSize="10px"

@@ -124,6 +124,9 @@ export interface RevisionLabElementAnchor {
 }
 
 export interface RevisionLabComment {
+  attachments?: import("../comment-rich.js").CommentAttachment[];
+  personas?: import("../comment-rich.js").CommentIdentity[];
+  mentions?: import("../comment-rich.js").CommentMention[];
   screenshot?: string | null;
   screenshotAnchor?: RevisionLabPoint | null;
   workspace?: WorkspaceOrigin;

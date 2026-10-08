@@ -73,8 +73,8 @@ export function NewTestSession({
       gap="4"
       p="5"
       borderWidth="1px"
-      borderColor="blue.200"
-      bg="blue.50"
+      borderColor="blue.border"
+      bg="blue.subtle"
       borderRadius="lg"
       maxW="2xl"
     >
@@ -89,7 +89,7 @@ export function NewTestSession({
               readOnly
               value={url}
               onFocus={(event) => event.target.select()}
-              bg="white"
+              bg="bg.panel"
             />
             <Field.HelperText>
               Share this single-use link with your participant. Unused links
@@ -118,7 +118,7 @@ export function NewTestSession({
               value={name}
               maxLength={100}
               onChange={(event) => setName(event.target.value)}
-              bg="white"
+              bg="bg.panel"
             />
           </Field.Root>
           <Field.Root required>
@@ -127,7 +127,7 @@ export function NewTestSession({
               value={route}
               onChange={(event) => setRoute(event.target.value)}
               placeholder="/"
-              bg="white"
+              bg="bg.panel"
             />
             <Field.HelperText>
               A path on this prototype, such as /checkout.
@@ -135,7 +135,7 @@ export function NewTestSession({
           </Field.Root>
           <Field.Root required>
             <Field.Label>Persona</Field.Label>
-            <NativeSelect.Root bg="white">
+            <NativeSelect.Root bg="bg.panel">
               <NativeSelect.Field
                 value={personaId}
                 onChange={(event) => setPersonaId(event.target.value)}
@@ -167,7 +167,7 @@ export function NewTestSession({
               max={120}
               value={minutes}
               onChange={(event) => setMinutes(event.target.value)}
-              bg="white"
+              bg="bg.panel"
             />
             <Field.HelperText>
               1–120 minutes, starting when the participant clicks Start. The
@@ -199,7 +199,7 @@ export function NewTestSession({
         </>
       )}
       {error && (
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {error}
         </Text>
       )}

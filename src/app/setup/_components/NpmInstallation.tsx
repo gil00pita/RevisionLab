@@ -14,11 +14,11 @@ export function NpmInstallation() {
         the workspace. Localhost development has owner access; the local SQLite
         database is initialized automatically on first use.
       </Text>
-      <Text color="gray.600">
+      <Text color="fg.muted">
         npm lists{" "}
         <Link
           href="https://www.npmjs.com/package/revisionlab/v/0.1.1"
-          color="blue.700"
+          color="blue.fg"
         >
           revisionlab@0.1.1
         </Link>{" "}

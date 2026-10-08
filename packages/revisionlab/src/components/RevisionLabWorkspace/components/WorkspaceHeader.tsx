@@ -21,27 +21,25 @@ export function WorkspaceHeader({
   view,
   flow,
   actions,
-  syncControl,
   creationAction,
   creationTriggerRef,
+  sessionTabsRef,
   onSignOut,
   signingOut,
-  dashboardScope,
 }: {
   data: RevisionLabState;
   view: WorkspaceView;
   flow?: RevisionLabFlow;
   actions?: ReactNode;
-  syncControl?: ReactNode;
   creationAction?: {
     kind: "persona" | "test";
     disabled: boolean;
     onClick: () => void;
   };
   creationTriggerRef?: RefObject<HTMLButtonElement | null>;
+  sessionTabsRef?: RefObject<HTMLDivElement | null>;
   onSignOut: () => Promise<void>;
   signingOut: boolean;
-  dashboardScope?: string;
 }) {
   return (
     <Flex
@@ -54,7 +52,7 @@ export function WorkspaceHeader({
       gap="4"
       flexWrap="wrap"
       borderBottomWidth="1px"
-      borderColor="gray.200"
+      borderColor="border"
     >
       <Box flex="1" minW={{ base: "full", md: "48" }}>
         <Heading as="h1" size="lg" overflowWrap="anywhere">
@@ -78,54 +76,43 @@ export function WorkspaceHeader({
             >
               {flow.status === "complete" ? "Recorded" : "Recording"}
             </Badge>
-            <Text color="gray.600" fontSize="xs">
+            <Text color="fg.muted" fontSize="xs">
               {flow.steps.length}{" "}
               {flow.steps.length === 1 ? "screen" : "screens"}
             </Text>
           </Flex>
         ) : (
-          <Text fontSize="xs" color="gray.600">
+          <Text fontSize="xs" color="fg.muted">
             {workspaceViewSubtitles[view]}
           </Text>
         )}
       </Box>
-      <Flex gap="3" align="center" flexWrap="wrap" maxW="full" minW="0">
-        {view === "dashboard" && dashboardScope && (
-          <Badge
-            colorPalette="blue"
-            maxW="full"
-            whiteSpace="normal"
-            overflowWrap="anywhere"
-          >
-            {dashboardScope}
-          </Badge>
-        )}
-        {actions}
-        {syncControl}
-        {creationAction && (
-          <Button
-            ref={creationTriggerRef}
-            size="sm"
-            minH="11"
-            h="auto"
-            py="2"
-            maxW="full"
-            whiteSpace="normal"
-            colorPalette="blue"
-            variant="outline"
-            color="blue.700"
-            borderColor="blue.600"
-            _hover={{ bg: "blue.50" }}
-            focusRing="outside"
-            focusRingColor="blue.600"
-            disabled={creationAction.disabled}
-            onClick={creationAction.onClick}
-          >
-            <Icon aria-hidden="true"><Plus /></Icon>
-            {creationAction.kind === "persona" ? "New persona" : "Create a test session"}
-          </Button>
-        )}
-        <Flex gap="2" flexWrap="wrap">
+      {(actions || creationAction || !data.actor.local) && (
+        <Flex gap="3" align="center" flexWrap="wrap" maxW="full" minW="0">
+          {actions}
+          {creationAction && (
+            <Button
+              ref={creationTriggerRef}
+              size="sm"
+              minH="11"
+              h="auto"
+              py="2"
+              maxW="full"
+              whiteSpace="normal"
+              colorPalette="blue"
+              variant="outline"
+              color="blue.fg"
+              borderColor="blue.border"
+              _hover={{ bg: "blue.subtle" }}
+              focusRing="outside"
+              focusRingColor="blue.focusRing"
+              disabled={creationAction.disabled}
+              onClick={creationAction.onClick}
+            >
+              <Icon aria-hidden="true"><Plus /></Icon>
+              {creationAction.kind === "persona" ? "New persona" : "Create a test session"}
+            </Button>
+          )}
           {!data.actor.local && (
             <Button
               size="sm"
@@ -141,7 +128,8 @@ export function WorkspaceHeader({
             </Button>
           )}
         </Flex>
-      </Flex>
+      )}
+      {sessionTabsRef && <Box ref={sessionTabsRef} w="full" flexBasis="full" mb="-4" />}
     </Flex>
   );
 }

@@ -45,8 +45,8 @@ export function FlowListItem({
       gap="1"
       w="full"
       borderBottomWidth="1px"
-      borderColor="gray.200"
-      bg={current ? "blue.50" : "transparent"}
+      borderColor="border"
+      bg={current ? "blue.subtle" : "transparent"}
       px={selecting ? "2" : "0"}
     >
       {selecting && (
@@ -79,16 +79,16 @@ export function FlowListItem({
         textAlign="left"
         whiteSpace="normal"
         justifyContent="start"
-        color="gray.900"
-        _hover={{ bg: current ? "blue.100" : "blue.50" }}
+        color="fg"
+        _hover={{ bg: current ? "blue.subtle" : "blue.subtle" }}
         focusRing="inside"
-        focusRingColor="blue.700"
+        focusRingColor="blue.focusRing"
         disabled={disabled}
         onClick={onSelect}
         aria-pressed={current}
       >
         {!selecting && (
-          <Icon asChild mt="1" flexShrink="0" color={current ? "blue.700" : "gray.500"}>
+          <Icon asChild mt="1" flexShrink="0" color={current ? "blue.fg" : "fg.muted"}>
             <GitBranch />
           </Icon>
         )}
@@ -100,8 +100,8 @@ export function FlowListItem({
             <Badge
               mt="1"
               colorPalette="blue"
-              bg="blue.100"
-              color="blue.800"
+              bg="blue.subtle"
+              color="blue.fg"
               maxW="full"
               whiteSpace="normal"
               overflowWrap="anywhere"
@@ -109,7 +109,7 @@ export function FlowListItem({
               {flow.workspace.name}
             </Badge>
           )}
-          <Flex align="center" gap="1" color="gray.600" mt="1">
+          <Flex align="center" gap="1" color="fg.muted" mt="1">
             <Icon asChild boxSize="3.5" flexShrink="0">
               <ContactRound />
             </Icon>
@@ -118,7 +118,7 @@ export function FlowListItem({
             </Text>
           </Flex>
           <Flex gap="2" mt="2" flexWrap="wrap" align="center">
-            <Badge colorPalette="blue" bg="blue.100" color="blue.800">
+            <Badge colorPalette="blue" bg="blue.subtle" color="blue.fg">
               v{flow.version}
             </Badge>
             <Text
@@ -127,7 +127,7 @@ export function FlowListItem({
               alignItems="center"
               gap="1"
               fontSize="xs"
-              color="gray.600"
+              color="fg.muted"
               aria-label={`${flow.steps.length} ${flow.steps.length === 1 ? "screen" : "screens"}`}
             >
               {flow.steps.length}
@@ -136,14 +136,14 @@ export function FlowListItem({
               </Icon>
             </Text>
             {active && (
-              <Badge colorPalette="blue" bg="blue.100" color="blue.800">
+              <Badge colorPalette="blue" bg="blue.subtle" color="blue.fg">
                 Recording
               </Badge>
             )}
           </Flex>
           <Text
             fontSize="xs"
-            color="gray.600"
+            color="fg.muted"
             mt="2"
             title="Recording created"
             overflowWrap="anywhere"

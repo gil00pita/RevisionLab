@@ -66,7 +66,7 @@ export function ReplaceFlowConfirmation({
               </Select.IndicatorGroup>
             </Select.Control>
             <Portal container={portal}>
-              <Select.Positioner data-revisionlab-ui>
+              <Select.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
                 <Select.Content>
                   {collection.items.map((item) => (
                     <Select.Item key={item.value} item={item}>
@@ -82,12 +82,12 @@ export function ReplaceFlowConfirmation({
           </Select.Root>
         </Field.Root>
       ) : (
-        <Text fontSize="sm" color="gray.600" overflowWrap="anywhere">
+        <Text fontSize="sm" color="fg.muted" overflowWrap="anywhere">
           Version {selected?.version} - {selected?.persona} - {selected?.route}
         </Text>
       )}
       {selected && !selected.canReplace && (
-        <Text role="status" fontSize="sm" color="gray.700">
+        <Text role="status" fontSize="sm" color="fg.muted">
           This flow has an unfinished recording. Finish or discard it before
           replacing.
         </Text>

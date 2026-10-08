@@ -1,4 +1,4 @@
-import { CommentInput } from "../../CommentInput/index.js";
+import { CommentInput, useCommentDraft } from "../../CommentInput/index.js";
 import { useEffect, useRef, useState } from "react";
 import { Badge, Box, Button, Flex, Icon, Stack, Text } from "@chakra-ui/react";
 import { Send, X } from "lucide-react";
@@ -36,7 +36,8 @@ export function CommentComposer({
   onAnchorChange,
   onSaved,
 }: CommentComposerProps) {
-  const [body, setBody] = useState("");
+  const draft = useCommentDraft(apiPath);
+  const { body, setBody } = draft;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -49,7 +50,12 @@ export function CommentComposer({
   }, [hasAnchor, parentId]);
 
   async function submit() {
-    if (!body.trim() || pending.current) return;
+    if (
+      (!body.trim() && !draft.files.length) ||
+      draft.preparing ||
+      pending.current
+    )
+      return;
     pending.current = true;
     setBusy(true);
     setError("");
@@ -58,7 +64,8 @@ export function CommentComposer({
       const result = await apiRequest<{ id: string }>(apiPath, "comments", {
         method: "POST",
         body: JSON.stringify({
-          body,
+          body: body.trim(),
+          ...draft.payload(),
           route,
           flowId,
           stepId,
@@ -68,7 +75,7 @@ export function CommentComposer({
           ...(elementAnchor ? { elementAnchor } : {}),
         }),
       });
-      setBody("");
+      draft.reset();
       setNotice(parentId ? "Reply added." : "Comment added.");
       await onSaved(result.id);
     } catch (cause) {
@@ -137,6 +144,7 @@ export function CommentComposer({
         }}
       >
         <CommentInput
+          draft={draft}
           apiPath={apiPath}
           route={route}
           inputRef={input}
@@ -165,11 +173,18 @@ export function CommentComposer({
         />
         <Button
           type="submit"
+          maxW="full"
+          minH="11"
+          h="auto"
+          py="2"
+          whiteSpace="normal"
           size="sm"
           colorPalette="blue"
           mt="3"
           loading={busy}
-          disabled={!body.trim() || busy}
+          disabled={
+            (!body.trim() && !draft.files.length) || draft.preparing || busy
+          }
         >
           <Icon>
             <Send />
@@ -184,12 +199,12 @@ export function CommentComposer({
         </Button>
       </Box>
       {error && (
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {error}
         </Text>
       )}
       {notice && (
-        <Text role="status" fontSize="xs" color="green.700">
+        <Text role="status" fontSize="xs" color="green.fg">
           {notice}
         </Text>
       )}

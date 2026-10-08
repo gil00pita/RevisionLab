@@ -123,7 +123,7 @@ export function PersonaForm({
             <Heading as="h4" size="sm">
               Synthetic test account
             </Heading>
-            <Text color="gray.600" fontSize="sm">
+            <Text color="fg.muted" fontSize="sm">
               Leave both fields blank to keep the existing account unchanged.
               These credentials are encrypted and excluded from captures and
               exports.
@@ -150,7 +150,7 @@ export function PersonaForm({
           </Stack>
         )}
         {error && (
-          <Text role="alert" color="red.700">
+          <Text role="alert" color="red.fg">
             {error}
           </Text>
         )}

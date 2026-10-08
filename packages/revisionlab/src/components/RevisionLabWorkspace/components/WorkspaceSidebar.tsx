@@ -27,6 +27,9 @@ export function WorkspaceSidebar({
   onDeleteFlows,
   disabled,
   syncError,
+  apiPath,
+  basePath,
+  onRefresh,
 }: {
   data: RevisionLabState;
   workspaces: WorkspaceInstance[];
@@ -39,6 +42,9 @@ export function WorkspaceSidebar({
   onDeleteFlows: (familyIds: string[]) => Promise<void>;
   disabled: boolean;
   syncError: boolean;
+  apiPath: string;
+  basePath: string;
+  onRefresh: () => Promise<void>;
 }) {
   const [showFlows, setShowFlows] = useState(false);
   const back = useRef<HTMLButtonElement>(null);
@@ -69,10 +75,10 @@ export function WorkspaceSidebar({
       flexShrink="0"
       overflow="hidden"
       borderRightWidth="1px"
-      borderColor="gray.200"
+      borderColor="border"
       direction="column"
-      bg="white"
-      color="gray.900"
+      bg="bg.panel"
+      color="fg"
     >
       <WorkspaceSidebarHeader />
       <WorkspaceSelector
@@ -81,6 +87,9 @@ export function WorkspaceSidebar({
         disabled={disabled}
         syncError={syncError}
         onChange={onWorkspaceChange}
+        canAdd={data.actor.role === "owner"}
+        apiPath={apiPath}
+        onRefresh={onRefresh}
       />
       <Box px="3" pb="4" flexShrink="0">
         <Button
@@ -146,8 +155,8 @@ export function WorkspaceSidebar({
           position="absolute"
           inset="0"
           direction="column"
-          bg="white"
-          color="gray.900"
+          bg="bg.panel"
+          color="fg"
           transform={showFlows ? "translateX(0)" : "translateX(100%)"}
           transitionProperty="transform"
           transitionDuration="moderate"
@@ -160,7 +169,7 @@ export function WorkspaceSidebar({
             p="3"
             flexShrink="0"
             borderBottomWidth="1px"
-            borderColor="gray.200"
+            borderColor="border"
           >
             <Button
               ref={back}
@@ -186,6 +195,8 @@ export function WorkspaceSidebar({
         </Flex>
       </Box>
       <WorkspaceSidebarFooter
+        apiPath={apiPath}
+        basePath={basePath}
         actor={data.actor}
         settingsActive={view === "settings"}
         onSettings={() => void navigate("settings")}

@@ -1,4 +1,10 @@
 export const schema = [
+  `CREATE TABLE IF NOT EXISTS comment_notifications (
+    id TEXT PRIMARY KEY, comment_id TEXT NOT NULL, recipient_id TEXT NOT NULL,
+    created_at TEXT NOT NULL, read_at TEXT,
+    UNIQUE(comment_id, recipient_id)
+  )`,
+  "CREATE INDEX IF NOT EXISTS idx_comment_notifications_recipient ON comment_notifications(recipient_id, created_at)",
   `CREATE TABLE IF NOT EXISTS feedback_ticket_evidence (
     ticket_id TEXT NOT NULL, evidence_id TEXT NOT NULL, comment_id TEXT, screenshot_id TEXT,
     PRIMARY KEY(ticket_id, evidence_id)

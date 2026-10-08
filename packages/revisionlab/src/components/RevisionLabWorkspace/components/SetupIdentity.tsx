@@ -21,7 +21,7 @@ export function SetupIdentity({
 }) {
   return (
     <Stack gap="5">
-      <Text color="gray.600">
+      <Text color="fg.muted">
         Add your owner details and the URL where you use RevisionLab. Access
         uses email login links.
       </Text>

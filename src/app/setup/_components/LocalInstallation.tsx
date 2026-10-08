@@ -21,7 +21,7 @@ export function LocalInstallation({ version }: { version: string }) {
         with the file created above:
       </Text>
       <SetupCommand>{`npx --package "${archive}" revisionlab init \\\n  --package "${archive}"`}</SetupCommand>
-      <Text color="gray.600">
+      <Text color="fg.muted">
         The first <Code>--package</Code> selects the CLI for npx. The second
         makes the installer add that same local build to your project, rather
         than the published package with the same version number. These commands

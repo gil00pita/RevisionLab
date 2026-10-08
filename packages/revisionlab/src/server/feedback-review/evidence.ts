@@ -26,7 +26,16 @@ export async function readReviewEvidence(
     result.push({
       id: `comment:${comment.id}`,
       kind: "comment",
-      title: comment.body,
+      title:
+        comment.body ||
+        comment.attachments?.map((file) => file.name).join(", ") ||
+        "Comment attachment",
+      attachments: [comment, ...replies].flatMap((source) =>
+        (source.attachments ?? []).map((file) => ({
+          ...file,
+          href: `${config.apiPath}/artifacts/${file.id}`,
+        })),
+      ),
       commentId: comment.id,
       route: comment.route,
       capturedAt: comment.createdAt,
@@ -46,6 +55,11 @@ export async function readReviewEvidence(
       target: comment.elementAnchor?.label,
       body: [
         `${comment.authorName}: ${comment.body}`,
+        ...(comment.personas?.length
+          ? [
+              `Linked personas: ${comment.personas.map((persona) => persona.name).join(", ")}`,
+            ]
+          : []),
         comment.anchor
           ? `Screenshot position: ${Math.round(comment.anchor.x * 100)}%, ${Math.round(comment.anchor.y * 100)}%`
           : "",

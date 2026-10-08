@@ -1,3 +1,4 @@
+import { CommentNotifications } from "../../CommentNotifications/index.js";
 import type { ReactNode } from "react";
 import {
   Button,
@@ -44,11 +45,11 @@ export function WidgetPanel({
   if (!data)
     return (
       <Stack gap="4" py="4">
-        <Text role="alert" color={unauthenticated ? "gray.600" : "red.700"}>
+        <Text role="alert" color={unauthenticated ? "fg.muted" : "red.fg"}>
           {error?.message ?? "Unable to connect."}
         </Text>
         {unauthenticated ? (
-          <Link href={`${basePath}/access`} color="blue.700">
+          <Link href={`${basePath}/access`} color="blue.fg">
             Verify your email to review
           </Link>
         ) : (
@@ -98,8 +99,13 @@ export function WidgetPanel({
       ) : (
         children
       )}
+      <CommentNotifications
+        key={data.actor.id}
+        apiPath={apiPath}
+        basePath={basePath}
+      />
       <Separator />
-      <Text color="gray.600" fontSize="xs">
+      <Text color="fg.muted" fontSize="xs">
         Reviewing as {data.actor.name} · {data.actor.role}
       </Text>
     </Stack>

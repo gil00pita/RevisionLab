@@ -37,11 +37,11 @@ export function SetupLauncher({
           </Button>
         </Popover.Trigger>
         <Portal>
-          <Popover.Positioner data-revisionlab-ui>
+          <Popover.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
             <Popover.Content
               maxW="calc(100vw - 2rem)"
-              bg="white"
-              color="gray.900"
+              bg="bg.panel"
+              color="fg"
               shadow="lg"
               borderRadius="lg"
             >

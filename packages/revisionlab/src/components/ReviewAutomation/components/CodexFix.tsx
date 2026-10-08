@@ -24,7 +24,7 @@ export function CodexFix({
   const changes = proposal?.changes.length ?? 0;
   return (
     <Stack gap="4">
-      <Text color="gray.600" fontSize="sm">
+      <Text color="fg.muted" fontSize="sm">
         Run your signed-in local Codex CLI on this screen’s feedback and saved
         workspace AI instructions. Relevant code and feedback are sent through
         your Codex account. Review the proposed changes before applying or
@@ -56,7 +56,7 @@ export function CodexFix({
         </>
       )}
       {error && (
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {error}
         </Text>
       )}
@@ -75,13 +75,13 @@ export function CodexFix({
           <Badge alignSelf="start">{proposal.status}</Badge>
           <Text whiteSpace="pre-wrap">{proposal.summary}</Text>
           {proposal.warnings.map((warning, index) => (
-            <Text key={index} fontSize="sm" color="orange.800">
+            <Text key={index} fontSize="sm" color="orange.fg">
               {warning}
             </Text>
           ))}
           <ProposedChanges changes={proposal.changes} />
           {!changes && <Text>No source changes were proposed.</Text>}
-          <Text fontSize="sm" color="gray.600">
+          <Text fontSize="sm" color="fg.muted">
             Source matching and JavaScript/TypeScript syntax are checked. Run
             your project tests and recheck the live screen after applying.
             Historical comments and accessibility reports remain unchanged.
@@ -133,14 +133,14 @@ export function CodexFix({
                 href={proposal.prUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                color="blue.700"
+                color="blue.fg"
               >
                 Open draft PR
               </Link>
             )}
           </Flex>
           {changes > 0 && !proposal.prUrl && (
-            <Text fontSize="xs" color="gray.600">
+            <Text fontSize="xs" color="fg.muted">
               Create draft PR publishes only this fix on a separate GitHub
               branch. Requires GitHub CLI sign-in and matching source files on
               the default branch.

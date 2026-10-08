@@ -64,8 +64,8 @@ export function BoardConnectionPanel({
       gap="4"
       p="4"
       borderWidth="1px"
-      borderColor="gray.200"
-      bg="white"
+      borderColor="border"
+      bg="bg.panel"
       minW="0"
     >
       <Flex justify="space-between" align="start" gap="3">
@@ -76,7 +76,7 @@ export function BoardConnectionPanel({
           <Text mt="1" fontSize="sm" overflowWrap="anywhere">
             {source?.title} → {target?.title}
           </Text>
-          <Text fontSize="xs" color="gray.600">
+          <Text fontSize="xs" color="fg.muted">
             {edge.kind === "recorded" ? "Recorded sequence" : "Manual path"}
           </Text>
         </Box>
@@ -118,7 +118,7 @@ export function BoardConnectionPanel({
           >
             Remove connection
           </Button>
-          <Text color="gray.600" fontSize="xs">
+          <Text color="fg.muted" fontSize="xs">
             Removing a connection keeps its discussion history in All comments.
           </Text>
         </Stack>
@@ -137,7 +137,7 @@ export function BoardConnectionPanel({
           onRefresh={onRefresh}
         />
       ) : (
-        <Text color="gray.600" role="status">
+        <Text color="fg.muted" role="status">
           This connection must finish autosaving before you can add comments.
         </Text>
       )}

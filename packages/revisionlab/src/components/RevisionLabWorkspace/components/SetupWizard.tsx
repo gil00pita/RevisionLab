@@ -64,7 +64,7 @@ export function SetupWizard({
       </Stack>
     );
   return (
-    <Box as="main" minH="100dvh" bg="gray.50" p={{ base: "4", md: "10" }}>
+    <Box as="main" minH="100dvh" bg="bg.subtle" p={{ base: "4", md: "10" }}>
       <Stack maxW="4xl" mx="auto" gap="6">
         <Text fontWeight="bold" fontSize="lg">
           RevisionLab
@@ -73,7 +73,7 @@ export function SetupWizard({
           <Heading as="h1" size={{ base: "2xl", md: "3xl" }}>
             Let’s set up RevisionLab
           </Heading>
-          <Text color="gray.600">
+          <Text color="fg.muted">
             A few choices to make this workspace yours. Only your details are
             required.
           </Text>
@@ -103,16 +103,16 @@ export function SetupWizard({
           </Steps.List>
         </Steps.Root>
         <Stack
-          bg="white"
+          bg="bg.panel"
           borderWidth="1px"
-          borderColor="gray.200"
+          borderColor="border"
           borderRadius="xl"
           p={{ base: "5", md: "8" }}
           gap="6"
           shadow="sm"
         >
           <Stack gap="1">
-            <Text color="blue.700" fontSize="sm" fontWeight="medium">
+            <Text color="blue.fg" fontSize="sm" fontWeight="medium">
               Step {wizard.step + 1} of {titles.length}
             </Text>
             <Heading
@@ -165,7 +165,7 @@ export function SetupWizard({
             )}
             {wizard.step === 4 && (
               <Stack gap="6">
-                <Text color="gray.600" role="status">
+                <Text color="fg.muted" role="status">
                   {data.personas.length === 0
                     ? "No personas yet. Choose a recommendation below or create your own."
                     : `${data.personas.filter((persona) => !persona.archivedAt).length} active personas in your workspace.`}
@@ -206,7 +206,7 @@ export function SetupWizard({
             )}
           </Box>
           {wizard.error && (
-            <Text role="alert" color="red.700">
+            <Text role="alert" color="red.fg">
               {wizard.error}
             </Text>
           )}
@@ -254,7 +254,7 @@ export function SetupWizard({
             </Flex>
           </Flex>
         </Stack>
-        <Text color="gray.600" fontSize="sm">
+        <Text color="fg.muted" fontSize="sm">
           Saved steps are kept if you leave. You can change these choices later
           in your workspace.
         </Text>

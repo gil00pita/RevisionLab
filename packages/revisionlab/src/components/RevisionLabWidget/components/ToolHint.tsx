@@ -12,7 +12,7 @@ export function ToolHint({
     <Tooltip.Root openDelay={300} positioning={{ placement: "top" }}>
       <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
       <Portal>
-        <Tooltip.Positioner data-revisionlab-ui>
+        <Tooltip.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
           <Tooltip.Content>
             {label}
             <Tooltip.Arrow>

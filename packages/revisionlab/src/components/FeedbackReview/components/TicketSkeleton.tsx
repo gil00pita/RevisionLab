@@ -6,13 +6,13 @@ export function TicketSkeleton() {
       p="5"
       gap="4"
       borderWidth="1px"
-      borderColor="blue.300"
+      borderColor="blue.border"
       rounded="lg"
-      bg="blue.50"
+      bg="blue.subtle"
       aria-busy="true"
       aria-label="Generating ticket preview"
     >
-      <Text role="status" color="blue.800" fontWeight="medium">
+      <Text role="status" color="blue.fg" fontWeight="medium">
         Codex is preparing your ticket preview…
       </Text>
       <Stack gap="4" aria-hidden="true">
@@ -22,7 +22,7 @@ export function TicketSkeleton() {
         <Skeleton h="20" _motionReduce={{ animation: "none" }} />
         <Skeleton h="16" w="36" _motionReduce={{ animation: "none" }} />
       </Stack>
-      <Text fontSize="sm" color="gray.600">
+      <Text fontSize="sm" color="fg.muted">
         Related feedback is being grouped and linked to its screenshots. You can
         cancel this run.
       </Text>

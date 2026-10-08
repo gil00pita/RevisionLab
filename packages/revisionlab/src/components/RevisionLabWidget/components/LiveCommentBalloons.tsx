@@ -1,3 +1,4 @@
+import { CommentContent } from "../../CommentContent/index.js";
 import { useRef, useState } from "react";
 import {
   Box,
@@ -20,10 +21,12 @@ import {
 
 export function LiveCommentBalloons({
   comments,
+  apiPath,
   commentsHref,
   color,
 }: {
   comments: RevisionLabComment[];
+  apiPath: string;
   commentsHref: string;
   color: CommentBubbleColor;
 }) {
@@ -33,7 +36,9 @@ export function LiveCommentBalloons({
   const boundary = useRef<HTMLDivElement>(null);
   const active = targets.find((target) => target.id === selected);
   const activeIds = new Set(active?.ids ?? []);
-  const visibleComments = comments.filter((comment) => activeIds.has(comment.id));
+  const visibleComments = comments.filter((comment) =>
+    activeIds.has(comment.id),
+  );
   return (
     <Popover.Root
       open={Boolean(active)}
@@ -113,13 +118,13 @@ export function LiveCommentBalloons({
             </Button>
           </Popover.Trigger>
         ))}
-        <Popover.Positioner data-revisionlab-ui>
+        <Popover.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
           <Popover.Content
             aria-label="Page comment preview"
             w="80"
             maxW="calc(100vw - 2rem)"
-            bg="white"
-            color="gray.900"
+            bg="bg.panel"
+            color="fg"
             borderRadius="lg"
             shadow="md"
           >
@@ -133,20 +138,18 @@ export function LiveCommentBalloons({
               <Stack gap="3" maxH="min(30dvh, 240px)" overflowY="auto">
                 {visibleComments.map((comment) => (
                   <Stack key={comment.id} gap="1">
-                    <Text fontSize="xs" color="gray.600">
+                    <Text fontSize="xs" color="fg.muted">
                       {comment.authorName}
                     </Text>
-                    <Text
-                      fontSize="sm"
-                      whiteSpace="pre-wrap"
-                      overflowWrap="anywhere"
-                    >
-                      {comment.body}
-                    </Text>
+                    <CommentContent
+                      comment={comment}
+                      apiPath={apiPath}
+                      compact
+                    />
                   </Stack>
                 ))}
               </Stack>
-              <Link href={commentsHref} color="blue.700" fontSize="sm" mt="3">
+              <Link href={commentsHref} color="blue.fg" fontSize="sm" mt="3">
                 Open in workspace
               </Link>
             </Popover.Body>

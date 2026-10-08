@@ -1,3 +1,4 @@
+import { IllustratedEmptyState } from "../../IllustratedEmptyState/index.js";
 import { Badge, Box, Flex, Icon, Text, Timeline } from "@chakra-ui/react";
 import type { FeedbackTimelineEntry } from "../timeline.js";
 import { feedbackTypes } from "../constants.js";
@@ -57,8 +58,8 @@ export function FeedbackTimeline({
                 gap={{ base: "2", md: "3" }}
               >
                 <Timeline.Connector>
-                  <Timeline.Separator borderColor="blue.200" />
-                  <Timeline.Indicator bg="blue.100" color="blue.800">
+                  <Timeline.Separator borderColor="blue.border" />
+                  <Timeline.Indicator bg="blue.subtle" color="blue.fg">
                     <Icon size="xs" aria-hidden="true">
                       <TypeIcon />
                     </Icon>
@@ -68,7 +69,7 @@ export function FeedbackTimeline({
                   <Flex gap="2" align="center" flexWrap="wrap" minH="6">
                     <Text
                       fontSize="xs"
-                      color="gray.600"
+                      color="fg.muted"
                       title={capturedAt ?? undefined}
                     >
                       {capturedAt
@@ -120,11 +121,12 @@ export function FeedbackTimeline({
           })}
         </Timeline.Root>
       ) : (
-        <Text p="4" color="gray.600">
-          {hasEvidence
+        <IllustratedEmptyState
+          illustration="inbox"
+          description={hasEvidence
             ? "No feedback matches this filter."
             : "No feedback yet. Add comments, save an accessibility scan, or complete a test session to start reviewing."}
-        </Text>
+        />
       )}
     </Box>
   );

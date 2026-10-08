@@ -56,7 +56,7 @@ export function AiInstructionsSettings({
           <Text role="status">Loading AI instructions...</Text>
         ) : (
           <>
-            <Text role="alert" color="red.700">
+            <Text role="alert" color="red.fg">
               {error}
             </Text>
             <Button variant="outline" alignSelf="start" onClick={retry}>
@@ -90,7 +90,7 @@ export function AiInstructionsSettings({
             readOnly={disabled}
             rows={10}
             maxLength={AI_INSTRUCTIONS_MAX_LENGTH}
-            borderColor="gray.500"
+            borderColor="fg.muted"
             fontSize="sm"
             onChange={(event) => update({ instructions: event.target.value })}
           />
@@ -129,8 +129,8 @@ export function AiInstructionsSettings({
             <Switch.HiddenInput />
             <Switch.Control
               borderWidth="1px"
-              borderColor="gray.500"
-              _checked={{ borderColor: "blue.700" }}
+              borderColor="fg.muted"
+              _checked={{ borderColor: "blue.border" }}
             >
               <Switch.Thumb />
             </Switch.Control>
@@ -204,7 +204,7 @@ export function AiInstructionsSettings({
           </Button>
         </Flex>
         {error && (
-          <Text role="alert" color="red.700">
+          <Text role="alert" color="red.fg">
             {error}
           </Text>
         )}
@@ -221,7 +221,7 @@ export function AiInstructionsSettings({
             value={instructions}
             readOnly
             rows={8}
-            borderColor="gray.500"
+            borderColor="fg.muted"
             fontSize="sm"
           />
           <Field.HelperText>

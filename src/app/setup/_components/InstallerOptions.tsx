@@ -51,7 +51,7 @@ export function InstallerOptions() {
         <Code>.revisionlab/backups/</Code>, and conflicting routes or protection
         files are not overwritten.
       </Text>
-      <Text color="gray.600">
+      <Text color="fg.muted">
         Initialization does not create a new Next.js project, provision a hosted
         database, publish a package, or deploy your application.
       </Text>

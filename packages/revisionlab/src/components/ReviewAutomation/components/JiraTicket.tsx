@@ -34,7 +34,7 @@ export function JiraTicket({
   }
   return (
     <Stack gap="4">
-      <Text color="gray.600" fontSize="sm">
+      <Text color="fg.muted" fontSize="sm">
         Review and edit this draft, then copy it into Jira. No ticket has been
         created.
       </Text>
@@ -47,7 +47,7 @@ export function JiraTicket({
             setDraft({ ...draft, summary: event.target.value });
             setStatus("");
           }}
-          borderColor="gray.500"
+          borderColor="fg.muted"
         />
       </Field.Root>
       <Field.Root>
@@ -60,7 +60,7 @@ export function JiraTicket({
             setStatus("");
           }}
           resize="vertical"
-          borderColor="gray.500"
+          borderColor="fg.muted"
         />
       </Field.Root>
       <Flex gap="2" flexWrap="wrap">
@@ -78,11 +78,11 @@ export function JiraTicket({
         </Button>
       </Flex>
       {error && (
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {error}
         </Text>
       )}
-      <Text role="status" color="gray.600" fontSize="sm">
+      <Text role="status" color="fg.muted" fontSize="sm">
         {status}
       </Text>
     </Stack>

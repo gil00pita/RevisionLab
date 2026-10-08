@@ -1,3 +1,4 @@
+import { IllustratedEmptyState } from "../../IllustratedEmptyState/index.js";
 import {
   Badge,
   Box,
@@ -30,7 +31,7 @@ export function MembershipList({
         Workspace members
       </Heading>
       {memberships.length === 0 && (
-        <Text color="gray.600">No managed members yet.</Text>
+        <IllustratedEmptyState illustration="documents" size="sm" description="No managed members yet." />
       )}
       {memberships.map((member) => (
         <Flex
@@ -47,7 +48,7 @@ export function MembershipList({
             <Text fontWeight="medium" overflowWrap="anywhere">
               {member.name ?? member.email}
             </Text>
-            <Text color="gray.600" fontSize="sm" overflowWrap="anywhere">
+            <Text color="fg.muted" fontSize="sm" overflowWrap="anywhere">
               {member.email}
             </Text>
           </Box>

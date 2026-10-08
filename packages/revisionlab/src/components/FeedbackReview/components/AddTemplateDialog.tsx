@@ -69,10 +69,10 @@ export function AddTemplateDialog({
     >
       <Portal>
         <Dialog.Backdrop data-revisionlab-ui />
-        <Dialog.Positioner data-revisionlab-ui>
+        <Dialog.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
           <Dialog.Content
-            bg="white"
-            color="gray.900"
+            bg="bg.panel"
+            color="fg"
             fontFamily="body"
             colorPalette="blue"
           >
@@ -91,7 +91,7 @@ export function AddTemplateDialog({
                     maxLength={100}
                     onChange={(event) => setName(event.target.value)}
                     placeholder="e.g. Design improvement"
-                    borderColor="gray.500"
+                    borderColor="fg.muted"
                   />
                 </Field.Root>
                 <Field.Root required disabled={saving}>
@@ -104,7 +104,7 @@ export function AddTemplateDialog({
                     placeholder={
                       "## Problem\nDescribe the feedback and user impact.\n\n## Proposed outcome\nDescribe the desired change.\n\nWrite acceptance criteria as a checklist."
                     }
-                    borderColor="gray.500"
+                    borderColor="fg.muted"
                   />
                   <Field.HelperText>
                     A .md file is saved in this installation. Use headings and
@@ -113,7 +113,7 @@ export function AddTemplateDialog({
                   </Field.HelperText>
                 </Field.Root>
                 {error && (
-                  <Text role="alert" color="red.700">
+                  <Text role="alert" color="red.fg">
                     {error}
                   </Text>
                 )}

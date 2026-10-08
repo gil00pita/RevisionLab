@@ -137,7 +137,7 @@ export function FlowBoard(props: FlowBoardProps) {
           gap="2"
           flexWrap="wrap"
           align="center"
-          bg="gray.50"
+          bg="bg.subtle"
           aria-label="Removed screens"
         >
           <Text fontSize="sm">Removed from this board:</Text>
@@ -159,7 +159,7 @@ export function FlowBoard(props: FlowBoardProps) {
         </Flex>
       )}
       {draft.board.nodes.length === 0 && (
-        <Text p="6" color="gray.600">
+        <Text p="6" color="fg.muted">
           {flow.steps.length
             ? "All screens are removed from this board. Enter Paths to restore a screen. Captures and comments are still available in Screen & comments."
             : "Record a screen in the prototype to begin this flow."}

@@ -35,7 +35,7 @@ export function FeedbackReview({
         <Heading as="h2" size="lg">
           Review feedback at its source
         </Heading>
-        <Text color="gray.600">
+        <Text color="fg.muted">
           Feedback Review keeps evidence and ticket drafts within each
           installation. Open the source workspace to review its feedback; Codex
           generation runs from that project on localhost.
@@ -48,7 +48,7 @@ export function FeedbackReview({
           .map((source) => (
             <Link
               key={source.id}
-              color="blue.700"
+              color="blue.fg"
               href={
                 source.id === "local"
                   ? `${basePath}?view=feedback&workspace=local`
@@ -121,13 +121,18 @@ function LocalFeedbackReview({
     <EvidencePreviewProvider>
       <Stack p={{ base: "5", md: "8" }} pb="40" gap="5" w="full">
         <Flex justify="space-between" gap="3" flexWrap="wrap" align="center">
-          <Text maxW="3xl" color="gray.600">
+          <Text maxW="3xl" color="fg.muted">
             One place to review recurring feedback, connect test evidence, and
             prepare the work that matters.
           </Text>
           <Button
             size="sm"
             variant="outline"
+            maxW="full"
+            h="auto"
+            minH="10"
+            py="2"
+            whiteSpace="normal"
             disabled={editing || review.busy}
             onClick={() => void review.reload()}
           >
@@ -135,12 +140,12 @@ function LocalFeedbackReview({
           </Button>
         </Flex>
         {review.error && (
-          <Text role="alert" color="red.700">
+          <Text role="alert" color="red.fg">
             {review.error}
           </Text>
         )}
         {review.status && (
-          <Text role="status" color="green.800">
+          <Text role="status" color="green.fg">
             {review.status}
           </Text>
         )}

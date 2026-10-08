@@ -13,8 +13,8 @@ export function ProposedChanges({ changes }: { changes: ProposedChange[] }) {
       <Box
         as="pre"
         p="3"
-        bg="red.50"
-        color="red.900"
+        bg="red.subtle"
+        color="red.fg"
         fontSize="xs"
         whiteSpace="pre-wrap"
         overflowWrap="anywhere"
@@ -29,8 +29,8 @@ export function ProposedChanges({ changes }: { changes: ProposedChange[] }) {
       <Box
         as="pre"
         p="3"
-        bg="green.50"
-        color="green.900"
+        bg="green.subtle"
+        color="green.fg"
         fontSize="xs"
         whiteSpace="pre-wrap"
         overflowWrap="anywhere"

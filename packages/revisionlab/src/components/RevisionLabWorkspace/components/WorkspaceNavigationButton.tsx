@@ -21,11 +21,11 @@ export function WorkspaceNavigationButton({
       variant="ghost"
       justifyContent="flex-start"
       minH={{ base: "11", lg: "10" }}
-      bg={active ? "blue.100" : "transparent"}
-      color={active ? "blue.800" : "gray.800"}
-      _hover={{ bg: active ? "blue.200" : "blue.50" }}
+      bg={active ? "blue.subtle" : "transparent"}
+      color={active ? "blue.fg" : "fg"}
+      _hover={{ bg: active ? "blue.muted" : "blue.subtle" }}
       focusRing="inside"
-      focusRingColor="blue.700"
+      focusRingColor="blue.focusRing"
       aria-current={active ? "page" : undefined}
       fontWeight={active ? "semibold" : "normal"}
       onClick={onClick}

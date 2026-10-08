@@ -1,4 +1,4 @@
-import { Button, Icon, Link } from "@chakra-ui/react";
+import { Button, Icon, Link, Text } from "@chakra-ui/react";
 import { Circle } from "lucide-react";
 import { recordingLaunchHref } from "../../../client/recording-launch.js";
 
@@ -7,7 +7,7 @@ export function RecordFlowAction({ prototypeUrl, disabled }: {
   disabled: boolean;
 }) {
   return (
-    <Button asChild size="sm" minH="11" h="auto" py="2" whiteSpace="normal" colorPalette="blue" disabled={disabled}>
+    <Button asChild size="sm" minH="11" h="auto" maxW="full" py="2" whiteSpace="normal" colorPalette="blue" disabled={disabled}>
       <Link
         href={recordingLaunchHref(prototypeUrl)}
         aria-disabled={disabled || undefined}
@@ -15,7 +15,7 @@ export function RecordFlowAction({ prototypeUrl, disabled }: {
         onClick={(event) => { if (disabled) event.preventDefault(); }}
       >
         <Icon aria-hidden="true"><Circle /></Icon>
-        Record new flow
+        <Text as="span" minW="0" overflowWrap="anywhere">Record new flow</Text>
       </Link>
     </Button>
   );

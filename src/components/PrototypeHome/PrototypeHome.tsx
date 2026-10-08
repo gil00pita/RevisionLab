@@ -28,11 +28,11 @@ export function PrototypeHome() {
         : "Workspace unavailable. Check the server configuration.";
 
   return (
-    <Box minH="100dvh" bg="gray.50" color="gray.900">
+    <Box minH="100dvh" bg="bg.subtle" color="fg">
       <Flex
         as="header"
-        bg="gray.900"
-        color="white"
+        bg="bg.inverted"
+        color="fg.inverted"
         px={{ base: "6", md: "12" }}
         minH="20"
         align="center"
@@ -45,7 +45,7 @@ export function PrototypeHome() {
             RevisionLab
           </Text>
         </Flex>
-        <Link asChild color="gray.100" fontSize="sm">
+        <Link asChild color="fg.inverted" fontSize="sm">
           <NextLink href="/setup">
             Installation guide
             <Icon>
@@ -75,7 +75,7 @@ export function PrototypeHome() {
             >
               Review the prototype. Keep the context.
             </Heading>
-            <Text color="gray.600" fontSize="lg" maxW="xl">
+            <Text color="fg.muted" fontSize="lg" maxW="xl">
               RevisionLab is running inside this Next.js project. Record a
               journey, capture screens for a persona, and bring the feedback
               together in your review workspace.
@@ -88,7 +88,7 @@ export function PrototypeHome() {
                 </Icon>
               </NextLink>
             </Button>
-            <Text role="status" color="gray.600" fontSize="sm">
+            <Text role="status" color="fg.muted" fontSize="sm">
               {status}
             </Text>
           </Stack>
@@ -98,19 +98,19 @@ export function PrototypeHome() {
             flex="1"
             maxW="lg"
             gap="5"
-            bg="white"
+            bg="bg.panel"
             borderWidth="1px"
-            borderColor="gray.200"
+            borderColor="border"
             borderRadius="xl"
             p={{ base: "6", md: "8" }}
           >
-            <Icon size="xl" color="blue.700">
+            <Icon size="xl" color="blue.fg">
               <GitBranch />
             </Icon>
             <Heading as="h2" size="xl">
               Your first recorded journey
             </Heading>
-            <List.Root as="ol" gap="4" ps="5" color="gray.700">
+            <List.Root as="ol" gap="4" ps="5" color="fg.muted">
               <List.Item>
                 Expand the RevisionLab logo, then choose the camera icon.
               </List.Item>
@@ -123,11 +123,11 @@ export function PrototypeHome() {
               </List.Item>
             </List.Root>
             <Separator />
-            <Text color="gray.600">
+            <Text color="fg.muted">
               This page is part of the running installation. Try navigating to
               the guide while recording to capture a second screen.
             </Text>
-            <Link asChild color="blue.700" fontWeight="semibold">
+            <Link asChild color="blue.fg" fontWeight="semibold">
               <NextLink href="/setup">
                 Visit the installation guide
                 <Icon>
@@ -142,31 +142,31 @@ export function PrototypeHome() {
           mt="16"
           pt="8"
           borderTopWidth="1px"
-          borderColor="gray.200"
+          borderColor="border"
         >
           <Heading as="h2" size="lg">
             Bring RevisionLab into another project
           </Heading>
-          <Text color="gray.600">
+          <Text color="fg.muted">
             The package generates review routes and adds the widget to your
             Next.js layout. Local development uses SQLite with no database
             service to configure.
           </Text>
           <Code
             p="4"
-            bg="gray.900"
-            color="gray.100"
+            bg="bg.inverted"
+            color="fg.inverted"
             borderRadius="lg"
             alignSelf="start"
           >
             npx revisionlab init
           </Code>
-          <Text color="gray.600" fontSize="sm">
+          <Text color="fg.muted" fontSize="sm">
             The package is built locally and has not been published to npm. Use
             the packed archive instructions in the guide until publication.
           </Text>
-          <Flex gap="2" align="center" color="gray.700" fontSize="sm">
-            <Icon color="green.700">
+          <Flex gap="2" align="center" color="fg.muted" fontSize="sm">
+            <Icon color="green.fg">
               <Check />
             </Icon>
             Next.js App Router · React 19 · local or shared storage
