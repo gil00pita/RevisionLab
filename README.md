@@ -6,6 +6,10 @@
 
 RevisionLab brings prototype flows, versions, and feedback into one shared review workspace inside your Next.js project.
 
+## First-use setup
+
+Implemented locally, not yet published: the wizard lets the owner name the workspace, optionally generate an API key under Advanced options, preview the actual widget and live-comment bubbles, choose the WCAG version and A/AA/AAA target, and add personas with image avatars from a compact table. Email and Slack use segmented controls that reveal only the selected configuration. See the [package setup guide](packages/revisionlab/README.md) for details.
+
 ## Comment attachments, personas, and mentions
 
 Implemented locally 8 October 2026; not yet published. Use the compact paperclip to upload files, or paste files/images into the comment field. Attach up to five files (3 MB each, 10 MB combined), preview/remove them before posting, and download saved attachments. An attachment can be posted without text. The people icon links multiple personas; type `@` or use the @ icon to select a persona or workspace user. Selecting a persona links it to the comment; selecting a user notifies them when posted. Ordinary `@` text without a selected identity does not notify anyone. Uploads and mentions also work in replies and live-element comments.

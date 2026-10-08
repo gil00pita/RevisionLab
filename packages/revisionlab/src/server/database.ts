@@ -71,7 +71,9 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
       ],
       installation: [["instance_id", "TEXT"]],
       workspace_history: [["committed_at", "TEXT"]],
+      personas: [["avatar", "TEXT"]],
       workspace_settings: [
+        ["display_name", "TEXT"],
         ["ai_instructions_json", "TEXT"],
         [
           "wcag_version",

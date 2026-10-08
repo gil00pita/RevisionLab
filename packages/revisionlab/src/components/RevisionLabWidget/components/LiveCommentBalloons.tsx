@@ -2,16 +2,14 @@ import { CommentContent } from "../../CommentContent/index.js";
 import { useRef, useState } from "react";
 import {
   Box,
-  Button,
   CloseButton,
-  Icon,
   Link,
   Popover,
   Portal,
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { MessageSquare } from "lucide-react";
+import { LiveCommentMarker } from "./LiveCommentMarker.js";
 import type { RevisionLabComment } from "../../../server/types.js";
 import { useLiveCommentTargets } from "../hooks/useLiveCommentTargets.js";
 import {
@@ -91,31 +89,16 @@ export function LiveCommentBalloons({
         />
         {targets.map((target) => (
           <Popover.Trigger key={target.id} value={target.id} asChild>
-            <Button
-              data-revisionlab-ui
+            <LiveCommentMarker
+              bubbleColor={color}
+              count={target.ids.length}
               position="fixed"
               left={`${target.x}px`}
               top={`${target.y}px`}
               zIndex="modal"
-              h="8"
-              minW="8"
-              size="xs"
-              borderRadius="full"
-              colorPalette={color}
-              bg={colors.solid}
-              color={colors.contrast}
-              borderWidth="1px"
-              borderColor={colors.outline}
-              _hover={{ bg: colors.hover }}
-              focusRingColor={colors.outline}
               aria-label={`Show comments: ${target.label}`}
               title={`Show comments: ${target.label}`}
-            >
-              <Icon>
-                <MessageSquare />
-              </Icon>
-              {target.ids.length}
-            </Button>
+            />
           </Popover.Trigger>
         ))}
         <Popover.Positioner data-revisionlab-ui color="fg" colorPalette="blue">

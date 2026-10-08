@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
+  Accordion,
   Button,
   Heading,
   HStack,
@@ -71,13 +72,17 @@ export function NotificationSettings({
             These settings apply to this installation.
           </Text>
         </Stack>
-        {!form.configuration.encryptionAvailable && (
-          <Text role="status" color="orange.fg">
-            Before saving credentials, set
-            REVISIONLAB_NOTIFICATION_ENCRYPTION_KEY on the host to a 32-byte
-            base64url secret.
-          </Text>
-        )}
+        {!form.configuration.encryptionAvailable &&
+          (form.draft.slack.enabled ||
+            ["custom", "resend", "smtpdev"].includes(
+              form.draft.defaultProvider,
+            )) && (
+            <Text role="status" color="orange.fg">
+              Before saving credentials, set
+              REVISIONLAB_NOTIFICATION_ENCRYPTION_KEY on the host to a 32-byte
+              base64url secret.
+            </Text>
+          )}
         <EmailProviders
           settings={form.draft}
           secrets={form.secrets}
@@ -97,71 +102,92 @@ export function NotificationSettings({
           onRecipients={form.setRecipients}
           onWebhook={(value) => form.changeSecret("slackWebhook", value)}
         />
-        <Button
-          type="button"
-          colorPalette="blue"
-          alignSelf="start"
-          loading={form.busy}
-          disabled={locked}
-          onClick={() => void form.save()}
-        >
-          Save notification settings
-        </Button>
+        {!onContinue && (
+          <Button
+            type="button"
+            colorPalette="blue"
+            alignSelf="start"
+            loading={form.busy}
+            disabled={locked}
+            onClick={() => void form.save()}
+          >
+            Save notification settings
+          </Button>
+        )}
         {form.dirty && (
           <Text fontSize="sm" color="fg.muted">
             You have unsaved notification settings. Save before testing.
           </Text>
         )}
       </Stack>
-      <Separator />
-      <Stack gap="4">
-        <Heading as="h3" size="md">
-          Test delivery
-        </Heading>
-        <NotificationInput
-          label="Test recipient email"
-          type="email"
-          value={testRecipient}
-          onChange={setTestRecipient}
-          disabled={locked}
-          helper="Tests use the saved default provider and send a real message when configured."
-        />
-        <HStack gap="3" flexWrap="wrap">
-          <Button
-            variant="outline"
-            disabled={locked || form.dirty || !testRecipient.trim()}
-            onClick={() => void form.test("email", testRecipient)}
-          >
-            Send test email
-          </Button>
-          <Button
-            variant="outline"
-            disabled={
-              locked ||
-              form.dirty ||
-              !form.configuration.configuredSecrets.slackWebhook
-            }
-            onClick={() => void form.test("slack", "")}
-          >
-            Send test Slack message
-          </Button>
-          <Button
-            variant="ghost"
-            disabled={locked || form.dirty}
-            onClick={() => void form.load()}
-          >
-            Refresh delivery status
-          </Button>
-        </HStack>
-        <Text fontSize="sm" color="fg.muted">
-          Email:{" "}
-          {form.configuration.lastDelivery.email ?? "No delivery attempt yet."}
-        </Text>
-        <Text fontSize="sm" color="fg.muted">
-          Slack:{" "}
-          {form.configuration.lastDelivery.slack ?? "No delivery attempt yet."}
-        </Text>
-      </Stack>
+      {(form.draft.defaultProvider !== "disabled" ||
+        form.draft.slack.enabled) && (
+        <Accordion.Root collapsible defaultValue={[]}>
+          <Accordion.Item value="test-delivery">
+            <Accordion.ItemTrigger>
+              <Text flex="1">Test delivery</Text>
+              <Accordion.ItemIndicator />
+            </Accordion.ItemTrigger>
+            <Accordion.ItemContent>
+              <Accordion.ItemBody px="0">
+                <Stack gap="4">
+                  {form.draft.defaultProvider !== "disabled" && (
+                    <NotificationInput
+                      label="Test recipient email"
+                      type="email"
+                      value={testRecipient}
+                      onChange={setTestRecipient}
+                      disabled={locked}
+                      helper="Tests use the saved default provider and send a real message when configured."
+                    />
+                  )}
+                  <HStack gap="3" flexWrap="wrap">
+                    {form.draft.defaultProvider !== "disabled" && (
+                      <Button
+                        variant="outline"
+                        disabled={locked || form.dirty || !testRecipient.trim()}
+                        onClick={() => void form.test("email", testRecipient)}
+                      >
+                        Send test email
+                      </Button>
+                    )}
+                    {form.draft.slack.enabled && (
+                      <Button
+                        variant="outline"
+                        disabled={
+                          locked ||
+                          form.dirty ||
+                          !form.configuration.configuredSecrets.slackWebhook
+                        }
+                        onClick={() => void form.test("slack", "")}
+                      >
+                        Send test Slack message
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      disabled={locked || form.dirty}
+                      onClick={() => void form.load()}
+                    >
+                      Refresh delivery status
+                    </Button>
+                  </HStack>
+                  <Text fontSize="sm" color="fg.muted">
+                    Email:{" "}
+                    {form.configuration.lastDelivery.email ??
+                      "No delivery attempt yet."}
+                  </Text>
+                  <Text fontSize="sm" color="fg.muted">
+                    Slack:{" "}
+                    {form.configuration.lastDelivery.slack ??
+                      "No delivery attempt yet."}
+                  </Text>
+                </Stack>
+              </Accordion.ItemBody>
+            </Accordion.ItemContent>
+          </Accordion.Item>
+        </Accordion.Root>
+      )}
       {form.dirty && (
         <Button
           variant="ghost"

@@ -23,6 +23,7 @@ export async function readWorkspaceState(
     memberships,
     accessSettings,
     sessionCount,
+    workspaceName,
   ] = await Promise.all([
     readSetup(client),
     readFlows(client, config.apiPath),
@@ -33,6 +34,7 @@ export async function readWorkspaceState(
     actor.role === "owner" ? readMemberships(client) : [],
     actor.role === "owner" ? readAccessSettings(client, config) : null,
     client.execute("SELECT COUNT(*) AS count FROM test_sessions"),
+    client.execute("SELECT display_name FROM workspace_settings WHERE id = 1"),
   ]);
   return {
     dashboard: {
@@ -41,6 +43,9 @@ export async function readWorkspaceState(
       ticketsCreated: 0,
     },
     setup,
+    workspaceName: String(
+      workspaceName.rows[0]?.display_name || "Local workspace",
+    ),
     project: { id: config.projectId, name: config.projectName },
     actor,
     flows,

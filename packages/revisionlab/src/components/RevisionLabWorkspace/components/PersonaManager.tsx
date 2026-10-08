@@ -2,18 +2,17 @@ import { IllustratedEmptyState } from "../../IllustratedEmptyState/index.js";
 import { useState } from "react";
 import {
   Badge,
-  Box,
   Button,
   Flex,
   Heading,
-  Icon,
   Separator,
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { Archive, KeyRound, Pencil, RotateCcw } from "lucide-react";
+import { PersonaActions } from "./PersonaActions.js";
 import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabPersona } from "../../../server/types.js";
+import { PersonaTable } from "./PersonaTable.js";
 import { PersonaForm } from "./PersonaForm.js";
 
 export interface PersonaEditorControl {
@@ -39,16 +38,18 @@ export function PersonaManager({
   onRefresh: () => Promise<void>;
   editor?: PersonaEditorControl;
 }) {
-  const [inlineEditing, setInlineEditing] = useState<RevisionLabPersona | undefined>();
-  const editing = editor ? editor.form?.persona : inlineEditing;
-  const formOpen = editor ? editor.form !== null : true;
+  const [inlineForm, setInlineForm] = useState<{
+    persona?: RevisionLabPersona;
+  } | null>(null);
+  const editing = editor ? editor.form?.persona : inlineForm?.persona;
+  const formOpen = editor ? editor.form !== null : inlineForm !== null;
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const actionsDisabled = Boolean(busy) || Boolean(editor?.disabled);
   function closeEditor() {
     if (editor) editor.onChange(null);
-    else setInlineEditing(undefined);
+    else setInlineForm(null);
   }
   async function archive(persona: RevisionLabPersona) {
     if (busy) return;
@@ -78,22 +79,64 @@ export function PersonaManager({
       onBusyChange?.(false);
     }
   }
+  async function removeAccount(id: string) {
+    if (busy) return;
+    setBusy(id);
+    onBusyChange?.(true);
+    setError("");
+    setNotice("");
+    try {
+      await apiRequest(apiPath, `personas/${id}/credentials`, {
+        method: "DELETE",
+        body: "{}",
+      });
+      await onRefresh();
+      setNotice("Persona test account removed.");
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Could not remove the test account.",
+      );
+    } finally {
+      setBusy(null);
+      onBusyChange?.(false);
+    }
+  }
   return (
     <Stack
-      p={{ base: "5", md: "8" }}
+      p={editor ? { base: "5", md: "8" } : "0"}
       gap="6"
       w="full"
       minW="0"
       maxW={editor ? "full" : "5xl"}
     >
-      <Flex align="center" justify="space-between" gap="3" flexWrap="wrap" minW="0">
-        <Heading as="h2" size="xl">
-          Personas
-        </Heading>
+      <Flex
+        align="center"
+        justify="space-between"
+        gap="3"
+        flexWrap="wrap"
+        minW="0"
+      >
+        {editor && (
+          <Heading as="h2" size="xl">
+            Personas
+          </Heading>
+        )}
         <Badge colorPalette="gray" whiteSpace="normal" overflowWrap="anywhere">
           {personas.filter((persona) => !persona.archivedAt).length} active
         </Badge>
       </Flex>
+      {canEdit && !editor && !formOpen && (
+        <Button
+          alignSelf="start"
+          variant="outline"
+          disabled={actionsDisabled}
+          onClick={() => setInlineForm({})}
+        >
+          Add persona
+        </Button>
+      )}
       {canEdit && formOpen && (
         <PersonaForm
           onBusyChange={onBusyChange}
@@ -101,7 +144,7 @@ export function PersonaManager({
           apiPath={apiPath}
           persona={editing}
           onCancel={closeEditor}
-          cancelable={Boolean(editor)}
+          cancelable
           canManageCredentials={canManageCredentials}
           onSaved={async () => {
             await onRefresh();
@@ -123,130 +166,35 @@ export function PersonaManager({
       )}
       <Stack as="section" gap="0" aria-label="Saved personas">
         {personas.length === 0 && (
-          <IllustratedEmptyState illustration="documents" description="No personas yet." />
+          <IllustratedEmptyState
+            illustration="documents"
+            description="No personas yet."
+          />
         )}
-        {personas.map((persona) => (
-          <Flex
-            key={persona.id}
-            as="article"
-            aria-label={`Persona ${persona.name}`}
-            py="4"
-            gap="4"
-            align="start"
-            borderBottomWidth="1px"
-            borderColor="border"
-            direction={{ base: "column", md: "row" }}
-          >
-            <Box flex="1" minW="0">
-              <Flex gap="2" align="center" flexWrap="wrap">
-                <Heading as="h3" size="md" overflowWrap="anywhere">
-                  {persona.name}
-                </Heading>
-                {persona.archivedAt && (
-                  <Badge colorPalette="gray">Archived</Badge>
-                )}
-                {persona.hasCredentials && (
-                  <Badge colorPalette="blue">Test account configured</Badge>
-                )}
-              </Flex>
-              {persona.description && (
-                <Text
-                  mt="2"
-                  color="fg.muted"
-                  whiteSpace="pre-wrap"
-                  overflowWrap="anywhere"
-                >
-                  {persona.description}
-                </Text>
-              )}
-            </Box>
-            {canEdit && (
-              <Flex gap="2" flexShrink="0" flexWrap="wrap" maxW="full" minW="0">
-                <Button
-                  size="sm"
-                  minH="11"
-                  h="auto"
-                  py="2"
-                  maxW="full"
-                  whiteSpace="normal"
-                  variant="ghost"
-                  disabled={actionsDisabled}
-                  onClick={() => {
-                    if (editor) editor.onChange({ persona });
-                    else setInlineEditing(persona);
-                    setNotice("");
-                  }}
-                >
-                  <Icon>
-                    <Pencil />
-                  </Icon>
-                  Edit
-                </Button>
-                {canManageCredentials && persona.hasCredentials && (
-                  <Button
-                    size="sm"
-                    minH="11"
-                    h="auto"
-                    py="2"
-                    maxW="full"
-                    whiteSpace="normal"
-                    variant="outline"
-                    colorPalette="red"
-                    disabled={actionsDisabled}
-                    onClick={() =>
-                      void (async () => {
-                        setBusy(persona.id);
-                        onBusyChange?.(true);
-                        setError("");
+        {personas.length > 0 && (
+          <PersonaTable
+            personas={personas}
+            actions={
+              canEdit
+                ? (persona) => (
+                    <PersonaActions
+                      persona={persona}
+                      disabled={actionsDisabled}
+                      loading={busy === persona.id}
+                      canManageCredentials={canManageCredentials}
+                      onEdit={() => {
+                        if (editor) editor.onChange({ persona });
+                        else setInlineForm({ persona });
                         setNotice("");
-                        try {
-                          await apiRequest(
-                            apiPath,
-                            `personas/${persona.id}/credentials`,
-                            { method: "DELETE", body: "{}" },
-                          );
-                          await onRefresh();
-                          setNotice("Persona test account removed.");
-                        } catch (cause) {
-                          setError(
-                            cause instanceof Error
-                              ? cause.message
-                              : "Could not remove the test account.",
-                          );
-                        } finally {
-                          setBusy(null);
-                          onBusyChange?.(false);
-                        }
-                      })()
-                    }
-                  >
-                    <Icon>
-                      <KeyRound />
-                    </Icon>
-                    Remove account
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  minH="11"
-                  h="auto"
-                  py="2"
-                  maxW="full"
-                  whiteSpace="normal"
-                  variant="outline"
-                  loading={busy === persona.id}
-                  disabled={actionsDisabled}
-                  onClick={() => void archive(persona)}
-                >
-                  <Icon>
-                    {persona.archivedAt ? <RotateCcw /> : <Archive />}
-                  </Icon>
-                  {persona.archivedAt ? "Restore" : "Archive"}
-                </Button>
-              </Flex>
-            )}
-          </Flex>
-        ))}
+                      }}
+                      onArchive={() => void archive(persona)}
+                      onRemoveAccount={() => void removeAccount(persona.id)}
+                    />
+                  )
+                : undefined
+            }
+          />
+        )}
       </Stack>
     </Stack>
   );

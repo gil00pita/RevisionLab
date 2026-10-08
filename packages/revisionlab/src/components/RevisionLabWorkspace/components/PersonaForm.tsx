@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import {
+  Accordion,
   Box,
   Button,
   Field,
@@ -12,6 +13,7 @@ import {
   Textarea,
 } from "@chakra-ui/react";
 import { Plus, Save, X } from "lucide-react";
+import { PersonaAvatarPicker } from "../../PersonaAvatar/index.js";
 import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabPersona } from "../../../server/types.js";
 
@@ -33,6 +35,7 @@ export function PersonaForm({
   cancelable?: boolean;
 }) {
   const [name, setName] = useState(persona?.name ?? "");
+  const [avatar, setAvatar] = useState(persona?.avatar ?? null);
   const [description, setDescription] = useState(persona?.description ?? "");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -51,7 +54,7 @@ export function PersonaForm({
         persona ? `personas/${persona.id}` : "personas",
         {
           method: persona ? "PATCH" : "POST",
-          body: JSON.stringify({ name, description }),
+          body: JSON.stringify({ name, description, avatar }),
         },
       );
       const personaId = persona?.id ?? result.id;
@@ -66,6 +69,7 @@ export function PersonaForm({
       await onSaved();
       setName("");
       setDescription("");
+      setAvatar(null);
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "Could not save the persona.",
@@ -112,42 +116,60 @@ export function PersonaForm({
             placeholder="Role, goals, or relevant context"
           />
         </Field.Root>
+        <PersonaAvatarPicker
+          name={name}
+          value={avatar}
+          disabled={busy}
+          onChange={setAvatar}
+        />
         {canManageCredentials && (
-          <Stack
-            gap="3"
-            borderWidth="1px"
-            borderColor="border"
-            rounded="md"
-            p="4"
-          >
-            <Heading as="h4" size="sm">
-              Synthetic test account
-            </Heading>
-            <Text color="fg.muted" fontSize="sm">
-              Leave both fields blank to keep the existing account unchanged.
-              These credentials are encrypted and excluded from captures and
-              exports.
-            </Text>
-            <Field.Root disabled={busy}>
-              <Field.Label>Prototype username</Field.Label>
-              <Input
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                autoComplete="off"
-                maxLength={254}
-              />
-            </Field.Root>
-            <Field.Root disabled={busy}>
-              <Field.Label>Prototype password</Field.Label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                autoComplete="new-password"
-                maxLength={1024}
-              />
-            </Field.Root>
-          </Stack>
+          <Accordion.Root collapsible defaultValue={[]}>
+            <Accordion.Item value="credentials">
+              <Accordion.ItemTrigger>
+                <Text flex="1">Synthetic test account (optional)</Text>
+                <Accordion.ItemIndicator />
+              </Accordion.ItemTrigger>
+              <Accordion.ItemContent>
+                <Accordion.ItemBody px="0">
+                  <Stack
+                    gap="3"
+                    borderWidth="1px"
+                    borderColor="border"
+                    rounded="md"
+                    p="4"
+                  >
+                    <Heading as="h4" size="sm">
+                      Synthetic test account
+                    </Heading>
+                    <Text color="fg.muted" fontSize="sm">
+                      Leave both fields blank to keep the existing account
+                      unchanged. These credentials are encrypted and excluded
+                      from captures and exports.
+                    </Text>
+                    <Field.Root disabled={busy}>
+                      <Field.Label>Prototype username</Field.Label>
+                      <Input
+                        value={username}
+                        onChange={(event) => setUsername(event.target.value)}
+                        autoComplete="off"
+                        maxLength={254}
+                      />
+                    </Field.Root>
+                    <Field.Root disabled={busy}>
+                      <Field.Label>Prototype password</Field.Label>
+                      <Input
+                        type="password"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        autoComplete="new-password"
+                        maxLength={1024}
+                      />
+                    </Field.Root>
+                  </Stack>
+                </Accordion.ItemBody>
+              </Accordion.ItemContent>
+            </Accordion.Item>
+          </Accordion.Root>
         )}
         {error && (
           <Text role="alert" color="red.fg">

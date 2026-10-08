@@ -29,6 +29,7 @@ const inputSchema = z.discriminatedUnion("action", [
     name: z.string().trim().min(1).max(100),
     email: z.string().trim().email().max(254),
     systemUrl: z.string().trim().min(1).max(2048),
+    workspaceName: z.string().trim().min(1).max(100).optional(),
   }),
   z.strictObject({
     action: z.literal("advance"),
@@ -65,6 +66,11 @@ export async function handleSetup(
         ON CONFLICT(id) DO UPDATE SET system_url = excluded.system_url`,
         args: [url],
       });
+      if (input.workspaceName !== undefined)
+        await tx.execute({
+          sql: "UPDATE workspace_settings SET display_name = ? WHERE id = 1",
+          args: [input.workspaceName],
+        });
       const email = input.email.toLowerCase();
       const duplicate = await tx.execute({
         sql: "SELECT id FROM reviewers WHERE email = ? AND id != ?",

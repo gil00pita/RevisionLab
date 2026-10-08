@@ -1,3 +1,4 @@
+import { personaAvatarIds } from "../persona-avatars.js";
 import { randomUUID } from "node:crypto";
 import type { Client, Transaction } from "@libsql/client";
 import { z } from "zod";
@@ -13,11 +14,11 @@ import {
 } from "./security.js";
 import type { RevisionLabActor, RevisionLabPersona } from "./types.js";
 
-const personaSchema = z
-  .strictObject({
-    name: z.string().trim().min(1).max(120),
-    description: z.string().trim().max(1000).default(""),
-  });
+const personaSchema = z.strictObject({
+  name: z.string().trim().min(1).max(120),
+  description: z.string().trim().max(1000).default(""),
+  avatar: z.enum(personaAvatarIds).nullable().optional(),
+});
 
 export async function readPersonas(
   client: Client,
@@ -30,6 +31,7 @@ export async function readPersonas(
     id: String(row.id),
     name: String(row.name),
     description: String(row.description),
+    avatar: row.avatar == null ? null : String(row.avatar),
     archivedAt: row.archived_at == null ? null : String(row.archived_at),
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
@@ -204,13 +206,29 @@ export async function handlePersonas(
       );
     if (creating) {
       await transaction.execute({
-        sql: "INSERT INTO personas (id, name, name_key, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
-        args: [id, input.name, key, input.description, now, now],
+        sql: "INSERT INTO personas (id, name, name_key, description, avatar, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        args: [
+          id,
+          input.name,
+          key,
+          input.description,
+          input.avatar ?? null,
+          now,
+          now,
+        ],
       });
     } else {
       await transaction.execute({
-        sql: "UPDATE personas SET name = ?, name_key = ?, description = ?, updated_at = ? WHERE id = ?",
-        args: [input.name, key, input.description, now, id],
+        sql: "UPDATE personas SET name = ?, name_key = ?, description = ?, avatar = CASE WHEN ? THEN ? ELSE avatar END, updated_at = ? WHERE id = ?",
+        args: [
+          input.name,
+          key,
+          input.description,
+          input.avatar !== undefined ? 1 : 0,
+          input.avatar ?? null,
+          now,
+          id,
+        ],
       });
     }
   });

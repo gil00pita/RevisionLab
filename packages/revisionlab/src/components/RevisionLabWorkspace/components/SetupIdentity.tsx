@@ -1,7 +1,14 @@
-import { Field, Input, Stack, Text } from "@chakra-ui/react";
+import { Accordion, Field, Input, Stack, Text } from "@chakra-ui/react";
+
+import { GeneralSettings } from "./GeneralSettings.js";
 
 export function SetupIdentity({
   name,
+  workspaceName,
+  apiPath,
+  projectName,
+  onWorkspaceName,
+  onBusyChange,
   email,
   systemUrl,
   local,
@@ -11,6 +18,11 @@ export function SetupIdentity({
   onUrl,
 }: {
   name: string;
+  workspaceName: string;
+  apiPath: string;
+  projectName: string;
+  onWorkspaceName: (value: string) => void;
+  onBusyChange: (busy: boolean) => void;
   email: string;
   systemUrl: string;
   local: boolean;
@@ -25,6 +37,22 @@ export function SetupIdentity({
         Add your owner details and the URL where you use RevisionLab. Access
         uses email login links.
       </Text>
+      <Field.Root required disabled={disabled}>
+        <Field.Label>
+          Workspace name
+          <Field.RequiredIndicator />
+        </Field.Label>
+        <Input
+          name="workspaceName"
+          value={workspaceName}
+          required
+          maxLength={100}
+          onChange={(event) => onWorkspaceName(event.target.value)}
+        />
+        <Field.HelperText>
+          The name shown in your workspace selector.
+        </Field.HelperText>
+      </Field.Root>
       <Field.Root required disabled={disabled}>
         <Field.Label>
           Your name
@@ -79,6 +107,25 @@ export function SetupIdentity({
           use HTTPS for a deployed site.
         </Field.HelperText>
       </Field.Root>
+      <Accordion.Root collapsible defaultValue={[]}>
+        <Accordion.Item value="advanced">
+          <Accordion.ItemTrigger>
+            <Text flex="1">Advanced options</Text>
+            <Accordion.ItemIndicator />
+          </Accordion.ItemTrigger>
+          <Accordion.ItemContent>
+            <Accordion.ItemBody px="0" pt="4">
+              <GeneralSettings
+                apiPath={apiPath}
+                projectName={projectName}
+                embedded
+                disabled={disabled}
+                onBusyChange={onBusyChange}
+              />
+            </Accordion.ItemBody>
+          </Accordion.ItemContent>
+        </Accordion.Item>
+      </Accordion.Root>
     </Stack>
   );
 }

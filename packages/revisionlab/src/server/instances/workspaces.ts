@@ -39,7 +39,7 @@ export async function connectedState(
   const home: WorkspaceInstance = {
     dashboard: local.dashboard,
     id: "local",
-    name: "Local workspace",
+    name: local.workspaceName || "Local workspace",
     url: new URL(request.url).origin,
     basePath: config.basePath,
     apiPath: config.apiPath,

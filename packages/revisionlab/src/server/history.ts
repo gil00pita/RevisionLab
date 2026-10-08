@@ -12,6 +12,7 @@ const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 const snapshotTables = {
   workspace_settings: [
     "id",
+    "display_name",
     "show_comment_bubbles",
     "comment_bubble_color",
     "show_widget",
@@ -31,6 +32,7 @@ const snapshotTables = {
     "name",
     "name_key",
     "description",
+    "avatar",
     "archived_at",
     "created_at",
     "updated_at",
@@ -313,6 +315,8 @@ async function insertRows(
           ? (row[column] ?? "[]")
           : [
                 "ai_instructions_json",
+                "avatar",
+                "display_name",
                 "screenshot",
                 "screenshot_anchor",
               ].includes(column)

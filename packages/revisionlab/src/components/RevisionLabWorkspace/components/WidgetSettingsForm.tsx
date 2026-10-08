@@ -77,9 +77,10 @@ export function WidgetSettingsForm({
         >
           <Switch.HiddenInput />
           <Switch.Control
-            borderWidth="1px"
-            borderColor="fg.muted"
-            _checked={{ borderColor: "blue.border" }}
+            outlineWidth="1px"
+            outlineStyle="solid"
+            outlineColor="border.emphasized"
+            _checked={{ outlineColor: "blue.border" }}
           >
             <Switch.Thumb />
           </Switch.Control>
