@@ -11,7 +11,13 @@ import {
 } from "@chakra-ui/react";
 import { Grip, ImageOff, MessageCircle, Trash2 } from "lucide-react";
 import type { RevisionLabStep } from "../../../server/types.js";
-import { CARD_HEIGHT, CARD_WIDTH } from "../geometry.js";
+import {
+  CARD_DETAILS_HEIGHT,
+  CARD_HEADER_HEIGHT,
+  CARD_HEIGHT,
+  CARD_WIDTH,
+  type ClickPreviewRect,
+} from "../geometry.js";
 import type { BoardNode } from "../types.js";
 import { useBoardNodeDrag } from "../hooks/useBoardNodeDrag.js";
 import { CursorTrail } from "../../CursorTrail/index.js";
@@ -33,6 +39,7 @@ interface BoardScreenProps {
   onConnect?: () => void;
   onRemove?: () => void;
   showCursor: boolean;
+  clickTargets: { edgeId: string; rect: ClickPreviewRect; label: string }[];
 }
 
 export function BoardScreen({
@@ -51,6 +58,7 @@ export function BoardScreen({
   onConnect,
   onRemove,
   showCursor,
+  clickTargets,
 }: BoardScreenProps) {
   const helpId = useId();
   const { start, move, keyMove, end } = useBoardNodeDrag(
@@ -74,7 +82,8 @@ export function BoardScreen({
       borderRadius="xl"
     >
       <Flex
-        h="10"
+        h={`${CARD_HEADER_HEIGHT}px`}
+        flexShrink="0"
         px="3"
         align="center"
         justify="space-between"
@@ -136,7 +145,7 @@ export function BoardScreen({
       <Button
         variant="plain"
         w="full"
-        h="calc(100% - 2.5rem)"
+        h={`calc(100% - ${CARD_HEADER_HEIGHT}px)`}
         p="0"
         display="flex"
         flexDirection="column"
@@ -156,7 +165,8 @@ export function BoardScreen({
         {step.screenshot ? (
           <Box
             position="relative"
-            h="132px"
+            flex="1"
+            minH="0"
             w="full"
             flexShrink="0"
             overflow="hidden"
@@ -164,7 +174,7 @@ export function BoardScreen({
             <Image
               src={step.screenshot}
               alt=""
-              h="132px"
+              h="full"
               w="full"
               objectFit="cover"
               objectPosition="top"
@@ -174,10 +184,29 @@ export function BoardScreen({
             {showCursor && step.capture && (
               <CursorTrail capture={step.capture} cover />
             )}
+            {clickTargets.map(({ edgeId, rect, label }) => (
+              <Box
+                key={edgeId}
+                aria-hidden="true"
+                title={`Recorded click: ${label}`}
+                position="absolute"
+                left={`${rect.x - 1}px`}
+                top={`${rect.y - CARD_HEADER_HEIGHT - 1}px`}
+                w={`${rect.width}px`}
+                h={`${rect.height}px`}
+                borderWidth="2px"
+                borderStyle="solid"
+                borderColor="pink.border"
+                bg="pink.solid/10"
+                borderRadius="md"
+                pointerEvents="none"
+              />
+            ))}
           </Box>
         ) : (
           <Flex
-            h="132px"
+            flex="1"
+            minH="0"
             align="center"
             justify="center"
             gap="2"
@@ -190,11 +219,17 @@ export function BoardScreen({
             <Text fontSize="xs">No capture</Text>
           </Flex>
         )}
-        <Box px="3" py="2" minW="0" flex="1">
-          <Text fontSize="sm" fontWeight="semibold" lineClamp={1}>
+        <Box
+          px="3"
+          py="1"
+          minW="0"
+          h={`${CARD_DETAILS_HEIGHT}px`}
+          flexShrink="0"
+        >
+          <Text fontSize="xs" fontWeight="semibold" lineClamp={1}>
             {step.title}
           </Text>
-          <Flex gap="2" align="center" justify="space-between" mt="1">
+          <Flex gap="2" align="center" justify="space-between" mt="0.5">
             <Text
               fontSize="xs"
               fontFamily="mono"
