@@ -47,11 +47,11 @@ export function PersonaRecommendations({
       <Heading as="h3" size="md">
         Recommended personas
       </Heading>
-      <Text color="gray.600">
+      <Text color="fg.muted">
         Start with an empty list. Add only the perspectives you want to review.
       </Text>
       {error && (
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {error}
         </Text>
       )}
@@ -69,11 +69,11 @@ export function PersonaRecommendations({
             justify="space-between"
             py="3"
             borderBottomWidth="1px"
-            borderColor="gray.200"
+            borderColor="border"
           >
             <Stack gap="1">
               <Text fontWeight="semibold">{persona.name}</Text>
-              <Text color="gray.600" fontSize="sm">
+              <Text color="fg.muted" fontSize="sm">
                 {persona.description}
               </Text>
             </Stack>

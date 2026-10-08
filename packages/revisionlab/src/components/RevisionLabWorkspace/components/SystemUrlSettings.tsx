@@ -77,7 +77,7 @@ export function SystemUrlSettings({
         >
           Save system URL
         </Button>
-        <Text role="status" fontSize="sm" color="gray.600" minH="5">
+        <Text role="status" fontSize="sm" color="fg.muted" minH="5">
           {saved ? "System URL saved." : ""}
         </Text>
       </Stack>

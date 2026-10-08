@@ -131,11 +131,11 @@ export function TicketEditor({
       gap="4"
       p="5"
       borderWidth="1px"
-      borderColor="gray.300"
+      borderColor="border.emphasized"
       rounded="lg"
       minW="0"
     >
-      <Text fontSize="sm" color="gray.600">
+      <Text fontSize="sm" color="fg.muted">
         Review the suggested priority and criteria, then copy into Jira. No
         external ticket has been created.
       </Text>
@@ -147,18 +147,18 @@ export function TicketEditor({
           setStatus("");
         }}
       />
-      <Text fontSize="sm" color="gray.600">
+      <Text fontSize="sm" color="fg.muted">
         {fields.status === "fixed"
           ? "Saving Fixed hides linked comments from active review. Their screenshots and discussion stay attached here."
           : "Choose Fixed after verifying the work. Reopening a fixed ticket restores eligible comments."}
       </Text>
       {ticket.template && (
-        <Text fontSize="xs" color="gray.600">
+        <Text fontSize="xs" color="fg.muted">
           Generated with template: {ticket.template.name}
         </Text>
       )}
       {latestChanged && (
-        <Text color="orange.800" fontSize="sm">
+        <Text color="orange.fg" fontSize="sm">
           A newer saved draft is available. Copy your edits before reloading it.
         </Text>
       )}
@@ -187,12 +187,12 @@ export function TicketEditor({
           </Button>
         )}
       </Flex>
-      <Text role="status" fontSize="sm" color="gray.600">
+      <Text role="status" fontSize="sm" color="fg.muted">
         {dirty ? "Unsaved edits. " : ""}
         {status}
       </Text>
       {error && (
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {error}
         </Text>
       )}
@@ -203,7 +203,7 @@ export function TicketEditor({
             rows={12}
             readOnly
             value={formatted}
-            borderColor="gray.500"
+            borderColor="fg.muted"
             onFocus={(event) => event.target.select()}
           />
         </Field.Root>

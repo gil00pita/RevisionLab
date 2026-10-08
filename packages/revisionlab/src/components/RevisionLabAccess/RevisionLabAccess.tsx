@@ -31,8 +31,8 @@ export function RevisionLabAccess({
         as="main"
         minH="100dvh"
         direction="column"
-        bg="gray.50"
-        color="gray.900"
+        bg="bg.subtle"
+        color="fg"
         data-revisionlab-ui="access"
       >
         <HStack
@@ -40,8 +40,8 @@ export function RevisionLabAccess({
           gap="3"
           px={{ base: "5", md: "10" }}
           py="5"
-          bg="gray.900"
-          color="white"
+          bg="bg.inverted"
+          color="fg.inverted"
         >
           <RevisionLabLogo decorative />
           <Text fontWeight="bold" fontSize="lg">
@@ -60,22 +60,22 @@ export function RevisionLabAccess({
               <Heading as="h1" size="2xl" letterSpacing="tight">
                 Join the review
               </Heading>
-              <Text color="gray.600" lineHeight="tall">
+              <Text color="fg.muted" lineHeight="tall">
                 Use your workspace code or member email to open the prototype,
                 follow its flows, and leave feedback.
               </Text>
             </Stack>
             <Box
-              bg="white"
+              bg="bg.panel"
               borderWidth="1px"
-              borderColor="gray.200"
+              borderColor="border"
               rounded="xl"
               p={{ base: "5", md: "7" }}
             >
               <LocalWorkspaceAccess apiPath={apiPath} basePath={basePath} />
               <AccessForm apiPath={apiPath} basePath={basePath} />
             </Box>
-            <HStack align="start" gap="3" color="gray.600" fontSize="sm">
+            <HStack align="start" gap="3" color="fg.muted" fontSize="sm">
               <Icon size="sm" mt="0.5" flexShrink="0">
                 <LockKeyhole />
               </Icon>
@@ -84,7 +84,7 @@ export function RevisionLabAccess({
                 a workspace code or to add your email.
               </Text>
             </HStack>
-            <Link href="/" color="blue.700" fontSize="sm" alignSelf="start">
+            <Link href="/" color="blue.fg" fontSize="sm" alignSelf="start">
               Back to prototype
             </Link>
           </Stack>

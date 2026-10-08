@@ -64,7 +64,7 @@ export function TicketGeneration({
     >
       <Portal>
         <ActionBar.Positioner
-          data-revisionlab-ui
+          data-revisionlab-ui color="fg" colorPalette="blue"
           zIndex="sticky"
           px={{ base: "2", md: "4" }}
         >
@@ -74,12 +74,12 @@ export function TicketGeneration({
             maxW="full"
             flexDirection="column"
             alignItems="stretch"
-            bg="white"
-            color="gray.900"
+            bg="bg.panel"
+            color="fg"
             fontFamily="body"
             colorPalette="blue"
             borderWidth="1px"
-            borderColor="gray.300"
+            borderColor="border.emphasized"
             shadow="lg"
             gap="2"
             p="3"
@@ -121,25 +121,25 @@ export function TicketGeneration({
               />
             </Flex>
             {!busy && (
-              <Text fontSize="xs" color="gray.600">
+              <Text fontSize="xs" color="fg.muted">
                 Template:{" "}
                 {templates.find((item) => item.id === templateId)?.name ??
                   "Bug report"}
               </Text>
             )}
             {duplicates > 0 && (
-              <Text fontSize="xs" color="orange.800">
+              <Text fontSize="xs" color="orange.fg">
                 {duplicates} selected sources already appear in saved drafts.
                 Running again will create additional drafts.
               </Text>
             )}
             {ids.length > 50 && (
-              <Text role="alert" fontSize="sm" color="red.700">
+              <Text role="alert" fontSize="sm" color="red.fg">
                 Select at most 50 source occurrences per run.
               </Text>
             )}
             {editing && (
-              <Text fontSize="xs" color="gray.600">
+              <Text fontSize="xs" color="fg.muted">
                 Save or discard ticket edits before generating more drafts.
               </Text>
             )}
@@ -172,7 +172,7 @@ export function TicketGeneration({
               )}
             </Flex>
             {busy && (
-              <Text fontSize="xs" color="gray.600">
+              <Text fontSize="xs" color="fg.muted">
                 Codex is consolidating the selected evidence. This may take a
                 few minutes.
               </Text>

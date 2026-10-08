@@ -38,12 +38,12 @@ export function EvidenceZoomDialog({
       <Portal>
         <Dialog.Backdrop data-revisionlab-ui />
         <Dialog.Positioner
-          data-revisionlab-ui
+          data-revisionlab-ui color="fg" colorPalette="blue"
           padding={{ base: "2", md: "10" }}
         >
           <Dialog.Content
-            bg="white"
-            color="gray.900"
+            bg="bg.panel"
+            color="fg"
             fontFamily="body"
             colorPalette="blue"
           >
@@ -94,7 +94,7 @@ export function EvidenceZoomDialog({
                     maxH="60vh"
                     overflow="auto"
                     borderWidth="1px"
-                    borderColor="gray.300"
+                    borderColor="border.emphasized"
                     rounded="md"
                     tabIndex={0}
                     aria-label="Screenshot viewport"
@@ -104,7 +104,7 @@ export function EvidenceZoomDialog({
                       <ScreenshotImage key={item.id} item={item} />
                     </Box>
                   </Box>
-                  <Text fontSize="sm" color="gray.600" overflowWrap="anywhere">
+                  <Text fontSize="sm" color="fg.muted" overflowWrap="anywhere">
                     {item.route} ·{" "}
                     {item.flowName
                       ? `${item.flowName} · v${item.version}`

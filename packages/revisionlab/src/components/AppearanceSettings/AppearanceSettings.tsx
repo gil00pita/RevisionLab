@@ -43,8 +43,8 @@ export function AppearanceSettings({
         <Switch.HiddenInput />
         <Switch.Control
           borderWidth="1px"
-          borderColor="gray.500"
-          _checked={{ borderColor: "blue.700" }}
+          borderColor="fg.muted"
+          _checked={{ borderColor: "blue.border" }}
         >
           <Switch.Thumb />
         </Switch.Control>
@@ -91,19 +91,19 @@ export function AppearanceSettings({
             </RadioGroup.Root>
           </Field.Root>
           {toggle("showWidget", "Show the RevisionLab widget")}
-          <Text color="gray.600" fontSize="sm">
+          <Text color="fg.muted" fontSize="sm">
             You can always open the workspace directly to change these settings.
           </Text>
           <Box
             position="relative"
             h="40"
-            bg="gray.50"
+            bg="bg.subtle"
             borderWidth="1px"
-            borderColor="gray.200"
+            borderColor="border"
             borderRadius="lg"
             aria-label="Widget preview"
           >
-            <Text p="4" color="gray.600" fontSize="sm">
+            <Text p="4" color="fg.muted" fontSize="sm">
               Prototype preview
             </Text>
             {value.showWidget && (
@@ -153,7 +153,7 @@ export function AppearanceSettings({
           </Heading>
           {toggle("auditLivePages", "Audit live prototype pages")}
           {toggle("auditRecordings", "Audit recorded screens")}
-          <Text color="gray.600">
+          <Text color="fg.muted">
             Run the existing WCAG A/AA checks on live pages and new recordings.
             Automated checks support manual review; they do not certify
             compliance. Saved reports stay unchanged.

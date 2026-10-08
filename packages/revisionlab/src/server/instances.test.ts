@@ -622,3 +622,86 @@ test("connected workspace state predating AI settings still loads with defaults"
   });
   assert.deepEqual(legacy.settings.ai, defaultAiSettings);
 });
+
+test("connected rich comments retain source identities and private files while mention inboxes require the recipient session", async (t) => {
+  const { local, remote, connection, workspace } = await pair(t);
+  const recipientCookie = await remote.login("commenter");
+  const personaId = (
+    await (await remote.call("personas", "POST", { name: "tester" })).json()
+  ).id;
+  const optionsResponse = await local.call(
+    `instances/${connection.id}/proxy/comments/options`,
+  );
+  assert.equal(optionsResponse.status, 200);
+  const options = await optionsResponse.json();
+  const persona = options.personas.find(
+    (item: { id: string }) => item.id === `${connection.id}~${personaId}`,
+  );
+  const user = options.users.find(
+    (item: { name: string }) => item.name === "Reviewer",
+  );
+  assert.ok(persona);
+  assert.ok(user.id.startsWith(`${connection.id}~`));
+  const path = `instances/${connection.id}/proxy/comments`;
+  const response = await local.call(path, "POST", {
+    route: "/",
+    body: "@tester @Reviewer check",
+    personaIds: [persona.id],
+    mentions: [
+      { id: persona.id, kind: "persona", label: "tester", start: 0, end: 7 },
+      { id: user.id, kind: "user", label: "Reviewer", start: 8, end: 17 },
+    ],
+    attachments: [
+      {
+        name: "large-note.txt",
+        data: `data:text/plain;base64,${Buffer.alloc(700_000, 65).toString("base64")}`,
+      },
+    ],
+  });
+  assert.equal(response.status, 201, await response.clone().text());
+  const saved = (await workspace(connection.id)).comments[0];
+  assert.equal(saved.personas?.[0].id, persona.id);
+  assert.equal(saved.mentions?.[1].id, user.id);
+  const attachment = saved.attachments![0];
+  assert.ok(attachment.id.startsWith(`${connection.id}~`));
+  const download = await local.call(
+    `instances/${connection.id}/proxy/artifacts/${attachment.id}`,
+  );
+  assert.equal(download.status, 200);
+  assert.equal(download.headers.get("Content-Disposition"), "attachment");
+  assert.match(download.headers.get("Content-Security-Policy")!, /sandbox/);
+  assert.equal((await download.arrayBuffer()).byteLength, 700_000);
+  assert.equal((await local.state()).comments.length, 0);
+  const inbox = await (
+    await remote.call(
+      "comments/notifications",
+      "GET",
+      undefined,
+      recipientCookie,
+    )
+  ).json();
+  assert.equal(inbox.length, 1);
+  assert.match(inbox[0].authorName, /Connected workspace/);
+  assert.deepEqual(
+    await (await local.call("comments/notifications")).json(),
+    [],
+  );
+  assert.equal(
+    (
+      await local.call(
+        `instances/${connection.id}/proxy/comments/notifications`,
+      )
+    ).status,
+    403,
+  );
+  assert.equal(
+    (
+      await local.call(path, "POST", {
+        route: "/",
+        body: "Wrong workspace",
+        personaIds: [`different-source~${personaId}`],
+      })
+    ).status,
+    400,
+  );
+});

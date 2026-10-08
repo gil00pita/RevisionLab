@@ -62,7 +62,7 @@ export function WidgetLauncher({
       alignItems="center"
       flexDirection={settings.widgetSide === "left" ? "row-reverse" : "row"}
       bg={widgetColorTokens(settings.widgetColor).solid}
-      color="white"
+      color="colorPalette.contrast"
       borderRadius="full"
       shadow="lg"
       maxW="calc(100vw - 1.5rem)"

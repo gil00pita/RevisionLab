@@ -1,3 +1,4 @@
+import { IllustratedEmptyState } from "../../IllustratedEmptyState/index.js";
 import { sourceApiPath, sourceCanEdit } from "../../../workspace-instances.js";
 import { useState } from "react";
 import {
@@ -15,12 +16,14 @@ import { commentContextLabel, commentGroupKey } from "../comment-context.js";
 
 export function AllComments({
   data,
+  commentId,
   apiPath,
   onRefresh,
   route,
   basePath,
 }: {
   data: WorkspaceState;
+  commentId?: string | null;
   apiPath: string;
   onRefresh: () => Promise<void>;
   route: string | null;
@@ -34,8 +37,16 @@ export function AllComments({
           (comment) =>
             comment.route === route && !comment.stepId && !comment.edgeId,
         );
+  const mentioned = visibleComments.find((comment) => comment.id === commentId);
+  const targetGroup = mentioned ? commentGroupKey(mentioned) : undefined;
+  const [threadSelection, setThreadSelection] = useState<
+    string | null | undefined
+  >(undefined);
   const groups = [...new Set(visibleComments.map(commentGroupKey))];
-  const active = selected && groups.includes(selected) ? selected : groups[0];
+  const active =
+    selected && groups.includes(selected)
+      ? selected
+      : (targetGroup ?? groups[0]);
   const comments = visibleComments.filter(
     (comment) => commentGroupKey(comment) === active,
   );
@@ -53,7 +64,7 @@ export function AllComments({
           </Text>
           <Link
             href={`${basePath}?${new URLSearchParams({ view: "comments", workspace: data.selection })}`}
-            color="blue.700"
+            color="blue.fg"
             fontSize="sm"
           >
             All workspace comments
@@ -61,10 +72,10 @@ export function AllComments({
         </Stack>
       )}
       {groups.length === 0 ? (
-        <Text color="gray.600">
-          No feedback yet. Open a prototype page or recorded screen to add your
-          first comment.
-        </Text>
+        <IllustratedEmptyState
+          illustration="messages"
+          description="No feedback yet. Open a prototype page or recorded screen to add your first comment."
+        />
       ) : (
         <Flex gap="8" direction={{ base: "column", md: "row" }}>
           <Stack gap="2" w={{ base: "full", md: "72" }} flexShrink="0">
@@ -82,7 +93,10 @@ export function AllComments({
                   textAlign="left"
                   variant={key === active ? "subtle" : "ghost"}
                   colorPalette={key === active ? "blue" : "gray"}
-                  onClick={() => setSelected(key)}
+                  onClick={() => {
+                    setSelected(key);
+                    setThreadSelection(undefined);
+                  }}
                   aria-pressed={key === active}
                 >
                   {commentContextLabel(comment, data)}
@@ -97,6 +111,12 @@ export function AllComments({
               </Heading>
               <FeedbackThread
                 key={active}
+                selectedCommentId={
+                  threadSelection === undefined
+                    ? (mentioned?.parentId ?? mentioned?.id)
+                    : threadSelection
+                }
+                onSelectComment={setThreadSelection}
                 apiPath={sourceApiPath(apiPath, first.workspace)}
                 route={first.route}
                 flowId={first.flowId ?? undefined}

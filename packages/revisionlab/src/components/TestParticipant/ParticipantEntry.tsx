@@ -34,8 +34,8 @@ export function ParticipantEntry({
     >
       <Portal>
         <Dialog.Backdrop data-revisionlab-ui />
-        <Dialog.Positioner data-revisionlab-ui colorPalette="blue">
-          <Dialog.Content bg="white" color="gray.900" fontFamily="body" mx="4">
+        <Dialog.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
+          <Dialog.Content bg="bg.panel" color="fg" fontFamily="body" mx="4">
             <Dialog.Header>
               <Dialog.Title>{session.name}</Dialog.Title>
             </Dialog.Header>
@@ -61,7 +61,7 @@ export function ParticipantEntry({
                   />
                 </Field.Root>
                 {error && (
-                  <Text role="alert" color="red.700">
+                  <Text role="alert" color="red.fg">
                     {error}
                   </Text>
                 )}

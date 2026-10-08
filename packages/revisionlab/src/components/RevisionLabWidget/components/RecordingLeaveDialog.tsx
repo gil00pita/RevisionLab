@@ -49,8 +49,8 @@ export function RecordingLeaveDialog({
     >
       <Portal>
         <Dialog.Backdrop data-revisionlab-ui />
-        <Dialog.Positioner data-revisionlab-ui>
-          <Dialog.Content bg="white" color="gray.900" fontFamily="body">
+        <Dialog.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
+          <Dialog.Content bg="bg.panel" color="fg" fontFamily="body">
             <Dialog.Header flexDirection="column" gap="2" pe="12">
               <Dialog.Title>
                 {savePending
@@ -61,7 +61,7 @@ export function RecordingLeaveDialog({
                       ? "Recording is still in progress"
                       : "Discard this recording?"}
               </Dialog.Title>
-              <Dialog.Description color="gray.600">
+              <Dialog.Description color="fg.muted">
                 {navigating ? "You are about to leave this page. " : ""}
                 {savePending
                   ? "Stay on this page and retry saving the recording before leaving. Saving may already have succeeded, so this recording cannot be discarded."
@@ -70,7 +70,7 @@ export function RecordingLeaveDialog({
             </Dialog.Header>
             {error && (
               <Dialog.Body>
-                <Text role="alert" color="red.700">
+                <Text role="alert" color="red.fg">
                   {error}
                 </Text>
               </Dialog.Body>

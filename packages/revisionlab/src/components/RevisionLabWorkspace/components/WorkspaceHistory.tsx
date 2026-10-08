@@ -1,3 +1,4 @@
+import { IllustratedEmptyState } from "../../IllustratedEmptyState/index.js";
 import { useCallback, useEffect, useState } from "react";
 import {
   Badge,
@@ -109,27 +110,28 @@ export function WorkspaceHistory({
         <Heading as="h2" size="md">
           Workspace history
         </Heading>
-        <Text color="gray.600">
+        <Text color="fg.muted">
           Review changes from the last 30 days. Restoring a version returns that
           source workspace to immediately before the selected change and also
           reverts its later content changes.
         </Text>
-        <Text color="gray.600" fontSize="sm">
+        <Text color="fg.muted" fontSize="sm">
           Access, API keys, workspace connections, and the AI instructions Markdown
           file are not included. Saved design-system choices are included.
         </Text>
       </Stack>
       {loading ? (
-        <HStack gap="3" color="gray.600">
+        <HStack gap="3" color="fg.muted">
           <Spinner size="sm" />
           <Text>Loading workspace history…</Text>
         </HStack>
       ) : entries.length === 0 ? (
-        <Text color="gray.600">
-          {unavailable.length === sources.length
+        <IllustratedEmptyState
+          illustration={unavailable.length === sources.length ? "connection" : "documents"}
+          description={unavailable.length === sources.length
             ? "History is unavailable while this workspace source is offline."
             : "No recoverable changes in the last 30 days."}
-        </Text>
+        />
       ) : (
         <Stack gap="3">
           {entries.map((entry) => {
@@ -149,11 +151,11 @@ export function WorkspaceHistory({
                 <Flex gap="3" justify="space-between" flexWrap="wrap">
                   <Stack gap="1">
                     <Text fontWeight="semibold">{entry.action}</Text>
-                    <Text fontSize="sm" color="gray.600">
+                    <Text fontSize="sm" color="fg.muted">
                       {entry.actorName} ·{" "}
                       {new Date(entry.createdAt).toLocaleString()}
                     </Text>
-                    <Text fontSize="xs" color="gray.600">
+                    <Text fontSize="xs" color="fg.muted">
                       Available until{" "}
                       {new Date(entry.expiresAt).toLocaleString()}
                     </Text>
@@ -163,8 +165,8 @@ export function WorkspaceHistory({
                   )}
                 </Flex>
                 {confirmingThis ? (
-                  <Stack gap="3" p="3" bg="orange.50" borderRadius="md">
-                    <Text fontSize="sm" color="orange.900">
+                  <Stack gap="3" p="3" bg="orange.subtle" borderRadius="md">
+                    <Text fontSize="sm" color="orange.fg">
                       Restore {entry.source.name} to before this change? Later
                       content changes in that workspace will also be reverted.
                     </Text>
@@ -199,7 +201,7 @@ export function WorkspaceHistory({
                   </Button>
                 )}
                 {!canRestore && (
-                  <Text fontSize="xs" color="gray.600">
+                  <Text fontSize="xs" color="fg.muted">
                     Editor permission and an available source workspace are
                     required to restore this version.
                   </Text>
@@ -210,17 +212,17 @@ export function WorkspaceHistory({
         </Stack>
       )}
       {unavailable.length > 0 && unavailable.length < sources.length && (
-        <Text color="orange.800" fontSize="sm">
+        <Text color="orange.fg" fontSize="sm">
           History from {unavailable.map((source) => source.name).join(", ")} is
           unavailable while the source is offline.
         </Text>
       )}
       {error && (
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {error}
         </Text>
       )}
-      <Text role="status" color="gray.600" minH="5">
+      <Text role="status" color="fg.muted" minH="5">
         {notice}
       </Text>
     </Stack>

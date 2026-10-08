@@ -1,3 +1,4 @@
+import { IllustratedEmptyState } from "../../IllustratedEmptyState/index.js";
 import { ScreenMetrics } from "./ScreenMetrics.js";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -70,7 +71,7 @@ export function SessionReplay({ detail }: { detail: TestDetail }) {
       <Heading as="h3" size="md">
         Session replay
       </Heading>
-      <Text fontSize="sm" color="gray.600">
+      <Text fontSize="sm" color="fg.muted">
         Saved screen snapshots with timed input activity. Text entry is masked;
         intermediate animations and cross-origin content are not replayed.
       </Text>
@@ -154,12 +155,12 @@ export function SessionReplay({ detail }: { detail: TestDetail }) {
       </Field.Root>
       <Box
         borderWidth="1px"
-        borderColor="gray.200"
-        bg="gray.50"
+        borderColor="border"
+        bg="bg.subtle"
         borderRadius="lg"
         overflow="hidden"
       >
-        <Box p="3" borderBottomWidth="1px" borderColor="gray.200">
+        <Box p="3" borderBottomWidth="1px" borderColor="border">
           <Text fontSize="sm">
             {screen?.title ?? "Waiting for the first captured screen"}{" "}
             {screen?.route}
@@ -182,16 +183,16 @@ export function SessionReplay({ detail }: { detail: TestDetail }) {
                 w={clicked ? "6" : "3"}
                 h={clicked ? "6" : "3"}
                 borderRadius="full"
-                bg={clicked ? "orange.500" : "blue.600"}
+                bg={clicked ? "orange.solid" : "blue.solid"}
                 borderWidth="2px"
-                borderColor="white"
+                borderColor="bg.panel"
                 pointerEvents="none"
                 aria-label={clicked ? "Recorded click" : "Recorded cursor"}
               />
             )}
           </Box>
         ) : (
-          <Text p="8">No screenshot at this point in the recording.</Text>
+          <IllustratedEmptyState illustration="images" description="No screenshot at this point in the recording." />
         )}
       </Box>
       <ScreenMetrics screens={screens} metrics={metrics} />

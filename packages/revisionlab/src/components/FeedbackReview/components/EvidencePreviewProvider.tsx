@@ -45,12 +45,12 @@ export function EvidenceScreenshot({ item }: { item: ReviewEvidence }) {
         onZoom={(trigger) => preview(item, trigger)}
       />
       {item.anchor ? (
-        <Text fontSize="xs" color="gray.600">
+        <Text fontSize="xs" color="fg.muted">
           Comment pin · {Math.round(item.anchor.x * 100)}%,{" "}
           {Math.round(item.anchor.y * 100)}%
         </Text>
       ) : item.target ? (
-        <Text fontSize="xs" color="gray.600" overflowWrap="anywhere">
+        <Text fontSize="xs" color="fg.muted" overflowWrap="anywhere">
           Target: {item.target}
         </Text>
       ) : null}

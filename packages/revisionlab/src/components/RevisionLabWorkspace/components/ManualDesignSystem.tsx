@@ -35,7 +35,7 @@ export function ManualDesignSystem({
             value={value[key]}
             type={key === "name" ? "text" : "url"}
             maxLength={key === "name" ? 120 : 2048}
-            borderColor="gray.500"
+            borderColor="fg.muted"
             onChange={(event) =>
               onChange({ ...value, [key]: event.target.value })
             }

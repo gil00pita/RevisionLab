@@ -168,7 +168,7 @@ export function TestParticipant({
   return (
     <Box position="fixed" bottom="4" right="4" zIndex="modal" p="4" maxW="full">
       <Stack
-        bg="white"
+        bg="bg.panel"
         borderRadius="xl"
         shadow="lg"
         p="6"
@@ -189,7 +189,7 @@ export function TestParticipant({
           </Text>
         )}
         {error && (
-          <Text role="alert" color="red.700">
+          <Text role="alert" color="red.fg">
             {error}
           </Text>
         )}

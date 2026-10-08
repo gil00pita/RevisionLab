@@ -53,8 +53,8 @@ export function EvidenceCard({
       p="4"
       borderWidth="1px"
       rounded="lg"
-      borderColor={checked ? "blue.600" : "gray.300"}
-      bg={checked ? "blue.50" : "white"}
+      borderColor={checked ? "blue.border" : "border.emphasized"}
+      bg={checked ? "blue.subtle" : "bg.panel"}
     >
       <Flex gap="2" flexWrap="wrap" align="center">
         <Badge colorPalette={group.kind === "test" ? "purple" : "gray"}>
@@ -78,7 +78,7 @@ export function EvidenceCard({
         <Checkbox.HiddenInput />
         <Checkbox.Control
           mt="1"
-          borderColor={checked ? "blue.600" : "gray.500"}
+          borderColor={checked ? "blue.border" : "fg.muted"}
         >
           <Checkbox.Indicator />
         </Checkbox.Control>
@@ -86,7 +86,7 @@ export function EvidenceCard({
           {group.title}
         </Checkbox.Label>
       </Checkbox.Root>
-      <Text fontSize="sm" color="gray.600" overflowWrap="anywhere">
+      <Text fontSize="sm" color="fg.muted" overflowWrap="anywhere">
         {[...new Set(group.evidence.map((item) => item.route))].join(" · ")}
       </Text>
       <Flex gap="3" flexWrap="wrap">
@@ -100,14 +100,14 @@ export function EvidenceCard({
         alignSelf="start"
         variant="plain"
         size="sm"
-        color="blue.700"
+        color="blue.fg"
         aria-expanded={expanded}
         onClick={() => setExpanded(!expanded)}
       >
         {expanded ? "Hide" : "View"} source evidence
       </Button>
       {expanded && (
-        <Box borderTopWidth="1px" borderColor="gray.300" pt="3">
+        <Box borderTopWidth="1px" borderColor="border.emphasized" pt="3">
           <EvidenceSources
             evidence={group.evidence}
             basePath={basePath}

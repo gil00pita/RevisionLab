@@ -5,11 +5,13 @@ import {
   Combobox,
   createListCollection,
   Field,
-  Portal,
   Stack,
-  Text,
   Textarea,
 } from "@chakra-ui/react";
+import { CommentSuggestions } from "./components/CommentSuggestions.js";
+import { commentChoices } from "./choices.js";
+import { CommentComposerTools } from "./components/CommentComposerTools.js";
+import type { CommentDraft } from "./hooks/useCommentDraft.js";
 import { useCommentSuggestions } from "./hooks/useCommentSuggestions.js";
 
 export function CommentInput({
@@ -24,6 +26,7 @@ export function CommentInput({
   suggestions = true,
   onSubmitShortcut,
   helperText,
+  draft,
 }: {
   apiPath: string;
   route: string;
@@ -36,14 +39,22 @@ export function CommentInput({
   suggestions?: boolean;
   onSubmitShortcut?: () => void;
   helperText?: string;
+  draft?: CommentDraft;
 }) {
   const id = useId();
-  const items = useCommentSuggestions(
+  const [caret, setCaret] = useState(value.length);
+  const beforeCaret = value.slice(0, caret);
+  const query = /(?:^|\s)@([^\s]*)$/.exec(beforeCaret);
+  const mentionStart = query ? beforeCaret.lastIndexOf("@") : null;
+  const similar = useCommentSuggestions(
     apiPath,
     route,
     value,
     suggestions && !disabled,
   );
+  const mentioning = Boolean(query && draft?.options);
+  const items = commentChoices(query?.[1], draft?.options ?? null, similar);
+  const enhanced = suggestions || Boolean(draft?.supported);
   const collection = createListCollection({
     items,
     itemToString: (item) => item.body,
@@ -56,16 +67,36 @@ export function CommentInput({
     <Textarea
       ref={inputRef}
       id={id}
-      value={suggestions ? undefined : value}
-      onChange={suggestions ? undefined : (event) => onChange(event.target.value)}
+      value={value}
+      onChange={(event) => {
+        onChange(event.target.value);
+        setCaret(event.target.selectionStart);
+        setDismissed(null);
+      }}
       placeholder={placeholder}
       rows={4}
       maxLength={4000}
       minH="24"
-      bg="white"
-      borderColor="gray.300"
+      bg="bg.panel"
+      borderColor="border.emphasized"
       resize="vertical"
-      onFocus={() => setFocused(true)}
+      onPaste={(event) => {
+        const files = Array.from(event.clipboardData.files);
+        if (!files.length || !draft) return;
+        event.preventDefault();
+        if (disabled || !draft.supported) {
+          draft.setError(
+            "Attachments are unavailable until workspace options load.",
+          );
+          return;
+        }
+        draft.setFiles([...draft.files.map((record) => record.file), ...files]);
+      }}
+      onSelect={(event) => setCaret(event.currentTarget.selectionStart)}
+      onFocus={() => {
+        setFocused(true);
+        setCaret(inputRef.current?.selectionStart ?? value.length);
+      }}
       onBlur={() => setFocused(false)}
       onKeyDown={(event) => {
         if (
@@ -80,77 +111,66 @@ export function CommentInput({
     />
   );
   return (
-    <Field.Root disabled={disabled}>
-      <Field.Label htmlFor={id}>{label}</Field.Label>
-      {suggestions ? (
-        <Combobox.Root
-          collection={collection}
-          ids={{ input: id }}
-          inputValue={value}
-          value={[]}
-          allowCustomValue
-          open={open}
-          openOnKeyPress={false}
-          onOpenChange={(event) => {
-            if (!event.open) setDismissed(value);
-          }}
-          onInputValueChange={(event) => onChange(event.inputValue)}
-          onValueChange={(event) => {
-            const selected = event.items[0];
-            if (selected) {
-              onChange(selected.body);
-              setDismissed(selected.body);
-            }
-          }}
+    <Stack gap="2">
+      <Field.Root disabled={disabled}>
+        <Field.Label htmlFor={id}>{label}</Field.Label>
+        {enhanced ? (
+          <Combobox.Root
+            collection={collection}
+            ids={{ input: id }}
+            inputValue={value}
+            value={[]}
+            allowCustomValue
+            selectionBehavior="preserve"
+            open={open}
+            openOnKeyPress={false}
+            onOpenChange={(event) => {
+              if (!event.open) setDismissed(value);
+            }}
+            onValueChange={(event) => {
+              const selected = event.items[0];
+              if (selected) {
+                if (selected.identity && draft && mentionStart !== null) {
+                  const position = draft.addMention(
+                    selected.identity,
+                    selected.identity.kind,
+                    mentionStart,
+                    caret,
+                  );
+                  if (position !== null)
+                    requestAnimationFrame(() => {
+                      inputRef.current?.focus();
+                      inputRef.current?.setSelectionRange(position, position);
+                      setCaret(position);
+                    });
+                  setDismissed(value);
+                } else {
+                  onChange(selected.body);
+                  setDismissed(selected.body);
+                }
+              }
+            }}
+            disabled={disabled}
+            positioning={{ placement: "bottom-start", sameWidth: true }}
+          >
+            <Combobox.Control>
+              <Combobox.Input asChild>{textarea}</Combobox.Input>
+            </Combobox.Control>
+            <CommentSuggestions items={items} mentioning={mentioning} />
+          </Combobox.Root>
+        ) : (
+          textarea
+        )}
+        {helperText && <Field.HelperText>{helperText}</Field.HelperText>}
+      </Field.Root>
+      {draft && (
+        <CommentComposerTools
+          draft={draft}
           disabled={disabled}
-          positioning={{ placement: "bottom-start", sameWidth: true }}
-        >
-          <Combobox.Control>
-            <Combobox.Input asChild>{textarea}</Combobox.Input>
-          </Combobox.Control>
-          <Portal>
-            <Combobox.Positioner data-revisionlab-ui zIndex="popover">
-              <Combobox.Content
-                bg="white"
-                color="gray.900"
-                borderColor="gray.300"
-                borderWidth="1px"
-                maxH="64"
-                overflowY="auto"
-                shadow="lg"
-              >
-                <Combobox.ItemGroup>
-                  <Combobox.ItemGroupLabel>
-                    Similar comments on this page
-                  </Combobox.ItemGroupLabel>
-                  {items.map((item) => (
-                    <Combobox.Item
-                      key={item.id}
-                      item={item}
-                      whiteSpace="normal"
-                      alignItems="start"
-                      _highlighted={{ bg: "blue.50" }}
-                    >
-                      <Stack gap="1" minW="0">
-                        <Combobox.ItemText overflowWrap="anywhere">
-                          {item.body}
-                        </Combobox.ItemText>
-                        <Text fontSize="xs" color="gray.600">
-                          {item.occurrences} existing occurrence
-                          {item.occurrences === 1 ? "" : "s"} · use this wording
-                        </Text>
-                      </Stack>
-                    </Combobox.Item>
-                  ))}
-                </Combobox.ItemGroup>
-              </Combobox.Content>
-            </Combobox.Positioner>
-          </Portal>
-        </Combobox.Root>
-      ) : (
-        textarea
+          inputRef={inputRef}
+          onMentionRequested={() => setDismissed(null)}
+        />
       )}
-      {helperText && <Field.HelperText>{helperText}</Field.HelperText>}
-    </Field.Root>
+    </Stack>
   );
 }

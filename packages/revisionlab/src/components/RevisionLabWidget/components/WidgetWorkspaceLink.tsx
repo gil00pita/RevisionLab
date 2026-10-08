@@ -10,13 +10,13 @@ export function WidgetWorkspaceLink({ href }: { href: string }) {
         asChild
         aria-label="Open review workspace"
         variant="plain"
-        color="white"
+        color="colorPalette.contrast"
         size="sm"
         boxSize="9"
         minW="9"
         borderRadius="full"
         focusRing="inset"
-        _hover={{ bg: "blackAlpha.200" }}
+        _hover={{ bg: "fg/12" }}
       >
         <NextLink href={href} prefetch={false}>
           <Icon boxSize="5">

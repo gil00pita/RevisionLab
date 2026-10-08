@@ -1,3 +1,4 @@
+import { IllustratedEmptyState } from "../../IllustratedEmptyState/index.js";
 import {
   Badge,
   Box,
@@ -31,14 +32,12 @@ export function InvitationList({
   }, []);
 
   return (
-    <Box borderTopWidth="1px" borderColor="gray.200" pt="6">
+    <Box borderTopWidth="1px" borderColor="border" pt="6">
       <Heading as="h3" size="md" mb="4">
         Invitations
       </Heading>
       {invitations.length === 0 ? (
-        <Text color="gray.600" fontSize="sm">
-          No invitations yet. Create one above to bring someone into the review.
-        </Text>
+        <IllustratedEmptyState illustration="inbox" size="sm" description="No invitations yet. Create one above to bring someone into the review." />
       ) : (
         <List.Root listStyleType="none" gap="0">
           {invitations.map((invitation) => {
@@ -53,7 +52,7 @@ export function InvitationList({
                 key={invitation.id}
                 py="4"
                 borderBottomWidth="1px"
-                borderColor="gray.200"
+                borderColor="border"
               >
                 <Flex
                   gap="3"
@@ -73,13 +72,13 @@ export function InvitationList({
                       </Badge>
                       <Text
                         fontSize="sm"
-                        color="gray.600"
+                        color="fg.muted"
                         textTransform="capitalize"
                       >
                         {invitation.role}
                       </Text>
                     </HStack>
-                    <Text fontSize="xs" color="gray.600">
+                    <Text fontSize="xs" color="fg.muted">
                       Expires {formatUtcTimestamp(invitation.expiresAt)}
                     </Text>
                   </Stack>

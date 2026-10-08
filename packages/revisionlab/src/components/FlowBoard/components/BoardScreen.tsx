@@ -68,9 +68,9 @@ export function BoardScreen({
       top={`${node.y}px`}
       w={`${CARD_WIDTH}px`}
       h={`${CARD_HEIGHT}px`}
-      bg="white"
+      bg="bg.panel"
       borderWidth="1px"
-      borderColor={selected ? "blue.600" : "gray.300"}
+      borderColor={selected ? "blue.border" : "border.emphasized"}
       borderRadius="xl"
     >
       <Flex
@@ -80,7 +80,7 @@ export function BoardScreen({
         justify="space-between"
         gap="2"
         borderBottomWidth="1px"
-        borderColor="gray.200"
+        borderColor="border"
       >
         <Badge colorPalette={selected ? "blue" : "gray"}>Screen {number}</Badge>
         {canEdit && (
@@ -145,13 +145,13 @@ export function BoardScreen({
         justifyContent="start"
         borderRadius="0"
         borderBottomRadius="xl"
-        color="gray.900"
+        color="fg"
         whiteSpace="normal"
         textAlign="left"
         overflow="hidden"
         aria-label={`Open screen ${number}: ${step.title}`}
         onClick={onOpen}
-        _hover={{ bg: "blue.50" }}
+        _hover={{ bg: "blue.subtle" }}
       >
         {step.screenshot ? (
           <Box
@@ -181,8 +181,8 @@ export function BoardScreen({
             align="center"
             justify="center"
             gap="2"
-            color="gray.600"
-            bg="gray.50"
+            color="fg.muted"
+            bg="bg.subtle"
           >
             <Icon>
               <ImageOff />
@@ -198,7 +198,7 @@ export function BoardScreen({
             <Text
               fontSize="xs"
               fontFamily="mono"
-              color="gray.600"
+              color="fg.muted"
               truncate
               minW="0"
               flex="1"
@@ -209,7 +209,7 @@ export function BoardScreen({
               <Flex
                 gap="1"
                 align="center"
-                color="blue.700"
+                color="blue.fg"
                 flexShrink="0"
                 aria-label={`${comments} open comment threads`}
               >

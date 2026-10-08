@@ -67,7 +67,7 @@ export function UsersRoleManager({
 
   return (
     <Stack p={{ base: "5", md: "8" }} gap="7" w="full" maxW="5xl">
-      <Text color="gray.600">
+      <Text color="fg.muted">
         Manage workspace membership, passwordless access, and default roles.
       </Text>
       {error && (
@@ -78,7 +78,7 @@ export function UsersRoleManager({
         </Alert.Root>
       )}
       {notice && (
-        <Text role="status" color="blue.700" fontSize="sm">
+        <Text role="status" color="blue.fg" fontSize="sm">
           {notice}
         </Text>
       )}

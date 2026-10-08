@@ -120,7 +120,11 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
         ["board_json", "TEXT"],
         ["board_revision", "INTEGER NOT NULL DEFAULT 0"],
       ],
+      artifacts: [["filename", "TEXT"]],
       comments: [
+        ["attachments_json", "TEXT NOT NULL DEFAULT '[]'"],
+        ["personas_json", "TEXT NOT NULL DEFAULT '[]'"],
+        ["mentions_json", "TEXT NOT NULL DEFAULT '[]'"],
         ["anchor_x", "REAL"],
         ["anchor_y", "REAL"],
         ["parent_id", "TEXT REFERENCES comments(id) ON DELETE CASCADE"],

@@ -44,7 +44,7 @@ export function InvitationLink({ value }: { value: string }) {
             </Button>
           </Clipboard.Trigger>
         </HStack>
-        <Text fontSize="sm" color="gray.600">
+        <Text fontSize="sm" color="fg.muted">
           Copy this link now. You can create another invitation if you lose it.
         </Text>
       </Stack>

@@ -73,7 +73,7 @@ export function BoardConnectionTarget({
         overflowWrap="anywhere"
         variant={selected ? "solid" : "outline"}
         colorPalette="blue"
-        bg={selected ? "blue.600" : "white"}
+        bg={selected ? "blue.solid" : "bg.panel"}
         aria-label={`Connection: ${name}`}
         aria-pressed={selected}
         onClick={onSelect}

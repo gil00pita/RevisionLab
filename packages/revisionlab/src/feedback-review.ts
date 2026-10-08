@@ -2,6 +2,9 @@ export type EvidenceKind = "comment" | "accessibility" | "test";
 
 /** Historical evidence is saved with a draft, independent of live review data. */
 export interface ReviewEvidence {
+  attachments?: (import("./comment-rich.js").CommentAttachment & {
+    href: string;
+  })[];
   id: string;
   kind: EvidenceKind;
   title: string;
@@ -124,6 +127,10 @@ export function ticketText(ticket: ReviewTicket, reviewRoot: string) {
           : "",
         `Review: ${evidenceReviewPath(item, reviewRoot)}`,
         item.body,
+        ...(item.attachments ?? []).map(
+          (file) =>
+            `Attachment: ${file.name} (${file.href.startsWith("/") && /^https?:\/\//.test(reviewRoot) ? new URL(file.href, reviewRoot).toString() : file.href})`,
+        ),
       ]
         .filter(Boolean)
         .join("\n"),

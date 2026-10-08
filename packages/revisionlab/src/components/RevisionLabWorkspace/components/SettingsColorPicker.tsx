@@ -64,13 +64,13 @@ export function SettingsColorPicker({
                 _checked={{
                   outlineWidth: "2px",
                   outlineStyle: "solid",
-                  outlineColor: "gray.900",
+                  outlineColor: "fg.muted",
                   outlineOffset: "3px",
                 }}
                 _focusVisible={{
                   outlineWidth: "3px",
                   outlineStyle: "solid",
-                  outlineColor: "blue.700",
+                  outlineColor: "blue.border",
                   outlineOffset: "3px",
                 }}
               >

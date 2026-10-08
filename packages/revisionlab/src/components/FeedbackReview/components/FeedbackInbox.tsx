@@ -95,16 +95,16 @@ export function FeedbackInbox({
       minW="0"
       minH={{ base: "auto", lg: "calc(100dvh - 12rem)" }}
     >
-      <Flex justify="space-between" align="center" gap="3">
+      <Flex justify="space-between" align="center" gap="3" flexWrap="wrap">
         <Heading as="h2" size="lg">
           Feedback inbox
         </Heading>
-        <Text fontSize="sm" color="gray.600">
+        <Text fontSize="sm" color="fg.muted">
           {visible.length} of {groups.length} group
           {groups.length === 1 ? "" : "s"}
         </Text>
       </Flex>
-      <Text color="gray.600" fontSize="sm">
+      <Text color="fg.muted" fontSize="sm">
         Repeated comments stay together. Select related feedback to turn it into
         shared tickets. Fixed tickets hide their linked feedback; their evidence
         stays in the ticket.

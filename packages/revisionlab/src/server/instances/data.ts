@@ -56,6 +56,38 @@ const flow = z.object({
     .optional(),
 });
 const comment = z.object({
+  attachments: z
+    .array(
+      z.object({
+        id,
+        name: text,
+        contentType: z.enum([
+          "image/png",
+          "image/jpeg",
+          "image/webp",
+          "application/octet-stream",
+        ]),
+        size: z.number().int().min(1).max(3_000_000),
+      }),
+    )
+    .max(5)
+    .optional(),
+  personas: z
+    .array(z.object({ id, name: text }))
+    .max(20)
+    .optional(),
+  mentions: z
+    .array(
+      z.object({
+        id,
+        kind: z.enum(["persona", "user"]),
+        label: text,
+        start: z.number().int().min(0).max(4000),
+        end: z.number().int().min(1).max(4000),
+      }),
+    )
+    .max(20)
+    .optional(),
   id,
   flowId: id.nullable(),
   stepId: id.nullable(),
@@ -136,7 +168,7 @@ const ids = new Set([
   "edgeId",
   "personaId",
 ]);
-const idArrays = new Set(["familyIds", "hiddenStepIds"]);
+const idArrays = new Set(["familyIds", "hiddenStepIds", "personaIds"]);
 const opaque = new Set([
   "capture",
   "accessibility",

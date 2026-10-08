@@ -36,8 +36,8 @@ export function CommentSettings({
           <Switch.HiddenInput />
           <Switch.Control
             borderWidth="1px"
-            borderColor="gray.500"
-            _checked={{ borderColor: "blue.700" }}
+            borderColor="fg.muted"
+            _checked={{ borderColor: "blue.border" }}
           >
             <Switch.Thumb />
           </Switch.Control>

@@ -23,8 +23,8 @@ export function AccessibilityMarkers({
           w={`${inspection.highlight.width}px`}
           h={`${inspection.highlight.height}px`}
           borderWidth="2px"
-          borderColor="red.700"
-          bg="red.500/10"
+          borderColor="red.border"
+          bg="red.solid/10"
         />
       )}
       {inspection.markers.map(({ targets, bounds }) => {
@@ -49,11 +49,11 @@ export function AccessibilityMarkers({
               minW="8"
               borderRadius="full"
               colorPalette="red"
-              bg="red.700"
-              color="white"
+              bg="red.solid"
+              color="colorPalette.contrast"
               borderWidth="1px"
-              borderColor="white"
-              _hover={{ bg: "red.800" }}
+              borderColor="bg.panel"
+              _hover={{ bg: "red.solid" }}
               onClick={() => inspection.select(target)}
             >
               <Icon boxSize="5">

@@ -52,7 +52,7 @@ export function TemplatePicker({
           <Select.HiddenSelect />
           <Select.Label>Ticket template</Select.Label>
           <Select.Control>
-            <Select.Trigger borderColor="gray.500">
+            <Select.Trigger borderColor="fg.muted">
               <Select.ValueText placeholder="Choose a template" />
             </Select.Trigger>
             <Select.IndicatorGroup>
@@ -60,8 +60,8 @@ export function TemplatePicker({
             </Select.IndicatorGroup>
           </Select.Control>
           <Portal>
-            <Select.Positioner data-revisionlab-ui>
-              <Select.Content bg="white" color="gray.900" fontFamily="body">
+            <Select.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
+              <Select.Content bg="bg.panel" color="fg" fontFamily="body">
                 {templates.map((item) => (
                   <Select.Item item={item} key={item.id}>
                     <Select.ItemText>{item.name}</Select.ItemText>
@@ -98,7 +98,7 @@ export function TemplatePicker({
         )}
       </Flex>
       {error && (
-        <Text role="alert" color="orange.800" fontSize="sm">
+        <Text role="alert" color="orange.fg" fontSize="sm">
           {error}
         </Text>
       )}
@@ -109,7 +109,7 @@ export function TemplatePicker({
             readOnly
             rows={8}
             value={template.markdown}
-            borderColor="gray.500"
+            borderColor="fg.muted"
           />
         </Field.Root>
       )}

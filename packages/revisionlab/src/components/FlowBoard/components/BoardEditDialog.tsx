@@ -28,15 +28,15 @@ export function BoardEditDialog({
     >
       <Portal>
         <Dialog.Backdrop data-revisionlab-ui />
-        <Dialog.Positioner data-revisionlab-ui>
-          <Dialog.Content bg="white" color="gray.900" fontFamily="body">
+        <Dialog.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
+          <Dialog.Content bg="bg.panel" color="fg" fontFamily="body">
             <Dialog.Header flexDirection="column" gap="2" pe="12">
               <Dialog.Title>
                 {action?.kind === "screen"
                   ? "Remove this screen from the board?"
                   : "Remove this connection?"}
               </Dialog.Title>
-              <Dialog.Description color="gray.600">
+              <Dialog.Description color="fg.muted">
                 {action?.kind === "screen"
                   ? `${action.title} and its ${action.connections} connected paths will be removed from this board. The captured screen, recording history, and comments are kept. This change saves automatically; Undo restores the screen and its paths.`
                   : "This path will be removed from the board and the change saved automatically. Its existing discussions remain in All comments. Undo restores the connection."}

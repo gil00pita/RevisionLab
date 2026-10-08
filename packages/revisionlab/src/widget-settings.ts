@@ -17,9 +17,9 @@ export const maxWidgetOffset = 1000;
 export function widgetColorTokens(color: CommentBubbleColor) {
   // Keep the supplied white mark and all controls legible on every palette.
   return {
-    solid: `${color}.${color === "blue" ? "600" : "700"}`,
-    contrast: "white",
-    outline: `${color}.800`,
+    solid: `widget.${color}.solid`,
+    contrast: `widget.${color}.contrast`,
+    outline: `widget.${color}.outline`,
   };
 }
 

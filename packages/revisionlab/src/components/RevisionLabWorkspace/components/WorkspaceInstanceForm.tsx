@@ -82,11 +82,11 @@ export function WorkspaceInstanceForm({
           path.
         </Field.HelperText>
       </Field.Root>
-      <HStack>
-        <Button type="submit" colorPalette="blue" loading={busy}>
+      <HStack flexWrap="wrap">
+        <Button type="submit" colorPalette="blue" loading={busy} maxW="full" h="auto" minH="11" py="2" whiteSpace="normal">
           {instance ? "Update connection" : "Add workspace"}
         </Button>
-        <Button variant="ghost" disabled={busy} onClick={onCancel}>
+        <Button variant="ghost" disabled={busy} onClick={onCancel} minH="11">
           Cancel
         </Button>
       </HStack>

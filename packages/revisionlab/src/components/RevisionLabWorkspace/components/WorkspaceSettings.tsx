@@ -114,7 +114,7 @@ export function WorkspaceSettings({
       maxW="3xl"
       aria-busy={busy}
     >
-      <Text fontSize="sm" color="gray.600">
+      <Text fontSize="sm" color="fg.muted">
         Widget, Comments, and Audit settings apply to{" "}
         {settingsWorkspace?.name ?? "Local workspace"}. General, Users &amp;
         Roles, Notifications, and Workspace Instances manage this installation.
@@ -261,11 +261,11 @@ export function WorkspaceSettings({
         )}
       </Tabs.Root>
       {error && (
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {error}
         </Text>
       )}
-      <Text role="status" fontSize="sm" color="gray.600" minH="5">
+      <Text role="status" fontSize="sm" color="fg.muted" minH="5">
         {busy ? "Saving settings..." : saved ? "Settings saved." : ""}
       </Text>
     </Stack>

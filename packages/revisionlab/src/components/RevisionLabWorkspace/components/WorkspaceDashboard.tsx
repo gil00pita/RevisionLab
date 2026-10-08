@@ -93,24 +93,24 @@ export function WorkspaceDashboard({
   return (
     <Grid
       templateColumns={{ base: "minmax(0, 1fr)", xl: "minmax(0, 2.2fr) minmax(0, 1fr)" }}
-      bg="white"
+      bg="bg.panel"
       flex="1"
       minW="0"
       alignItems="start"
     >
       <Stack gap="0" minW="0" px={{ base: "4", md: "6", xl: "8" }}>
-        <SimpleGrid columns={{ base: 1, md: 3 }} gap="0" as="section" aria-label="Review statistics" borderBottomWidth="1px" borderColor="gray.100" py="6">
+        <SimpleGrid columns={{ base: 1, md: 3 }} gap="0" as="section" aria-label="Review statistics" borderBottomWidth="1px" borderColor="border.muted" py="6">
           {reviewMetrics.map((metric, index) => (
-            <Box key={metric.label} minW="0" px={{ base: "0", md: index === 0 ? "0" : "5" }} borderLeftWidth={{ base: "0", md: index === 0 ? "0" : "1px" }} borderColor="gray.100">
+            <Box key={metric.label} minW="0" px={{ base: "0", md: index === 0 ? "0" : "5" }} borderLeftWidth={{ base: "0", md: index === 0 ? "0" : "1px" }} borderColor="border.muted">
               <DashboardStatistic {...metric} variant="review" />
             </Box>
           ))}
         </SimpleGrid>
         <Box as="section" aria-labelledby="overview-activity" py="7">
-          <Heading id="overview-activity" as="h2" fontSize="md" fontWeight="medium" color="gray.900" mb="6">Workspace activity</Heading>
+          <Heading id="overview-activity" as="h2" fontSize="md" fontWeight="medium" color="fg" mb="6">Workspace activity</Heading>
           <SimpleGrid columns={{ base: 1, md: 2 }} gap="0">
             {inventoryMetrics.map((metric, index) => (
-              <Box key={metric.label} minW="0" py="5" pr={{ base: "0", md: index % 2 === 0 ? "6" : "0" }} pl={{ base: "0", md: index % 2 === 1 ? "6" : "0" }} borderTopWidth={index >= 2 ? "1px" : "0"} borderLeftWidth={{ base: "0", md: index % 2 === 1 ? "1px" : "0" }} borderColor="gray.100">
+              <Box key={metric.label} minW="0" py="5" pr={{ base: "0", md: index % 2 === 0 ? "6" : "0" }} pl={{ base: "0", md: index % 2 === 1 ? "6" : "0" }} borderTopWidth={index >= 2 ? "1px" : "0"} borderLeftWidth={{ base: "0", md: index % 2 === 1 ? "1px" : "0" }} borderColor="border.muted">
                 <DashboardStatistic {...metric} variant="inventory" />
               </Box>
             ))}
@@ -118,9 +118,9 @@ export function WorkspaceDashboard({
         </Box>
         <DashboardReviewAcknowledgement comments={stats.comments} resolvedComments={stats.resolvedComments} current={current} onReviewComments={onReviewComments} disabled={navigationDisabled} />
       </Stack>
-      <Stack as="section" aria-label="Workspace health" minW="0" gap="0" px={{ base: "4", md: "6" }} py="6" borderLeftWidth={{ base: "0", xl: "1px" }} borderTopWidth={{ base: "1px", xl: "0" }} borderColor="gray.100">
+      <Stack as="section" aria-label="Workspace health" minW="0" gap="0" px={{ base: "4", md: "6" }} py="6" borderLeftWidth={{ base: "0", xl: "1px" }} borderTopWidth={{ base: "1px", xl: "0" }} borderColor="border.muted">
         <DashboardResolutionCard comments={stats.comments} resolvedComments={stats.resolvedComments} current={current} />
-        <Box py="6" borderBottomWidth="1px" borderColor="gray.100">
+        <Box py="6" borderBottomWidth="1px" borderColor="border.muted">
           <DashboardStatistic {...metrics[5]} variant="inventory" />
         </Box>
       </Stack>

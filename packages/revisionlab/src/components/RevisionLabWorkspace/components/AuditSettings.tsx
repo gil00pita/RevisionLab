@@ -50,7 +50,7 @@ export function AuditSettings({
         <Heading as="h2" size="md">
           Default accessibility standard
         </Heading>
-        <Text color="gray.700">
+        <Text color="fg.muted">
           Choose the WCAG version and conformance level used for page checks and
           new recording evidence.
         </Text>
@@ -109,7 +109,7 @@ export function AuditSettings({
             AA includes A checks. AAA includes A and AA checks.
           </Field.HelperText>
         </Field.Root>
-        <Text fontSize="sm" color="gray.600">
+        <Text fontSize="sm" color="fg.muted">
           Selected default: {wcagLabel(draft)}. Existing saved reports stay
           unchanged.
         </Text>
@@ -127,19 +127,19 @@ export function AuditSettings({
         <Heading as="h3" size="sm">
           Accessibility checks
         </Heading>
-        <Text color="gray.700">
+        <Text color="fg.muted">
           RevisionLab automatically checks visited prototype pages while the
           widget is visible. The collapsed widget shows a spinner during checks
           and a badge when issues are found.
         </Text>
-        <Text color="gray.700">
+        <Text color="fg.muted">
           Expand the widget and open its accessibility results to review
           findings or choose Run again. Stop auditing pauses live-page checks
           until you rerun them or reload the page. Accessibility evidence
           collected during recordings is checked separately using the saved
           standard.
         </Text>
-        <Text fontSize="sm" color="gray.600">
+        <Text fontSize="sm" color="fg.muted">
           Only checks supported by the automated engine run. Some criteria,
           including many AAA requirements, need manual review; a passing scan
           does not establish WCAG conformance.

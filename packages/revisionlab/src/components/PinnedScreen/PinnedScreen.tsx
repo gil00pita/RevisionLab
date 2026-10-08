@@ -107,7 +107,7 @@ export function PinnedScreen({
         </Switch.Root>
       )}
       {imageState === "error" ? (
-        <Stack align="center" py="12" gap="3" color="gray.600">
+        <Stack align="center" py="12" gap="3" color="fg.muted">
           <Icon size="xl">
             <ImageOff />
           </Icon>
@@ -127,9 +127,9 @@ export function PinnedScreen({
           overflow="auto"
           maxW="full"
           borderWidth="1px"
-          borderColor="gray.300"
+          borderColor="border.emphasized"
           borderRadius="lg"
-          bg="white"
+          bg="bg.panel"
           p="5"
           maxH="75dvh"
           tabIndex={0}
@@ -220,10 +220,10 @@ export function PinnedScreen({
                   h="9"
                   align="center"
                   justify="center"
-                  bg="blue.700"
-                  color="white"
+                  bg="blue.solid"
+                  color="colorPalette.contrast"
                   borderWidth="2px"
-                  borderColor="white"
+                  borderColor="bg.panel"
                   borderRadius="full"
                   aria-label="New comment location"
                 >

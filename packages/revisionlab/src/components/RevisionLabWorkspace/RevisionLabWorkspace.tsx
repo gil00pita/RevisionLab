@@ -1,5 +1,7 @@
 "use client";
 
+import { EmptyStateIllustration } from "../EmptyStateIllustration/index.js";
+
 import { TestSessions } from "../TestSessions/index.js";
 import { FeedbackReview } from "../FeedbackReview/index.js";
 import { Suspense, useCallback, useRef, useState } from "react";
@@ -10,7 +12,6 @@ import {
   Heading,
   Icon,
   Link,
-  Spinner,
   Stack,
   Text,
 } from "@chakra-ui/react";
@@ -19,7 +20,7 @@ import { apiRequest, ApiError } from "../../client/api.js";
 import { useWorkspaceData } from "./hooks/useWorkspaceData.js";
 import { sourceApiPath, sourceCanEdit } from "../../workspace-instances.js";
 import { WorkspaceHeader } from "./components/WorkspaceHeader.js";
-import { WorkspaceSyncControl } from "./components/WorkspaceSyncControl.js";
+import { WorkspaceSyncToast } from "./components/WorkspaceSyncToast/index.js";
 import { FlowHeaderActions } from "./components/FlowHeaderActions.js";
 import { RecordFlowAction } from "./components/RecordFlowAction.js";
 import { RevisionLabProvider } from "../RevisionLabProvider/index.js";
@@ -35,6 +36,7 @@ import { defaultSettings } from "../../comment-settings.js";
 import { useFlowDeletion } from "./hooks/useFlowDeletion.js";
 import { workspaceViewTitles } from "./constants.js";
 import { WorkspaceDashboard } from "./components/WorkspaceDashboard.js";
+import { WorkspaceLoadingSkeleton } from "./components/WorkspaceLoadingSkeleton/index.js";
 
 export interface RevisionLabWorkspaceProps {
   apiPath?: string;
@@ -47,13 +49,7 @@ export function RevisionLabWorkspace({
 }: RevisionLabWorkspaceProps) {
   return (
     <RevisionLabProvider>
-      <Suspense
-        fallback={
-          <Flex minH="100dvh" align="center" justify="center">
-            <Spinner />
-          </Flex>
-        }
-      >
+      <Suspense fallback={<WorkspaceLoadingSkeleton />}>
         <Workspace apiPath={apiPath} basePath={basePath} />
       </Suspense>
     </RevisionLabProvider>
@@ -95,6 +91,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const [personaEditor, setPersonaEditor] = useState<WorkspacePersonaEditor | null>(null);
   const [personaBusy, setPersonaBusy] = useState(false);
   const creationTrigger = useRef<HTMLButtonElement>(null);
+  const sessionTabsHeader = useRef<HTMLDivElement>(null);
   const [setupFinished, setSetupFinished] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [startingRecording, setStartingRecording] = useState(false);
@@ -228,43 +225,38 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
     }
   }
 
+  if (!data && loading)
+    return <WorkspaceLoadingSkeleton title={workspaceViewTitles[view]} />;
+
   if (!data)
     return (
-      <Flex minH="100dvh" align="center" justify="center" bg="gray.50" p="6">
+      <Flex minH="100dvh" align="center" justify="center" bg="bg.subtle" p="6">
         <Stack gap="5" maxW="md" w="full">
+          <EmptyStateIllustration variant={error instanceof TypeError || (error instanceof ApiError && error.status === 503) ? "connection" : "error"} />
           <Heading as="h1" size="2xl">
             {workspaceViewTitles[view]}
           </Heading>
-          {loading ? (
-            <Flex gap="3" align="center">
-              <Spinner />
-              <Text>Opening your workspace…</Text>
-            </Flex>
+          <Text role="alert" color="fg.muted">
+            {error?.message}
+          </Text>
+          {error instanceof ApiError && error.status === 401 ? (
+            <Button asChild colorPalette="blue">
+              <Link href={`${basePath}/access`}>Verify your email</Link>
+            </Button>
           ) : (
-            <>
-              <Text role="alert" color="gray.600">
-                {error?.message}
-              </Text>
-              {error instanceof ApiError && error.status === 401 ? (
-                <Button asChild colorPalette="blue">
-                  <Link href={`${basePath}/access`}>Verify your email</Link>
-                </Button>
-              ) : (
-                <Button onClick={() => void refresh()}>Try again</Button>
-              )}
-              {selection !== "local" && (
-                <Link href={basePath} color="blue.700">
-                  Open this workspace
-                </Link>
-              )}
-              <Link href="/" color="blue.700">
-                <Icon>
-                  <ArrowLeft />
-                </Icon>
-                Back to prototype
-              </Link>
-            </>
+            <Button onClick={() => void refresh()}>Try again</Button>
           )}
+          {selection !== "local" && (
+            <Link href={basePath} color="blue.fg">
+              Open this workspace
+            </Link>
+          )}
+          <Link href="/" color="blue.fg">
+            <Icon>
+              <ArrowLeft />
+            </Icon>
+            Back to prototype
+          </Link>
         </Stack>
       </Flex>
     );
@@ -283,15 +275,13 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const navigationPending = completingBoard || signingOut || startingRecording || deletion.pending || personaBusy;
   const personaSource = data.workspaces.find((source) => source.id === (selection === "all" ? "local" : selection));
 
-  const dashboardScope =
-    data.selection === "all"
-      ? "All workspaces"
-      : (data.workspaces.find((source) => source.id === data.selection)?.name ??
-        "Local workspace");
-
   return (
-    <Flex minH="100dvh" bg="white" direction={{ base: "column", lg: "row" }}>
+    <Flex minH="100dvh" bg="bg.panel" direction={{ base: "column", lg: "row" }}>
+      <WorkspaceSyncToast key={selection} data={data} syncError={Boolean(error)} />
       <WorkspaceSidebar
+        basePath={basePath}
+        apiPath={apiPath}
+        onRefresh={refresh}
         workspaces={data.workspaces}
         selection={selection}
         onWorkspaceChange={(next) => void selectWorkspace(next)}
@@ -310,15 +300,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           view={view}
           flow={view === "flows" ? flow : undefined}
           creationTriggerRef={creationTrigger}
-          syncControl={
-            <WorkspaceSyncControl
-              key={selection}
-              sources={data.workspaces.filter((source) => selection === "all" || source.id === selection)}
-              syncedAt={syncedAt}
-              syncError={Boolean(error)}
-              onRefresh={refresh}
-            />
-          }
+          sessionTabsRef={view === "sessions" ? sessionTabsHeader : undefined}
           creationAction={
             view === "personas" && personaSource && sourceCanEdit(data.actor.role, personaSource)
               ? {
@@ -332,7 +314,6 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           }
           onSignOut={signOut}
           signingOut={signingOut}
-          dashboardScope={view === "dashboard" ? dashboardScope : undefined}
           actions={
             view === "flows" &&
             flow &&
@@ -361,11 +342,9 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             ) : undefined
           }
         />
-        {(error || actionError || boardNavigationError) && (
-          <Text role="alert" px="6" py="3" color="red.700" bg="red.50">
-            {view === "dashboard" && error
-              ? "Could not refresh workspace data."
-              : error?.message || actionError || boardNavigationError}
+        {(actionError || boardNavigationError) && (
+          <Text role="alert" px="6" py="3" color="red.fg" bg="red.subtle">
+            {actionError || boardNavigationError}
           </Text>
         )}
         {data.workspaces
@@ -376,15 +355,15 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
               role="alert"
               px="6"
               py="3"
-              bg="orange.50"
-              color="orange.800"
+              bg="orange.subtle"
+              color="orange.fg"
             >
               {source.name}: {source.error} Showing any last-loaded data; this
               workspace is unavailable. Automatic updates will retry.
             </Text>
           ))}
         {completingBoard && (
-          <Text role="status" px="6" py="3" color="gray.600">
+          <Text role="status" px="6" py="3" color="fg.muted">
             Finishing board autosave…
           </Text>
         )}
@@ -411,6 +390,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           />
         ) : view === "sessions" ? (
           <TestSessions
+            headerContainer={sessionTabsHeader}
             apiPath={apiPath}
             basePath={basePath}
             data={data}
@@ -463,7 +443,8 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           />
         ) : view === "comments" ? (
           <AllComments
-            key={commentRoute}
+            commentId={searchParams.get("comment")}
+            key={`${commentRoute ?? "all"}:${searchParams.get("comment") ?? ""}`}
             data={data}
             apiPath={apiPath}
             onRefresh={refresh}

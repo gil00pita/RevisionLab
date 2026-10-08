@@ -92,7 +92,7 @@ export function GeneralSettings({
       <Heading as="h2" size="md">
         Workspace API keys
       </Heading>
-      <Text color="gray.600">
+      <Text color="fg.muted">
         Generate a key for another {projectName} installation to connect to this
         workspace. Keys grant access to review data, never invitation or API key
         management.
@@ -152,7 +152,7 @@ export function GeneralSettings({
         </Button>
       </Stack>
       {token && (
-        <Stack gap="3" p="4" bg="blue.50" borderRadius="md">
+        <Stack gap="3" p="4" bg="blue.subtle" borderRadius="md">
           <Text fontWeight="semibold">
             Copy this key now. It is shown only once.
           </Text>
@@ -186,14 +186,14 @@ export function GeneralSettings({
         </Stack>
       )}
       {error && (
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {error}
           <Button size="xs" variant="ghost" onClick={() => void load()}>
             Retry
           </Button>
         </Text>
       )}
-      <Text role="status" color="gray.600">
+      <Text role="status" color="fg.muted">
         {notice}
       </Text>
       <WorkspaceApiKeyList keys={keys} busy={busy} onRevoke={revokeKey} />

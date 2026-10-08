@@ -12,6 +12,7 @@ export async function notifyReviewEvent(
     type: "comments" | "issues";
     title: string;
     detail: string;
+    mentionRecipients?: string[];
   },
   requestDeadline = Infinity,
 ) {
@@ -19,8 +20,17 @@ export async function notifyReviewEvent(
   const deadline = Math.min(requestDeadline, Date.now() + 3000);
   try {
     const { settings } = await readNotificationRecord(client);
+    const recipients = [
+      ...new Set([
+        ...(settings.email[event.type] ? settings.email.recipients : []),
+        ...(event.mentionRecipients ?? []),
+      ]),
+    ];
     const email =
-      settings.email[event.type] && settings.email.recipients.length > 0;
+      recipients.length > 0 &&
+      settings.defaultProvider !== "disabled" &&
+      (settings.defaultProvider !== "environment" ||
+        Boolean(config.resendApiKey && config.emailFrom));
     const slack = settings.slack.enabled && settings.slack[event.type];
     if (!email && !slack) return;
     const access = await readAccessConfiguration(client, config);
@@ -38,7 +48,7 @@ export async function notifyReviewEvent(
             await sendEmail(
               client,
               config,
-              { to: settings.email.recipients, subject, text },
+              { to: recipients, subject, text },
               deadline,
             );
           else await sendSlack(client, config, text, deadline);

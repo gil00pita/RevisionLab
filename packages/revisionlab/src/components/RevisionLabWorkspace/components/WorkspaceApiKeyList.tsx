@@ -1,3 +1,4 @@
+import { IllustratedEmptyState } from "../../IllustratedEmptyState/index.js";
 import { useState } from "react";
 import {
   Badge,
@@ -24,7 +25,7 @@ export function WorkspaceApiKeyList({
       <Heading as="h3" size="sm">
         Generated keys
       </Heading>
-      {keys.length === 0 && <Text color="gray.600">No API keys yet.</Text>}
+      {keys.length === 0 && <IllustratedEmptyState illustration="documents" size="sm" description="No API keys yet." />}
       {keys.map((key) => (
         <Stack
           key={key.id}
@@ -39,7 +40,7 @@ export function WorkspaceApiKeyList({
             </Text>
             <Badge>{key.revokedAt ? "Revoked" : key.role}</Badge>
           </Flex>
-          <Text fontSize="xs" color="gray.600">
+          <Text fontSize="xs" color="fg.muted">
             Created {new Date(key.createdAt).toLocaleDateString()}
           </Text>
           {!key.revokedAt &&

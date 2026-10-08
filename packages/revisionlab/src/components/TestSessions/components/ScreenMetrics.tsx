@@ -30,7 +30,7 @@ export function ScreenMetrics({
                   <Table.Cell>
                     {screens.find((screen) => screen.id === id)?.title ??
                       "Before capture"}
-                    <Text color="gray.600" fontSize="xs">
+                    <Text color="fg.muted" fontSize="xs">
                       {value.route}
                     </Text>
                   </Table.Cell>

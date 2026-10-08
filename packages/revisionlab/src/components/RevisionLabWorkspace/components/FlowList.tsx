@@ -61,8 +61,8 @@ export function FlowList({
       aria-label="Recorded flows"
       w="full"
       flexShrink="0"
-      bg="white"
-      borderColor="gray.200"
+      bg="bg.panel"
+      borderColor="border"
     >
       <Stack gap="4" p="4">
         <Flex align="center" justify="space-between" gap="2" flexWrap="wrap">
@@ -157,7 +157,7 @@ export function FlowList({
                   Delete selected
                 </Button>
                 {selection.length > 100 && (
-                  <Text fontSize="sm" color="red.700" role="alert">
+                  <Text fontSize="sm" color="red.fg" role="alert">
                     Delete up to 100 flows at a time.
                   </Text>
                 )}
@@ -166,12 +166,12 @@ export function FlowList({
           </Stack>
         )}
         {notice && (
-          <Text role="status" fontSize="sm" color="green.700">
+          <Text role="status" fontSize="sm" color="green.fg">
             {notice}
           </Text>
         )}
       </Stack>
-      <Stack gap="0" borderTopWidth="1px" borderColor="gray.200">
+      <Stack gap="0" borderTopWidth="1px" borderColor="border">
         {filtered.map((flow) => (
           <FlowListItem
             key={flow.familyId}
@@ -192,7 +192,7 @@ export function FlowList({
           />
         ))}
         {filtered.length === 0 && (
-          <Text color="gray.600" p="3">
+          <Text color="fg.muted" p="3">
             {flows.length
               ? "No flows match your search."
               : "Your first recording will appear here."}

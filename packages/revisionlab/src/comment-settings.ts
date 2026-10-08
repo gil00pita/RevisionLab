@@ -49,21 +49,12 @@ export const defaultSettings: RevisionLabSettings = {
 };
 
 export function commentBubbleTokens(color: CommentBubbleColor) {
-  // Warm swatches use dark text; green/teal/cyan need darker fills for white text.
-  const darkText = color === "orange" || color === "yellow";
-  const shade =
-    color === "yellow"
-      ? "300"
-      : color === "orange"
-        ? "400"
-        : ["green", "teal", "cyan"].includes(color)
-          ? "700"
-          : "600";
+  // Preserve the saved hue while the palette supplies theme-aware contrast.
   return {
-    solid: `${color}.${shade}`,
-    contrast: darkText ? "gray.950" : "white",
-    hover: `${color}.${darkText ? "500" : "800"}`,
-    outline: `${color}.700`,
-    tint: `${color}.500/10`,
+    solid: `${color}.solid`,
+    contrast: `${color}.contrast`,
+    hover: `${color}.solid/90`,
+    outline: `${color}.fg`,
+    tint: `${color}.solid/10`,
   };
 }

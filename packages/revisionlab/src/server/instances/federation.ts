@@ -1,3 +1,4 @@
+import { readCommentOptions } from "../comment-mentions.js";
 import { handleAiInstructions } from "../ai-instructions.js";
 import type { Client } from "@libsql/client";
 import { z } from "zod";
@@ -46,6 +47,18 @@ export async function handleFederation(
       ...(await readWorkspaceState(client, config, actor)),
       instanceId: await installationId(client),
     });
+  if (path[0] === "comments" && path[1] === "notifications")
+    throw new HttpError(
+      403,
+      "Mention notifications require a user session in their source workspace.",
+    );
+  if (
+    request.method === "GET" &&
+    path.length === 2 &&
+    path[0] === "comments" &&
+    path[1] === "options"
+  )
+    return json(await readCommentOptions(client));
   if (path[0] === "history") {
     if (request.method !== "GET")
       await consumeRateLimit(client, `federation:${actor.id}`, 120, 60_000);

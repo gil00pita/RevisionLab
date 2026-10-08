@@ -42,8 +42,8 @@ export function BoardConnections({
       p="4"
       gap="4"
       borderBottomWidth="1px"
-      borderColor="gray.200"
-      bg="white"
+      borderColor="border"
+      bg="bg.panel"
     >
       {canEdit && steps.length > 1 && (
         <Box
@@ -130,7 +130,7 @@ export function BoardConnections({
                       {names.get(edge.targetStepId)}
                     </Text>
                   </Flex>
-                  <Text fontSize="xs" color="gray.600" overflowWrap="anywhere">
+                  <Text fontSize="xs" color="fg.muted" overflowWrap="anywhere">
                     {edge.kind === "recorded"
                       ? "Recorded sequence"
                       : `Manual path: ${edge.label}`}
@@ -156,7 +156,7 @@ export function BoardConnections({
           ))}
         </List.Root>
       ) : (
-        <Text color="gray.600" fontSize="sm">
+        <Text color="fg.muted" fontSize="sm">
           No connections yet. Recording another screen creates the next path
           automatically.
         </Text>

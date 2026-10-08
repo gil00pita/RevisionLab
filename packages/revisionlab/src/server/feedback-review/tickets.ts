@@ -62,5 +62,10 @@ export async function retainTicketEvidence(
         item.screenshotId ?? null,
       ],
     });
+    for (const file of item.attachments ?? [])
+      await transaction.execute({
+        sql: "INSERT OR IGNORE INTO feedback_ticket_evidence (ticket_id,evidence_id,screenshot_id) VALUES (?,?,?)",
+        args: [ticket.id, `${item.id}:attachment:${file.id}`, file.id],
+      });
   }
 }

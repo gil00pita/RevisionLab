@@ -91,7 +91,7 @@ export function RecordedClickPreview({
             <Text fontWeight="semibold" fontSize="sm" overflowWrap="anywhere">
               {interaction.target.label}
             </Text>
-            <Text fontSize="xs" color="gray.600">
+            <Text fontSize="xs" color="fg.muted">
               {interaction.target.tag} ·{" "}
               {interaction.activation === "keyboard"
                 ? "Keyboard activation (element center)"
@@ -104,7 +104,7 @@ export function RecordedClickPreview({
               maxH="320px"
               overflowY="auto"
               borderWidth="1px"
-              borderColor="gray.300"
+              borderColor="border.emphasized"
               borderRadius="md"
               tabIndex={0}
               aria-label="Source screenshot with click location"
@@ -133,8 +133,8 @@ export function RecordedClickPreview({
                     w={`${interaction.bounds.width * 100}%`}
                     h={`${interaction.bounds.height * 100}%`}
                     borderWidth="2px"
-                    borderColor="pink.700"
-                    bg="pink.500/10"
+                    borderColor="pink.border"
+                    bg="pink.solid/10"
                   />
                 )}
                 {interaction.point && (
@@ -154,10 +154,10 @@ export function RecordedClickPreview({
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    bg="pink.700"
-                    color="white"
+                    bg="pink.solid"
+                    color="colorPalette.contrast"
                     borderWidth="1px"
-                    borderColor="white"
+                    borderColor="bg.panel"
                     borderRadius="full"
                   >
                     <Icon boxSize="4">
@@ -169,13 +169,13 @@ export function RecordedClickPreview({
             </Box>
           )}
           {!interaction.point && (
-            <Text fontSize="xs" color="gray.600">
+            <Text fontSize="xs" color="fg.muted">
               The click was outside the captured image.
             </Text>
           )}
         </>
       ) : (
-        <Text fontSize="sm" color="gray.600">
+        <Text fontSize="sm" color="fg.muted">
           Click details were not recorded for this transition.
         </Text>
       )}

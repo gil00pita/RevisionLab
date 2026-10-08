@@ -38,8 +38,8 @@ export function BoardSaveStatus({
   return (
     <>
       {(state.error || state.conflict) && (
-        <Flex px="4" py="3" gap="3" align="center" bg="red.50" flexWrap="wrap">
-          <Text role="alert" color="red.700" flex="1" minW="40">
+        <Flex px="4" py="3" gap="3" align="center" bg="red.subtle" flexWrap="wrap">
+          <Text role="alert" color="red.fg" flex="1" minW="40">
             {state.error ||
               "A newer board is available. Your pending changes have not overwritten it. Load the saved board to continue."}
           </Text>
@@ -84,7 +84,7 @@ export function BoardSaveStatus({
         px="4"
         py="2"
         fontSize="xs"
-        color="gray.600"
+        color="fg.muted"
       >
         {status}
         {` · ${screenCount} screens · ${pathCount} paths`}

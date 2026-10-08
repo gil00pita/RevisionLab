@@ -82,7 +82,7 @@ export function AddMemberForm({
           </Button>
         </Flex>
         {devLoginUrl && (
-          <Link href={devLoginUrl} color="blue.700">
+          <Link href={devLoginUrl} color="blue.fg">
             Open local login link
           </Link>
         )}

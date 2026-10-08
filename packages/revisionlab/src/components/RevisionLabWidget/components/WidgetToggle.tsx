@@ -34,14 +34,14 @@ export function WidgetToggle({
         title={label}
         aria-describedby={showBadge ? statusId : undefined}
         variant="plain"
-        color="white"
+        color="colorPalette.contrast"
         size="sm"
         boxSize="9"
         minW="9"
         position="relative"
         flexShrink="0"
         borderRadius="full"
-        _hover={{ bg: "blackAlpha.200" }}
+        _hover={{ bg: "fg/12" }}
         focusRing="inset"
       >
         <Image src={markUrl} alt="" w="16px" h="18px" flexShrink="0" />
@@ -60,8 +60,8 @@ export function WidgetToggle({
             alignItems="center"
             justifyContent="center"
             borderRadius="full"
-            bg={checking ? "white" : "blue.700"}
-            color="blue.700"
+            bg={checking ? "bg.panel" : "blue.solid"}
+            color="blue.fg"
             shadow="sm"
             pointerEvents="none"
           >

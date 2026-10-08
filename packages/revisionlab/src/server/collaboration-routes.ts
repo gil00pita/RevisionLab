@@ -1,3 +1,11 @@
+import {
+  MAX_COMMENT_BODY_BYTES,
+  MAX_COMMENT_TOTAL_BYTES,
+} from "../comment-rich.js";
+import {
+  createMentionNotifications,
+  validateCommentLinks,
+} from "./comment-mentions.js";
 import { notifyReviewEvent } from "./notifications/events.js";
 import { randomUUID } from "node:crypto";
 import type { Client } from "@libsql/client";
@@ -17,7 +25,7 @@ import type { RevisionLabActor } from "./types.js";
 import {
   discardArtifact,
   insertArtifact,
-  MAX_CAPTURE_BODY_BYTES,
+  prepareCommentAttachment,
   prepareArtifact,
 } from "./artifacts.js";
 
@@ -36,26 +44,52 @@ export async function handleComments(
   notificationDeadline?: number,
 ): Promise<Response> {
   if (request.method === "POST" && path.length === 1) {
-    const value = await readJson(request, MAX_CAPTURE_BODY_BYTES);
+    const value = await readJson(request, MAX_COMMENT_BODY_BYTES);
     if (
-      !(value as { screenshot?: unknown } | null)?.screenshot &&
+      !(value as { screenshot?: unknown; attachments?: unknown[] } | null)
+        ?.screenshot &&
+      !(value as { attachments?: unknown[] } | null)?.attachments?.length &&
       Buffer.byteLength(JSON.stringify(value)) > 16_384
     )
       throw new HttpError(413, "This request is too large.");
     const input = commentSchema.parse(value);
-    if (input.screenshot && !config)
-      throw new HttpError(503, "Screenshot storage is unavailable.");
-    const artifact = input.screenshot
-      ? await prepareArtifact(input.screenshot, config!)
-      : null;
+    if ((input.screenshot || input.attachments.length) && !config)
+      throw new HttpError(503, "Attachment storage is unavailable.");
+    const prepared: NonNullable<Awaited<ReturnType<typeof prepareArtifact>>>[] =
+      [];
     const id = randomUUID();
+    let mentionRecipients: string[] = [];
     try {
+      const artifact = input.screenshot
+        ? await prepareArtifact(input.screenshot, config!)
+        : null;
+      if (artifact) prepared.push(artifact);
+      const attachments: import("../comment-rich.js").CommentAttachment[] = [];
+      let total = 0;
+      for (const file of input.attachments) {
+        const stored = await prepareCommentAttachment(
+          file.name,
+          file.data,
+          config!,
+        );
+        prepared.push(stored);
+        total += stored.bytes.length;
+        if (total > MAX_COMMENT_TOTAL_BYTES)
+          throw new HttpError(413, "Attachments must total 10 MB or less.");
+        attachments.push({
+          id: stored.id,
+          name: file.name,
+          contentType: stored.contentType,
+          size: stored.bytes.length,
+        });
+      }
       await write(client, async (transaction) => {
         const context = await commentContext(transaction, input);
-        await insertArtifact(transaction, artifact);
+        const links = await validateCommentLinks(transaction, input);
+        for (const file of prepared) await insertArtifact(transaction, file);
         await transaction.execute({
-          sql: `INSERT INTO comments (id, flow_id, step_id, edge_id, route, body, status, author_id, created_at, anchor_x, anchor_y, parent_id, element_anchor, screenshot, screenshot_anchor)
-          VALUES (?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?, ?, ?)`,
+          sql: `INSERT INTO comments (id, flow_id, step_id, edge_id, route, body, status, author_id, created_at, anchor_x, anchor_y, parent_id, element_anchor, screenshot, screenshot_anchor, attachments_json, personas_json, mentions_json)
+          VALUES (?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           args: [
             id,
             context.flowId,
@@ -73,12 +107,23 @@ export async function handleComments(
             input.screenshotAnchor
               ? JSON.stringify(input.screenshotAnchor)
               : null,
+            JSON.stringify(attachments),
+            JSON.stringify(links.personas),
+            JSON.stringify(links.mentions),
           ],
         });
+        mentionRecipients = await createMentionNotifications(
+          transaction,
+          id,
+          links.mentions,
+          actor,
+        );
       });
     } catch (error) {
       if (config)
-        await discardArtifact(artifact, config).catch(() => undefined);
+        await Promise.allSettled(
+          prepared.map((file) => discardArtifact(file, config)),
+        );
       throw error;
     }
     if (config)
@@ -89,6 +134,7 @@ export async function handleComments(
           type: "comments",
           title: input.parentId ? "New comment reply" : "New comment",
           detail: `${actor.name}: ${input.body}`,
+          mentionRecipients,
         },
         notificationDeadline,
       );

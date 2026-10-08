@@ -24,18 +24,18 @@ export function DashboardStatistic({
       unstyled
       display="flex"
       flexDirection="column"
-      bg="white"
+      bg="bg.panel"
       py="3"
       minW="0"
       gap="3"
     >
-      <Stat.Label color="gray.600" fontSize="sm" fontWeight="medium" lineHeight="tall">
+      <Stat.Label color="fg.muted" fontSize="sm" fontWeight="medium" lineHeight="tall">
         <Flex justify="space-between" align="center" gap="3">
           <Text as="span" flex="1" minW="0" overflowWrap="anywhere">
             {label}
           </Text>
           <Flex align="center" justify="center" flexShrink="0">
-            <Icon size="sm" color="blue.600" aria-hidden="true">
+            <Icon size="sm" color="blue.fg" aria-hidden="true">
               <MetricIcon />
             </Icon>
           </Flex>
@@ -45,7 +45,7 @@ export function DashboardStatistic({
         ref={ref}
         fontSize={value === null ? "xl" : variant === "review" ? "3xl" : "2xl"}
         fontWeight="semibold"
-        color={recentlyUpdated ? "green.700" : "gray.900"}
+        color={recentlyUpdated ? "green.fg" : "fg"}
         letterSpacing="tight"
         lineHeight="shorter"
         fontVariantNumeric="tabular-nums"
@@ -59,7 +59,7 @@ export function DashboardStatistic({
       >
         {value === null ? "Unavailable" : value.toLocaleString("en")}
       </Stat.ValueText>
-      <Stat.HelpText as="dd" color="gray.600" fontSize="xs" lineHeight="tall">
+      <Stat.HelpText as="dd" color="fg.muted" fontSize="xs" lineHeight="tall">
         {value === null
           ? "A selected workspace could not provide this total. Check its connection or ask its owner to update RevisionLab."
           : help}

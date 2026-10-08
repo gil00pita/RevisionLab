@@ -1,4 +1,4 @@
-import { CommentInput } from "../../CommentInput/index.js";
+import { CommentInput, useCommentDraft } from "../../CommentInput/index.js";
 import { captureDimensions, captureScreen } from "../../../client/recording.js";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -30,7 +30,8 @@ export function LiveCommentComposer({
   onEscape: () => void;
   onSaved: () => void;
 }) {
-  const [body, setBody] = useState("");
+  const draft = useCommentDraft(apiPath);
+  const { body, setBody } = draft;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [captureWarning, setCaptureWarning] = useState("");
@@ -48,7 +49,12 @@ export function LiveCommentComposer({
   }, []);
 
   async function post() {
-    if (pending.current || !body.trim()) return;
+    if (
+      pending.current ||
+      (!body.trim() && !draft.files.length) ||
+      draft.preparing
+    )
+      return;
     pending.current = true;
     setBusy(true);
     setError("");
@@ -89,6 +95,7 @@ export function LiveCommentComposer({
         body: JSON.stringify({
           route,
           body: body.trim(),
+          ...draft.payload(),
           elementAnchor: anchor,
           screenshot,
           screenshotAnchor,
@@ -139,17 +146,17 @@ export function LiveCommentComposer({
             w={bounds ? `${bounds.width}px` : "1px"}
             h={bounds ? `${bounds.height}px` : "1px"}
             borderWidth={bounds ? "2px" : "0"}
-            borderColor="blue.600"
+            borderColor="blue.border"
             borderRadius="sm"
           />
         </Popover.Anchor>
-        <Popover.Positioner data-revisionlab-ui>
+        <Popover.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
           <Popover.Content
             aria-label="Add comment"
             w="sm"
             maxW="calc(100vw - 2rem)"
-            bg="white"
-            color="gray.900"
+            bg="bg.panel"
+            color="fg"
             borderRadius="lg"
             shadow="lg"
           >
@@ -157,6 +164,7 @@ export function LiveCommentComposer({
             <Popover.Body p="4" maxH="calc(100dvh - 7rem)" overflowY="auto">
               <Stack gap="3">
                 <CommentInput
+                  draft={draft}
                   apiPath={apiPath}
                   route={route}
                   inputRef={input}
@@ -168,21 +176,21 @@ export function LiveCommentComposer({
                   onSubmitShortcut={() => void post()}
                 />
                 {captureWarning && (
-                  <Text role="status" fontSize="xs" color="orange.800">
+                  <Text role="status" fontSize="xs" color="orange.fg">
                     {captureWarning}
                   </Text>
                 )}
                 {!bounds && (
-                  <Text role="status" fontSize="xs" color="orange.800">
+                  <Text role="status" fontSize="xs" color="orange.fg">
                     The selected element is no longer visible.
                   </Text>
                 )}
                 {error && (
-                  <Text role="alert" fontSize="sm" color="red.700">
+                  <Text role="alert" fontSize="sm" color="red.fg">
                     {error}
                   </Text>
                 )}
-                <Flex justify="end" gap="2">
+                <Flex justify="end" gap="2" wrap="wrap">
                   <Button
                     size="sm"
                     variant="ghost"
@@ -196,7 +204,11 @@ export function LiveCommentComposer({
                     colorPalette="blue"
                     onClick={() => void post()}
                     loading={busy}
-                    disabled={!body.trim()}
+                    disabled={
+                      (!body.trim() && !draft.files.length) ||
+                      draft.preparing ||
+                      busy
+                    }
                   >
                     {captureWarning ? "Post without screenshot" : "Post"}
                   </Button>
