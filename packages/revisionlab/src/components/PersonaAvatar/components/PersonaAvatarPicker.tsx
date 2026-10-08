@@ -1,13 +1,23 @@
 import {
-  Accordion,
+  Box,
   Field,
-  Grid,
-  RadioGroup,
-  Stack,
-  Text,
+  HStack,
+  Portal,
+  Select,
+  createListCollection,
 } from "@chakra-ui/react";
 import { personaAvatarIds } from "../../../persona-avatars.js";
 import { PersonaAvatar } from "../PersonaAvatar.js";
+
+const avatarOptions = createListCollection({
+  items: [
+    { label: "Initials", value: "initials" },
+    ...personaAvatarIds.map((avatar) => ({
+      label: `Avatar ${avatar.slice(7)}`,
+      value: avatar,
+    })),
+  ],
+});
 
 export function PersonaAvatarPicker({
   name,
@@ -21,72 +31,71 @@ export function PersonaAvatarPicker({
   onChange: (value: string | null) => void;
 }) {
   return (
-    <Stack gap="3">
-      <PersonaAvatar name={name || "Persona"} avatar={value} size="lg" />
-      <Accordion.Root collapsible lazyMount unmountOnExit defaultValue={[]}>
-        <Accordion.Item value="avatars">
-          <Accordion.ItemTrigger>
-            <Text flex="1">Choose an avatar</Text>
-            <Accordion.ItemIndicator />
-          </Accordion.ItemTrigger>
-          <Accordion.ItemContent>
-            <Accordion.ItemBody px="0">
-              <Field.Root disabled={disabled}>
-                <RadioGroup.Root
-                  aria-label="Persona avatar"
-                  w="full"
-                  value={value ?? "initials"}
-                  disabled={disabled}
-                  onValueChange={(event) =>
-                    onChange(event.value === "initials" ? null : event.value)
-                  }
-                >
-                  <Grid
-                    w="full"
-                    templateColumns="repeat(auto-fill, minmax(64px, 1fr))"
-                    gap="2"
-                    maxH="64"
-                    overflowY="auto"
-                    p="2"
-                  >
-                    {["initials", ...personaAvatarIds].map((avatar) => (
-                      <RadioGroup.Item
-                        key={avatar}
-                        value={avatar}
-                        flexDirection="column"
-                        gap="1"
-                        p="2"
-                        borderRadius="md"
-                        borderWidth="2px"
-                        borderColor="border"
-                        _checked={{
-                          borderColor: "blue.border",
-                          bg: "blue.subtle",
-                        }}
-                        _focusVisible={{
-                          outlineWidth: "2px",
-                          outlineStyle: "solid",
-                          outlineColor: "blue.focusRing",
-                        }}
-                        cursor="pointer"
-                      >
-                        <RadioGroup.ItemHiddenInput />
-                        <PersonaAvatar
-                          name={name || "Persona"}
-                          avatar={avatar === "initials" ? null : avatar}
-                        />
-                        <RadioGroup.ItemText fontSize="xs">
-                          {avatar === "initials" ? "Initials" : avatar.slice(7)}
-                        </RadioGroup.ItemText>
-                      </RadioGroup.Item>
-                    ))}
-                  </Grid>
-                </RadioGroup.Root>
-              </Field.Root>
-            </Accordion.ItemBody>
-          </Accordion.ItemContent>
-        </Accordion.Item>
-      </Accordion.Root>
-    </Stack>
+    <Field.Root disabled={disabled}>
+      <Select.Root
+        collection={avatarOptions}
+        value={[value ?? "initials"]}
+        onValueChange={(event) =>
+          onChange(event.value[0] === "initials" ? null : event.value[0])
+        }
+        disabled={disabled}
+        lazyMount
+        unmountOnExit
+        positioning={{
+          strategy: "fixed",
+          hideWhenDetached: true,
+          sameWidth: true,
+        }}
+      >
+        <Select.HiddenSelect />
+        <Select.Label>Persona avatar</Select.Label>
+        <Select.Control>
+          <Select.Trigger minH="12" py="2">
+            <HStack minW="0" gap="3" flex="1">
+              <Box aria-hidden="true">
+                <PersonaAvatar name={name || "Persona"} avatar={value} />
+              </Box>
+              <Select.ValueText truncate />
+            </HStack>
+          </Select.Trigger>
+          <Select.IndicatorGroup>
+            <Select.Indicator />
+          </Select.IndicatorGroup>
+        </Select.Control>
+        <Portal>
+          <Select.Positioner
+            data-revisionlab-ui
+            color="fg"
+            colorPalette="blue"
+            zIndex="popover"
+          >
+            <Select.Content
+              maxH="64"
+              overflowY="auto"
+              bg="bg.panel"
+              color="fg"
+              fontFamily="body"
+            >
+              {avatarOptions.items.map((option) => (
+                <Select.Item item={option} key={option.value}>
+                  <HStack minW="0" gap="3">
+                    <Box aria-hidden="true">
+                      <PersonaAvatar
+                        name={name || "Persona"}
+                        avatar={
+                          option.value === "initials" ? null : option.value
+                        }
+                      />
+                    </Box>
+                    <Select.ItemText>{option.label}</Select.ItemText>
+                  </HStack>
+                  <Select.ItemIndicator />
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Positioner>
+        </Portal>
+      </Select.Root>
+    </Field.Root>
   );
 }

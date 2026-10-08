@@ -22,93 +22,99 @@ export function MarketingNavigation() {
 
       <Flex
         as="header"
+        w="full"
         bg="bg.inverted"
         color="fg.inverted"
-        px={{ base: "5", md: "10", xl: "16" }}
         h={{ base: "20", md: "24" }}
-        maxW="1600px"
-        mx="auto"
-        justify="space-between"
-        align="center"
-        gap="4"
         borderBottomWidth="1px"
         borderColor="fg.inverted/20"
       >
-        <Link asChild color="fg.inverted" textDecoration="none" minH="44px">
-          <NextLink href="/" aria-label="RevisionLab home">
-            <RevisionLabLogo decorative />
-            <Text
-              fontFamily="Manrope, sans-serif"
-              fontWeight="700"
-              fontSize={{ base: "lg", md: "xl" }}
-            >
-              RevisionLab
-            </Text>
-          </NextLink>
-        </Link>
         <Flex
-          as="nav"
-          aria-label="Main navigation"
-          gap={{ base: "3", md: "8" }}
+          w="full"
+          h="full"
+          maxW="1600px"
+          mx="auto"
+          px={{ base: "5", md: "10", xl: "16" }}
+          justify="space-between"
           align="center"
+          gap="4"
         >
-          <Link
-            href="#how-it-works"
-            color="fg.inverted/80"
-            fontSize="sm"
-            minH="44px"
-            hideBelow="md"
-          >
-            How it works
-          </Link>
-          <Link
-            href="#review"
-            color="fg.inverted/80"
-            fontSize="sm"
-            minH="44px"
-            hideBelow="lg"
-          >
-            The workspace
-          </Link>
-          <Link
-            asChild
-            color="fg.inverted/80"
-            fontSize="sm"
-            minH="44px"
-            hideBelow="lg"
-          >
-            <NextLink href="/setup">
-              Docs
-              <Icon boxSize="12px">
-                <ArrowUpRight />
-              </Icon>
+          <Link asChild color="fg.inverted" textDecoration="none" minH="44px">
+            <NextLink href="/" aria-label="RevisionLab home">
+              <RevisionLabLogo decorative />
+              <Text
+                fontFamily="Manrope, sans-serif"
+                fontWeight="700"
+                fontSize={{ base: "lg", md: "xl" }}
+              >
+                RevisionLab
+              </Text>
             </NextLink>
           </Link>
-          <Link
-            asChild
-            color="fg.inverted/80"
-            fontSize="sm"
-            minH="44px"
-            hideBelow="md"
+          <Flex
+            as="nav"
+            aria-label="Main navigation"
+            gap={{ base: "3", md: "8" }}
+            align="center"
           >
-            <NextLink href="/demo/finance">Try demo</NextLink>
-          </Link>
-          <Button
-            asChild
-            size="sm"
-            minH="44px"
-            colorPalette="blue"
-            bg="blue.solid"
-            borderRadius="md"
-            px={{ base: "3", md: "5" }}
-          >
-            <NextLink href="/setup">
-              Install free
-              <Icon size="sm">
-                <ArrowUpRight />
-              </Icon>
-            </NextLink>
-          </Button>
+            <Link
+              href="#how-it-works"
+              color="fg.inverted/80"
+              fontSize="sm"
+              minH="44px"
+              hideBelow="md"
+            >
+              How it works
+            </Link>
+            <Link
+              href="#review"
+              color="fg.inverted/80"
+              fontSize="sm"
+              minH="44px"
+              hideBelow="lg"
+            >
+              The workspace
+            </Link>
+            <Link
+              asChild
+              color="fg.inverted/80"
+              fontSize="sm"
+              minH="44px"
+              hideBelow="lg"
+            >
+              <NextLink href="/setup">
+                Docs
+                <Icon boxSize="12px">
+                  <ArrowUpRight />
+                </Icon>
+              </NextLink>
+            </Link>
+            <Link
+              asChild
+              color="fg.inverted/80"
+              fontSize="sm"
+              minH="44px"
+              hideBelow="md"
+            >
+              <NextLink href="/demo/finance">Try demo</NextLink>
+            </Link>
+            <Button
+              asChild
+              size="sm"
+              minH="44px"
+              colorPalette="blue"
+              bg="blue.solid"
+              borderRadius="md"
+              px={{ base: "3", md: "5" }}
+            >
+              <NextLink href="/setup">
+                Install free
+                <Icon size="sm">
+                  <ArrowUpRight />
+                </Icon>
+              </NextLink>
+            </Button>
+          </Flex>
         </Flex>
       </Flex>
     </>

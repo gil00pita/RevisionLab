@@ -1,6 +1,14 @@
 # Release validation
 
+## Persona avatar select — 8 October 2026
+
+The wizard and workspace Personas editor now share one Chakra avatar select. It shows the selected portrait and label when closed and a scrollable Initials plus 126 portrait options when opened. `npm run lint`, `npm run build`, all 296 package tests, and `git diff --check` pass. Browser checks in isolated production previews confirmed keyboard ArrowDown/Enter selection, saving and reopening the selected portrait in both the first-use wizard and workspace editor, loaded image assets, 127 accessible options with stable labels, and a dropdown matching the 672px desktop and 316px mobile fields. At 390px, the page has no horizontal overflow. The mobile dropdown was visually inspected in light and dark modes. Screenshots are retained in `.context/avatar-select-personas.png`, `.context/avatar-select-wizard-open.png`, and `.context/avatar-select-wizard-dark-mobile.png`. The previews use local fixture databases and do not change a deployed workspace.
+
 Final pre-commit verification — 8 October 2026: npm run lint, npm run build, all 292 package tests and git diff checks pass with the rich-comment, transparent-illustration and Personas-width changes together. Logs are retained under `.context/final-commit-*.log`; feature-specific browser evidence and limitations are recorded below.
+
+## Landing navigation width — 8 October 2026
+
+The marketing header's background and bottom border now occupy the full viewport while its navigation content remains centered at a maximum width of 1,600px. `npm run lint`, `npm run build` and `git diff --check` pass. In the production preview, browser geometry checks at 320, 390, 1,440, 2,048 and 2,560px confirm the header reaches both viewport edges, its content remains inside the cap, and its visible links stay within the viewport. The 2,048px screenshot in `.context/landing-nav-full-width.png` was visually inspected. At 320px, a separate hero heading extends the page to about 340px; the header itself remains 320px wide and does not cause that overflow. The root widget, links and access settings were unchanged. Build and lint logs are in `.context/landing-nav-{build,lint}.log`.
 
 ## Recordable five-page demo flow — 8 October 2026
 
