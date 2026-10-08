@@ -56,14 +56,14 @@ export function RecorderPanel({
               </Badge>
             </Flex>
           </Box>
-          <Text color="gray.600">
+          <Text color="fg.muted">
             Explore the prototype. New routes are captured automatically;
             capture again for a dialog, form, or other state.
           </Text>
           <Field.Root>
             <Field.Label>
               Next screen name{" "}
-              <Text as="span" color="gray.600">
+              <Text as="span" color="fg.muted">
                 (optional)
               </Text>
             </Field.Label>
@@ -72,7 +72,7 @@ export function RecorderPanel({
               onChange={(event) => setTitle(event.target.value)}
               placeholder="e.g. Application confirmation"
               maxLength={160}
-              bg="white"
+              bg="bg.panel"
             />
           </Field.Root>
           <Button
@@ -100,12 +100,12 @@ export function RecorderPanel({
         />
       )}
       {recorder.error && (
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {recorder.error}
         </Text>
       )}
       {recorder.notice && (
-        <Text role="status" color="green.700" fontSize="xs">
+        <Text role="status" color="green.fg" fontSize="xs">
           {recorder.notice}
         </Text>
       )}

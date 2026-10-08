@@ -51,14 +51,14 @@ export function RecordingPopover({
       }}
     >
       <Portal>
-        <Popover.Positioner data-revisionlab-ui>
+        <Popover.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
           <Popover.Content
             aria-label="Record a flow"
             ref={content}
             w="sm"
             maxW="calc(100vw - 1.5rem)"
-            bg="white"
-            color="gray.900"
+            bg="bg.panel"
+            color="fg"
             borderRadius="lg"
             shadow="lg"
           >

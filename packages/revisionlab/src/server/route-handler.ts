@@ -1,3 +1,7 @@
+import {
+  readCommentOptions,
+  handleCommentNotifications,
+} from "./comment-mentions.js";
 import { handleTestSessions } from "./test-sessions/routes.js";
 import { handleFeedbackReview } from "./feedback-review/routes.js";
 import { handleTestParticipant } from "./test-sessions/participant.js";
@@ -50,10 +54,23 @@ export function createRevisionLabHandler(
       if (path[0] === "test-participant")
         return await handleTestParticipant(request, path, client, config);
       const actor = await authenticate(request, client, config);
-      if (request.method === "GET" && path.length === 1 && path[0] === "comment-suggestions")
+      if (
+        request.method === "GET" &&
+        path.length === 1 &&
+        path[0] === "comment-suggestions"
+      )
         return await handleCommentSuggestions(request, client);
       if (request.method !== "GET")
         await consumeRateLimit(client, `mutate:${actor.id}`, 120, 60_000);
+      if (path[0] === "comments" && path[1] === "notifications")
+        return await handleCommentNotifications(request, path, client, actor);
+      if (
+        request.method === "GET" &&
+        path.length === 2 &&
+        path[0] === "comments" &&
+        path[1] === "options"
+      )
+        return json(await readCommentOptions(client));
       if (path[0] === "feedback-review")
         return await handleFeedbackReview(request, path, client, config, actor);
       if (path[0] === "test-sessions")
@@ -127,7 +144,15 @@ export function createRevisionLabHandler(
           config,
           actor,
           historyAction(request.method, path),
-          () => handleComments(request, path, client, actor, config),
+          () =>
+            handleComments(
+              request,
+              path,
+              client,
+              actor,
+              config,
+              notificationDeadline,
+            ),
         );
       if (path[0] === "invitations")
         return await handleInvitations(request, path, client, config, actor);

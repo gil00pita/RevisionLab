@@ -59,14 +59,14 @@ export function AccessibilityResults({
   return (
     <>
       <AccessibilityMarkers inspection={inspection} />
-      <Popover.Positioner data-revisionlab-ui>
+      <Popover.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
         <Popover.Content
           ref={panel}
           aria-label="Accessibility"
           w="sm"
           maxW="calc(100vw - 2rem)"
-          bg="white"
-          color="gray.900"
+          bg="bg.panel"
+          color="fg"
           borderRadius="lg"
         >
           {!topPanel && <Popover.Arrow />}
@@ -95,7 +95,7 @@ export function AccessibilityResults({
                   h="auto"
                   whiteSpace="normal"
                   textAlign="left"
-                  color="red.700"
+                  color="red.fg"
                   onClick={() => inspection.select(active)}
                 >
                   {active.issue.help}
@@ -110,17 +110,17 @@ export function AccessibilityResults({
                 <Text role="status" fontWeight="semibold">
                   {label.replace("Accessibility: ", "")}
                 </Text>
-                <Text fontSize="xs" color="gray.600">
+                <Text fontSize="xs" color="fg.muted">
                   {result.standard ? wcagLabel(result.standard) : "WCAG"}{" "}
                   automated checks only. Manual testing is still required.
                 </Text>
                 {result.checkedAt && (
-                  <Text fontSize="xs" color="gray.600">
+                  <Text fontSize="xs" color="fg.muted">
                     Checked {formatUtcTimestamp(result.checkedAt)}
                   </Text>
                 )}
                 {result.error && (
-                  <Text role="alert" color="red.700">
+                  <Text role="alert" color="red.fg">
                     {result.error}
                   </Text>
                 )}

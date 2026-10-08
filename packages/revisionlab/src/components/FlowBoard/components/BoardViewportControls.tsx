@@ -24,9 +24,9 @@ export function BoardViewportControls({
       align="center"
       gap="1"
       p="1"
-      bg="white"
+      bg="bg.panel"
       borderWidth="1px"
-      borderColor="gray.200"
+      borderColor="border"
       borderRadius="md"
       boxShadow="md"
     >

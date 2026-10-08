@@ -42,7 +42,7 @@ export function InvitationForm({
         <Field.Root>
           <Field.Label>
             Reviewer email{" "}
-            <Text as="span" color="gray.600" fontWeight="normal">
+            <Text as="span" color="fg.muted" fontWeight="normal">
               (optional)
             </Text>
           </Field.Label>
@@ -80,7 +80,7 @@ export function InvitationForm({
                 <RadioGroup.ItemText fontWeight="medium">
                   Commenter
                 </RadioGroup.ItemText>
-                <Text color="gray.600" fontSize="sm">
+                <Text color="fg.muted" fontSize="sm">
                   View screens and add feedback.
                 </Text>
               </Stack>
@@ -92,7 +92,7 @@ export function InvitationForm({
                 <RadioGroup.ItemText fontWeight="medium">
                   Editor
                 </RadioGroup.ItemText>
-                <Text color="gray.600" fontSize="sm">
+                <Text color="fg.muted" fontSize="sm">
                   Record flows, capture screens, and manage feedback.
                 </Text>
               </Stack>

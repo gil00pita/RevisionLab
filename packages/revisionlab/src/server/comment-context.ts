@@ -1,3 +1,4 @@
+import { MAX_COMMENT_FILES, MAX_COMMENT_BODY_BYTES } from "../comment-rich.js";
 import type { Transaction } from "@libsql/client";
 import { z } from "zod";
 import { syncBoardEdges } from "./board-edges.js";
@@ -6,45 +7,77 @@ import { routeSchema } from "./flow-routes.js";
 import { HttpError } from "./security.js";
 import { MAX_CAPTURE_BODY_BYTES } from "./artifacts.js";
 
-export const commentSchema = z.strictObject({
-  body: z.string().trim().min(1).max(4_000),
-  screenshot: z.string().max(MAX_CAPTURE_BODY_BYTES).optional(),
-  screenshotAnchor: z
-    .strictObject({
-      x: z.number().finite().min(0).max(1),
-      y: z.number().finite().min(0).max(1),
-    })
-    .optional(),
-  route: routeSchema.optional(),
-  flowId: z.string().uuid().nullable().optional(),
-  stepId: z.string().uuid().nullable().optional(),
-  edgeId: z
-    .string()
-    .min(1)
-    .max(160)
-    .regex(/^[a-zA-Z0-9_-]+$/)
-    .nullable()
-    .optional(),
-  anchor: z
-    .strictObject({
-      x: z.number().finite().min(0).max(1),
-      y: z.number().finite().min(0).max(1),
-    })
-    .nullable()
-    .optional(),
-  parentId: z.string().uuid().nullable().optional(),
-  elementAnchor: z
-    .strictObject({
-      selector: z.string().trim().min(1).max(2000),
-      tag: z
-        .string()
-        .regex(/^[a-z][a-z0-9-]*$/)
-        .max(80),
-      label: z.string().trim().min(1).max(160),
-    })
-    .nullable()
-    .optional(),
-});
+export const commentSchema = z
+  .strictObject({
+    attachments: z
+      .array(
+        z.strictObject({
+          name: z
+            .string()
+            .trim()
+            .min(1)
+            .max(180)
+            .regex(/^[^\/\\\x00-\x1f\x7f]+$/),
+          data: z.string().max(MAX_COMMENT_BODY_BYTES),
+        }),
+      )
+      .max(MAX_COMMENT_FILES)
+      .default([]),
+    personaIds: z.array(z.string().uuid()).max(20).default([]),
+    mentions: z
+      .array(
+        z.strictObject({
+          id: z.string().uuid(),
+          kind: z.enum(["persona", "user"]),
+          label: z.string().min(1).max(160),
+          start: z.number().int().min(0).max(4000),
+          end: z.number().int().min(1).max(4000),
+        }),
+      )
+      .max(20)
+      .default([]),
+    body: z.string().trim().max(4_000),
+    screenshot: z.string().max(MAX_CAPTURE_BODY_BYTES).optional(),
+    screenshotAnchor: z
+      .strictObject({
+        x: z.number().finite().min(0).max(1),
+        y: z.number().finite().min(0).max(1),
+      })
+      .optional(),
+    route: routeSchema.optional(),
+    flowId: z.string().uuid().nullable().optional(),
+    stepId: z.string().uuid().nullable().optional(),
+    edgeId: z
+      .string()
+      .min(1)
+      .max(160)
+      .regex(/^[a-zA-Z0-9_-]+$/)
+      .nullable()
+      .optional(),
+    anchor: z
+      .strictObject({
+        x: z.number().finite().min(0).max(1),
+        y: z.number().finite().min(0).max(1),
+      })
+      .nullable()
+      .optional(),
+    parentId: z.string().uuid().nullable().optional(),
+    elementAnchor: z
+      .strictObject({
+        selector: z.string().trim().min(1).max(2000),
+        tag: z
+          .string()
+          .regex(/^[a-z][a-z0-9-]*$/)
+          .max(80),
+        label: z.string().trim().min(1).max(160),
+      })
+      .nullable()
+      .optional(),
+  })
+  .refine((input) => input.body.length > 0 || input.attachments.length > 0, {
+    message: "Add a comment or attachment.",
+    path: ["body"],
+  });
 
 export async function commentContext(
   transaction: Transaction,

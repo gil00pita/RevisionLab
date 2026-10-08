@@ -60,8 +60,8 @@ export function ElementPicker({
           height={`${bounds.height}px`}
           borderWidth="2px"
           borderStyle="solid"
-          borderColor="blue.600"
-          bg="blue.500/10"
+          borderColor="blue.border"
+          bg="blue.solid/10"
         />
       )}
       {showControls && (
@@ -74,10 +74,10 @@ export function ElementPicker({
           px="4"
           py="3"
           gap="1"
-          bg="white"
-          color="gray.900"
+          bg="bg.panel"
+          color="fg"
           borderWidth="1px"
-          borderColor="gray.200"
+          borderColor="border"
           borderRadius="lg"
           shadow="sm"
         >
@@ -94,10 +94,10 @@ export function ElementPicker({
             </Switch.Control>
             <Switch.Label>Show comments notes</Switch.Label>
           </Switch.Root>
-          <Link href={commentsHref} color="blue.700" fontSize="sm">
+          <Link href={commentsHref} color="blue.fg" fontSize="sm">
             Show all comments from this page
           </Link>
-          <Text fontSize="xs" color="gray.600">
+          <Text fontSize="xs" color="fg.muted">
             Press Esc to close the comments.
           </Text>
         </Stack>

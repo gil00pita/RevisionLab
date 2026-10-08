@@ -44,13 +44,13 @@ export function DeleteFlowsDialog({
     >
       <Portal>
         <Dialog.Backdrop data-revisionlab-ui />
-        <Dialog.Positioner data-revisionlab-ui p="4">
+        <Dialog.Positioner data-revisionlab-ui color="fg" colorPalette="blue" p="4">
           <Dialog.Content
             maxW="md"
             w="full"
             borderRadius="lg"
-            bg="white"
-            color="gray.900"
+            bg="bg.panel"
+            color="fg"
             fontFamily="body"
             fontSize="sm"
             lineHeight="1.6"
@@ -75,7 +75,7 @@ export function DeleteFlowsDialog({
                       <Text fontWeight="semibold" overflowWrap="anywhere">
                         {target.name}
                       </Text>
-                      <Text fontSize="sm" color="gray.600">
+                      <Text fontSize="sm" color="fg.muted">
                         {target.versions}{" "}
                         {target.versions === 1 ? "version" : "versions"},{" "}
                         {target.screens}{" "}
@@ -85,7 +85,7 @@ export function DeleteFlowsDialog({
                   ))}
                 </List.Root>
                 {error && (
-                  <Text role="alert" color="red.700" overflowWrap="anywhere">
+                  <Text role="alert" color="red.fg" overflowWrap="anywhere">
                     {error}
                   </Text>
                 )}

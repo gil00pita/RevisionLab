@@ -1,3 +1,4 @@
+import { IllustratedEmptyState } from "../../IllustratedEmptyState/index.js";
 import { useState } from "react";
 import {
   Badge,
@@ -78,7 +79,13 @@ export function PersonaManager({
     }
   }
   return (
-    <Stack p={{ base: "5", md: "8" }} gap="6" w="full" maxW="5xl">
+    <Stack
+      p={{ base: "5", md: "8" }}
+      gap="6"
+      w="full"
+      minW="0"
+      maxW={editor ? "full" : "5xl"}
+    >
       <Flex align="center" justify="space-between" gap="3" flexWrap="wrap" minW="0">
         <Heading as="h2" size="xl">
           Personas
@@ -105,20 +112,18 @@ export function PersonaManager({
       )}
       {canEdit && formOpen && <Separator />}
       {error && (
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {error}
         </Text>
       )}
       {notice && (
-        <Text role="status" color="green.700" fontSize="sm">
+        <Text role="status" color="green.fg" fontSize="sm">
           {notice}
         </Text>
       )}
       <Stack as="section" gap="0" aria-label="Saved personas">
         {personas.length === 0 && (
-          <Text color="gray.600" py="6">
-            No personas yet.
-          </Text>
+          <IllustratedEmptyState illustration="documents" description="No personas yet." />
         )}
         {personas.map((persona) => (
           <Flex
@@ -129,7 +134,7 @@ export function PersonaManager({
             gap="4"
             align="start"
             borderBottomWidth="1px"
-            borderColor="gray.200"
+            borderColor="border"
             direction={{ base: "column", md: "row" }}
           >
             <Box flex="1" minW="0">
@@ -147,7 +152,7 @@ export function PersonaManager({
               {persona.description && (
                 <Text
                   mt="2"
-                  color="gray.600"
+                  color="fg.muted"
                   whiteSpace="pre-wrap"
                   overflowWrap="anywhere"
                 >

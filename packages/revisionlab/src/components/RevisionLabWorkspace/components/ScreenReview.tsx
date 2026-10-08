@@ -117,10 +117,10 @@ export function ScreenReview({
         aria-label="Screen feedback"
         w={{ base: "full", xl: "80", "2xl": "96" }}
         flexShrink="0"
-        bg="gray.50"
+        bg="bg.subtle"
         borderLeftWidth={{ base: "0", xl: "1px" }}
         borderTopWidth={{ base: "1px", xl: "0" }}
-        borderColor="gray.200"
+        borderColor="border"
         p="5"
       >
         {step && canResolve && (
@@ -146,7 +146,7 @@ export function ScreenReview({
               <Heading as="h2" size="md">
                 Screen feedback
               </Heading>
-              <Text color="gray.600">
+              <Text color="fg.muted">
                 This discussion opens beside its pin on the screen. Read and
                 reply there without losing the location.
               </Text>

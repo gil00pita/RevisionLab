@@ -94,7 +94,7 @@ export function InvitationManager({
         <Heading as="h2" size="xl" id="revisionlab-invitations-heading">
           Invite reviewers
         </Heading>
-        <Text color="gray.600">
+        <Text color="fg.muted">
           Give colleagues and clients access with an email verification code.
           Each invitation can be revoked at any time.
         </Text>
@@ -108,7 +108,7 @@ export function InvitationManager({
         </Alert.Root>
       )}
       {notice && (
-        <Text role="status" fontSize="sm" color="blue.700">
+        <Text role="status" fontSize="sm" color="blue.fg">
           {notice}
         </Text>
       )}

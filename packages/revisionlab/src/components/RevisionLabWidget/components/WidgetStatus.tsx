@@ -26,13 +26,13 @@ export function WidgetStatus({
       zIndex="popover"
       maxW="calc(100vw - 1.5rem)"
       w="80"
-      bg="white"
-      color="gray.900"
+      bg="bg.panel"
+      color="fg"
       px="3"
       py="2"
       borderRadius="md"
       borderWidth="1px"
-      borderColor="gray.200"
+      borderColor="border"
       pointerEvents={recorder.savedRecording ? "auto" : "none"}
     >
       {recorder.savedRecording ? (
@@ -40,12 +40,12 @@ export function WidgetStatus({
           <Text role="status" fontSize="sm" fontWeight="semibold">
             Recording ended and saved.
           </Text>
-          <Text fontSize="xs" color="gray.600" overflowWrap="anywhere">
+          <Text fontSize="xs" color="fg.muted" overflowWrap="anywhere">
             {recorder.savedRecording.name}
           </Text>
           <Link
             fontSize="sm"
-            color="blue.700"
+            color="blue.fg"
             alignSelf="start"
             href={`${basePath}?${new URLSearchParams({ view: "flows", flow: recorder.savedRecording.id })}`}
           >
@@ -71,7 +71,7 @@ export function WidgetStatus({
           <Text
             fontSize="xs"
             role={recorder.error ? "alert" : "status"}
-            color={recorder.error ? "red.700" : "gray.600"}
+            color={recorder.error ? "red.fg" : "fg.muted"}
             overflowWrap="anywhere"
           >
             {recorder.error || recorder.notice}

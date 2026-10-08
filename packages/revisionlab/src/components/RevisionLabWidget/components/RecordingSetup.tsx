@@ -126,7 +126,7 @@ export function RecordingSetup({
             onChange={(event) => setName(event.target.value)}
             maxLength={120}
             placeholder="e.g. Submit an application"
-            bg="white"
+            bg="bg.panel"
           />
         </Field.Root>
         <Field.Root
@@ -161,7 +161,7 @@ export function RecordingSetup({
               </Select.IndicatorGroup>
             </Select.Control>
             <Portal container={portal}>
-              <Select.Positioner data-revisionlab-ui zIndex="popover">
+              <Select.Positioner data-revisionlab-ui color="fg" colorPalette="blue" zIndex="popover">
                 <Select.Content>
                   {collection.items.map((item) => (
                     <Select.Item key={item.value} item={item}>
@@ -185,7 +185,7 @@ export function RecordingSetup({
           </Field.ErrorText>
         </Field.Root>
         {active.length === 0 && (
-          <Text color="gray.600" fontSize="sm">
+          <Text color="fg.muted" fontSize="sm">
             No active personas yet.
           </Text>
         )}
@@ -250,7 +250,7 @@ export function RecordingSetup({
           </Alert.Root>
         )}
         {credentialError && (
-          <Text role="alert" color="red.700" fontSize="sm">
+          <Text role="alert" color="red.fg" fontSize="sm">
             {credentialError}
           </Text>
         )}
@@ -258,7 +258,7 @@ export function RecordingSetup({
           href={`${basePath}?view=personas`}
           target="_blank"
           rel="noopener noreferrer"
-          color="blue.700"
+          color="blue.fg"
           fontSize="sm"
           alignSelf="start"
         >

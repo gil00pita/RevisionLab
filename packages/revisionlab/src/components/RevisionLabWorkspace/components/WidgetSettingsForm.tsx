@@ -78,8 +78,8 @@ export function WidgetSettingsForm({
           <Switch.HiddenInput />
           <Switch.Control
             borderWidth="1px"
-            borderColor="gray.500"
-            _checked={{ borderColor: "blue.700" }}
+            borderColor="fg.muted"
+            _checked={{ borderColor: "blue.border" }}
           >
             <Switch.Thumb />
           </Switch.Control>
@@ -162,7 +162,7 @@ export function WidgetSettingsForm({
           <Field.HelperText>Distance from the bottom edge.</Field.HelperText>
         </Field.Root>
       </SimpleGrid>
-      <Text fontSize="sm" color="gray.600">
+      <Text fontSize="sm" color="fg.muted">
         Offsets are adjusted on small screens to keep the tools visible.
       </Text>
       {canEdit && (

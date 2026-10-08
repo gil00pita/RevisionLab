@@ -79,6 +79,9 @@ const snapshotTables = {
     "archived_at",
   ],
   comments: [
+    "attachments_json",
+    "personas_json",
+    "mentions_json",
     "id",
     "flow_id",
     "step_id",
@@ -134,7 +137,12 @@ function artifactIds(snapshot: Snapshot): string[] {
   return [
     ...new Set(
       [...snapshot.steps, ...snapshot.comments]
-        .map((step) => step.screenshot)
+        .flatMap((step) => [
+          step.screenshot,
+          ...JSON.parse(String(step.attachments_json ?? "[]")).map(
+            (file: { id: string }) => file.id,
+          ),
+        ])
         .filter((value): value is string => typeof value === "string"),
     ),
   ];
@@ -256,6 +264,7 @@ async function pruneHistory(
       await transaction.execute(`SELECT id, storage FROM artifacts
       WHERE NOT EXISTS (SELECT 1 FROM steps WHERE steps.screenshot = artifacts.id)
       AND NOT EXISTS (SELECT 1 FROM comments WHERE comments.screenshot = artifacts.id)
+      AND NOT EXISTS (SELECT 1 FROM comments, json_each(comments.attachments_json) attachment WHERE json_extract(attachment.value, '$.id') = artifacts.id)
       AND NOT EXISTS (SELECT 1 FROM feedback_ticket_evidence WHERE screenshot_id = artifacts.id)
       AND NOT EXISTS (SELECT 1 FROM workspace_history_artifacts WHERE artifact_id = artifacts.id)
       LIMIT 100`);
@@ -281,6 +290,7 @@ async function pruneHistory(
           sql: `DELETE FROM artifacts WHERE id = ?
             AND NOT EXISTS (SELECT 1 FROM steps WHERE steps.screenshot = artifacts.id)
             AND NOT EXISTS (SELECT 1 FROM comments WHERE comments.screenshot = artifacts.id)
+      AND NOT EXISTS (SELECT 1 FROM comments, json_each(comments.attachments_json) attachment WHERE json_extract(attachment.value, '$.id') = artifacts.id)
             AND NOT EXISTS (SELECT 1 FROM feedback_ticket_evidence WHERE screenshot_id = artifacts.id)
             AND NOT EXISTS (SELECT 1 FROM workspace_history_artifacts WHERE artifact_id = artifacts.id)`,
           args: [id],
@@ -299,11 +309,15 @@ async function insertRows(
     await transaction.execute({
       sql,
       args: columns.map((column) =>
-        ["ai_instructions_json", "screenshot", "screenshot_anchor"].includes(
-          column,
-        )
-          ? (row[column] ?? null)
-          : row[column],
+        ["attachments_json", "personas_json", "mentions_json"].includes(column)
+          ? (row[column] ?? "[]")
+          : [
+                "ai_instructions_json",
+                "screenshot",
+                "screenshot_anchor",
+              ].includes(column)
+            ? (row[column] ?? null)
+            : row[column],
       ),
     });
 }

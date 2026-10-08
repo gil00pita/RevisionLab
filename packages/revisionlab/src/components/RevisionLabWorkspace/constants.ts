@@ -11,8 +11,7 @@ export const workspaceViewTitles: Record<WorkspaceView, string> = {
 };
 
 export const workspaceViewSubtitles: Record<WorkspaceView, string> = {
-  dashboard:
-    "Review counts, workspace connections, and the last successful sync.",
+  dashboard: "Review counts and workspace activity.",
   sessions:
     "Invite participants, follow live tests, and replay their journeys.",
   flows: "Review recorded journeys, screens, and versions.",

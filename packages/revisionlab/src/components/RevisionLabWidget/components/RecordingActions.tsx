@@ -47,7 +47,7 @@ export function RecordingActions({
           {recorder.recording?.discardRequested ? "Retry discard" : "Discard"}
         </Button>
       </Flex>
-      <Text fontSize="xs" color="gray.600">
+      <Text fontSize="xs" color="fg.muted">
         {recorder.recording?.discardRequested
           ? "Recording is stopped. Retry discard to finish removing it."
           : recorder.recording?.finishRequested

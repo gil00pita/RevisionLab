@@ -49,10 +49,10 @@ export function TicketOptionsPopover({
         </Button>
       </Popover.Trigger>
       <Portal>
-        <Popover.Positioner data-revisionlab-ui zIndex="popover">
+        <Popover.Positioner data-revisionlab-ui color="fg" colorPalette="blue" zIndex="popover">
           <Popover.Content
-            bg="white"
-            color="gray.900"
+            bg="bg.panel"
+            color="fg"
             fontFamily="body"
             colorPalette="blue"
             w="sm"
@@ -61,7 +61,7 @@ export function TicketOptionsPopover({
             overflowY="auto"
             shadow="lg"
             borderWidth="1px"
-            borderColor="gray.300"
+            borderColor="border.emphasized"
             _motionReduce={{ animation: "none" }}
           >
             <Popover.Header pe="12">
@@ -79,7 +79,7 @@ export function TicketOptionsPopover({
                     maxLength={4000}
                     value={notes}
                     onChange={(event) => onNotes(event.target.value)}
-                    borderColor="gray.500"
+                    borderColor="fg.muted"
                     placeholder="What did you observe in the tests? What should change?"
                   />
                   <Field.HelperText>
@@ -87,7 +87,7 @@ export function TicketOptionsPopover({
                     findings; metrics alone do not prove a problem.
                   </Field.HelperText>
                 </Field.Root>
-                <Text fontSize="xs" color="gray.600">
+                <Text fontSize="xs" color="fg.muted">
                   {canGenerate
                     ? "Uses your signed-in local Codex account and saved AI Instructions. Selected feedback may be sent to your configured model."
                     : "Generation requires an Owner or Editor on localhost in development with a signed-in Codex CLI. Saved tickets remain available for review."}

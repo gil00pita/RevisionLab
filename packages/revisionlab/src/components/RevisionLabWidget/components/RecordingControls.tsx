@@ -22,8 +22,8 @@ export function RecordingControls({
       zIndex="docked"
       w="80"
       maxW="calc(100vw - 2rem)"
-      bg="white"
-      color="gray.900"
+      bg="bg.panel"
+      color="fg"
       shadow="md"
       borderRadius="lg"
       p="3"
@@ -37,7 +37,7 @@ export function RecordingControls({
               : "Recording"}
           : {recorder.recording.name}
         </Text>
-        <Text fontSize="xs" color="gray.600" overflowWrap="anywhere">
+        <Text fontSize="xs" color="fg.muted" overflowWrap="anywhere">
           {recorder.recording.persona} · {recorder.recording.count}{" "}
           {recorder.recording.count === 1 ? "screen" : "screens"} captured
         </Text>
@@ -59,11 +59,11 @@ export function RecordingControls({
           onDiscard={onDiscard}
         />
         {recorder.error && (
-          <Text color="red.700" fontSize="sm" role="alert">
+          <Text color="red.fg" fontSize="sm" role="alert">
             {recorder.error}
           </Text>
         )}
-        <Text fontSize="xs" color="gray.600" role="status">
+        <Text fontSize="xs" color="fg.muted" role="status">
           {recorder.notice || "Recording in progress"}
         </Text>
       </Stack>

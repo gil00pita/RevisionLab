@@ -63,7 +63,7 @@ export function NotificationEvents({
         <Heading as="h3" size="md">
           Slack notifications
         </Heading>
-        <Text fontSize="sm" color="gray.600">
+        <Text fontSize="sm" color="fg.muted">
           Connect a channel using an incoming webhook from your Slack app.
           Notifications include review text; choose a channel appropriate for
           this workspace.
@@ -72,7 +72,7 @@ export function NotificationEvents({
           href="https://api.slack.com/apps"
           target="_blank"
           rel="noopener noreferrer"
-          color="blue.700"
+          color="blue.fg"
         >
           Create or configure a Slack app
         </Link>
@@ -80,7 +80,7 @@ export function NotificationEvents({
           href="https://docs.slack.dev/messaging/sending-messages-using-incoming-webhooks/"
           target="_blank"
           rel="noopener noreferrer"
-          color="blue.700"
+          color="blue.fg"
         >
           How to create an incoming webhook
         </Link>
@@ -116,7 +116,7 @@ export function NotificationEvents({
           }
         />
       </Stack>
-      <Text fontSize="sm" color="gray.600">
+      <Text fontSize="sm" color="fg.muted">
         Issues are accessibility findings saved with new recorded screens. Live
         scans, reused screens, and restored history do not send notifications.
         Delivery failures do not undo saved feedback; automatic retries are not

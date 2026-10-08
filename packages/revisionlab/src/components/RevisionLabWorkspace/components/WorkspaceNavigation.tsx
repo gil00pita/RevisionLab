@@ -59,7 +59,7 @@ export function WorkspaceNavigation({
           <GitBranch />
         </Icon>
         Flows
-        <Badge ml="auto" colorPalette="blue" bg="blue.100" color="blue.800">
+        <Badge ml="auto" colorPalette="blue" bg="blue.subtle" color="blue.fg">
           {new Set(data.flows.map((flow) => flow.familyId)).size}
         </Badge>
       </NavigationButton>
@@ -80,7 +80,7 @@ export function WorkspaceNavigation({
           <MessageSquare />
         </Icon>
         Comments
-        <Badge ml="auto" colorPalette="blue" bg="blue.100" color="blue.800">
+        <Badge ml="auto" colorPalette="blue" bg="blue.subtle" color="blue.fg">
           {
             data.comments.filter(
               (comment) => !comment.parentId && comment.status === "open",

@@ -45,7 +45,7 @@ export function DesignSystemResources({
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              color="blue.700"
+              color="blue.fg"
               fontSize="sm"
             >
               {label}
@@ -65,7 +65,7 @@ export function DesignSystemResources({
               }
             >
               <Checkbox.HiddenInput />
-              <Checkbox.Control borderColor="gray.500">
+              <Checkbox.Control borderColor="fg.muted">
                 <Checkbox.Indicator />
               </Checkbox.Control>
               <Checkbox.Label>{label}</Checkbox.Label>

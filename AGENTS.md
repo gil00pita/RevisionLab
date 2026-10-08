@@ -93,12 +93,13 @@ Do not use these Chakra UI v2 APIs or patterns:
 - Keep the existing `ChakraProvider value={defaultSystem}` setup in `src/components/provider.tsx` unless the task explicitly requires a custom system. Do not replace it with a v2 provider pattern.
 - Keep provider components marked with `"use client"`; import and use them from the root layout so server-rendered routes remain server components by default.
 - Every custom token value must use `{ value: ... }`.
-- Pass theme token names directly to Chakra color props instead of hardcoded values or custom properties.
-- Prefer semantic tokens for light and dark mode using `base` and `_dark` values. Do not scatter color-mode ternaries through components.
+- Use semantic color tokens in all inline Chakra styles so components follow the active theme. Do not pin presentation to palette shades such as `color="gray.700"`, `bg="gray.50"`, or `borderColor="blue.500"`; use common roles such as `color="fg.muted"`, `bg="bg.subtle"`, and `borderColor="border.info"` instead. This applies to nested state styles and responsive values as well as direct props.
+- Use existing roles such as `fg`, `fg.muted`, `fg.inverted`, `bg`, `bg.panel`, `bg.subtle`, `border`, and semantic status variants. For colored accents, use `colorPalette` with `colorPalette.fg`, `colorPalette.solid`, `colorPalette.contrast`, `colorPalette.subtle`, and related semantic slots. A specific semantic palette token such as `blue.fg` is acceptable when the hue has product meaning; numbered palette shades, fixed `white`/`black`, and raw color literals do not belong in component styles.
+- Define any missing semantic role centrally with light and dark values rather than adding custom colors or color-mode ternaries to components. Preserve data-driven annotation colors and imported asset colors as product data, while using theme-aware semantic slots for their rendered controls.
 - Define complete color scales when introducing a palette used by `colorPalette`, including semantic slots such as `solid`, `contrast`, `fg`, `muted`, `subtle`, `emphasized`, and `focusRing` where appropriate.
 - Prefer existing Chakra semantic tokens such as `bg`, `fg`, `border`, `colorPalette.solid`, and their variants before introducing project-owned theme tokens.
 - Express colors only through Chakra's token-aware color props, such as `color`, `bg`, `borderColor`, `outlineColor`, `boxShadowColor`, `fill`, `stroke`, and `focusRingColor`. Split composite declarations into width, style, and color props; for example, use `borderWidth="1px"`, `borderStyle="solid"`, and `borderColor="border"` instead of embedding a color in `border`.
-- Use token opacity modifiers such as `blackAlpha.500` when transparency is required. Do not write hex, `rgb()`, `rgba()`, `hsl()`, named CSS colors, or color-bearing composite strings in authored components.
+- Use opacity modifiers on semantic color tokens when transparency is required. Do not write hex, `rgb()`, `rgba()`, `hsl()`, named CSS colors, or color-bearing composite strings in authored components.
 - After changing a project-owned theme extension, regenerate its types with `npx @chakra-ui/cli typegen <theme-file>` when the CLI is available. Do not edit generated types inside `node_modules`.
 
 ### Component composition
@@ -162,7 +163,7 @@ import { Button, CloseButton, Dialog, Portal } from "@chakra-ui/react";
 - Test interactive components through user-visible behavior and accessible roles or names, not generated Chakra class names.
 - Run the lightest relevant check after changes. Use `npm run lint` and `npm run build` when the changed surface warrants them.
 
-Before finishing a Chakra UI change, verify that the diff contains no avoidable raw intrinsic UI elements, avoidable `<chakra.*>` elements, new visual `className` usage or component CSS selectors, React `style` props, Chakra `css` props, authored CSS custom properties or `var(...)`, raw color literals, color-bearing composite strings, v2 boolean props, `extendTheme`, `colorScheme`, `sx`, `useToast`, or guessed compound parts; that custom theme tokens use `{ value: ... }`; and that overlay, form, focus, icon-button, toaster, and controlled-component patterns follow the rules above.
+Before finishing a Chakra UI change, verify that the diff contains no avoidable raw intrinsic UI elements, avoidable `<chakra.*>` elements, new visual `className` usage or component CSS selectors, React `style` props, Chakra `css` props, authored CSS custom properties or `var(...)`, numbered palette shades or fixed white/black in inline visual styles, raw color literals, color-bearing composite strings, v2 boolean props, `extendTheme`, `colorScheme`, `sx`, `useToast`, or guessed compound parts; that custom theme tokens use `{ value: ... }`; and that overlay, form, focus, icon-button, toaster, and controlled-component patterns follow the rules above.
 
 ## Preserve the interface
 

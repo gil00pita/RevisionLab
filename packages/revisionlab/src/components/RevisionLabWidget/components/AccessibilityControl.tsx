@@ -31,7 +31,7 @@ const labels: Record<PageAccessibility["status"], string> = {
   error: "Accessibility: check failed",
 };
 export function AccessibilityControl({
-  color = "white",
+  color = "colorPalette.contrast",
   result,
   onRerun,
   disabled,
@@ -71,7 +71,7 @@ export function AccessibilityControl({
           borderRadius="0"
           variant="plain"
           color={color}
-          _hover={{ bg: "blackAlpha.200" }}
+          _hover={{ bg: "fg/12" }}
           focusRing="inset"
         >
           {result.status === "checking" ? (

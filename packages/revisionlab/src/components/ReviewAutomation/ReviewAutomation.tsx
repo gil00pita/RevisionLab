@@ -79,12 +79,12 @@ export function ReviewAutomation({
       >
         <Portal>
           <Dialog.Backdrop data-revisionlab-ui />
-          <Dialog.Positioner data-revisionlab-ui>
+          <Dialog.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
             <Dialog.Content
               mx="3"
               maxW="3xl"
-              bg="white"
-              color="gray.900"
+              bg="bg.panel"
+              color="fg"
               fontFamily="body"
               colorPalette="blue"
             >

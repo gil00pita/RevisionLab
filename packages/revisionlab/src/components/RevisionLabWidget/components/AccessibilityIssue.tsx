@@ -16,7 +16,7 @@ export function AccessibilityRuleLink({
       href={issue.helpUrl}
       target="_blank"
       rel="noopener noreferrer"
-      color="blue.700"
+      color="blue.fg"
       fontSize="xs"
       aria-label={`Read more about ${issue.help}`}
     >
@@ -43,7 +43,7 @@ export function AccessibilityIssue({
   return (
     <Stack
       borderTopWidth="1px"
-      borderColor="gray.200"
+      borderColor="border"
       pt="3"
       gap="1"
       align="start"
@@ -55,13 +55,13 @@ export function AccessibilityIssue({
         whiteSpace="normal"
         textAlign="left"
         justifyContent="start"
-        color="blue.700"
+        color="blue.fg"
         onClick={() => onSelect({ issue, index: first })}
         disabled={!current || first < 0}
       >
         {issue.help}
       </Button>
-      <Text fontSize="xs" color="gray.600">
+      <Text fontSize="xs" color="fg.muted">
         {issue.count} affected {issue.count === 1 ? "element" : "elements"}
       </Text>
       {issue.targets.map((target, index) => {
@@ -77,7 +77,7 @@ export function AccessibilityIssue({
               textAlign="left"
               fontFamily="mono"
               overflowWrap="anywhere"
-              color="gray.700"
+              color="fg.muted"
               onClick={() => onSelect({ issue, index })}
               disabled={!available}
               aria-label={`Highlight ${target.label}`}
@@ -85,7 +85,7 @@ export function AccessibilityIssue({
               {target.label}
             </Button>
             {!available && (
-              <Text fontSize="xs" color="gray.600">
+              <Text fontSize="xs" color="fg.muted">
                 {current ? "Element unavailable" : "Awaiting a fresh check"}
               </Text>
             )}

@@ -86,17 +86,17 @@ export function AccessForm({
           </Alert.Root>
         )}
         {access.notice && (
-          <Text role="status" fontSize="sm" color="blue.700">
+          <Text role="status" fontSize="sm" color="blue.fg">
             {access.notice}
           </Text>
         )}
         {access.devLoginUrl && (
-          <Link href={access.devLoginUrl} color="blue.700" fontWeight="medium">
+          <Link href={access.devLoginUrl} color="blue.fg" fontWeight="medium">
             Open local login link
           </Link>
         )}
         {consuming && !access.error && (
-          <Text role="status" color="gray.600">
+          <Text role="status" color="fg.muted">
             Signing you in…
           </Text>
         )}

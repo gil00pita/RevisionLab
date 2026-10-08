@@ -71,9 +71,9 @@ export function AccessPolicyForm({
           </Button>
         </Flex>
         {joinUrl && (
-          <Text fontSize="sm" color="gray.600">
+          <Text fontSize="sm" color="fg.muted">
             Join link: {" "}
-            <Link href={joinUrl} color="blue.700">
+            <Link href={joinUrl} color="blue.fg">
               {joinUrl}
             </Link>
           </Text>

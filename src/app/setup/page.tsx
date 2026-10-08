@@ -9,19 +9,19 @@ export default function SetupPage() {
   return (
     <Box
       as="main"
-      bg="gray.50"
-      color="gray.900"
+      bg="bg.subtle"
+      color="fg"
       minH="100dvh"
       p={{ base: "6", md: "12" }}
     >
       <Stack maxW="3xl" mx="auto" gap="6">
-        <Link asChild color="blue.700">
+        <Link asChild color="blue.fg">
           <NextLink href="/">Back to RevisionLab</NextLink>
         </Link>
         <Heading as="h1" size="3xl">
           Install in your prototype
         </Heading>
-        <Text fontSize="lg" color="gray.600">
+        <Text fontSize="lg" color="fg.muted">
           Start with an existing Next.js 15 or 16 App Router project using React
           19 and Node.js 20.9 or newer (or your Next.js version&apos;s higher
           minimum). The installer adds the widget, workspace, API routes, and
@@ -33,7 +33,7 @@ export default function SetupPage() {
         <LocalInstallation version={packageManifest.version} />
         <Heading as="h2" size="xl" mt="4">
           Share a private{" "}
-          <Text as="span" color="blue.300">
+          <Text as="span" color="blue.fg">
             review
           </Text>
         </Heading>
@@ -54,7 +54,7 @@ export default function SetupPage() {
             do not need a Vercel account.
           </List.Item>
         </List.Root>
-        <Text color="gray.600">
+        <Text color="fg.muted">
           Vercel Deployment Protection runs before the application. Use a review
           deployment that allows invitees to reach RevisionLab’s email gate. The
           application cannot bypass Vercel’s login page.
@@ -80,7 +80,7 @@ export default function SetupPage() {
           region with <Code>data-revisionlab-private</Code>. Screenshots may not
           include cross-origin frames, video, or protected external images.
         </Text>
-        <Link asChild color="blue.700" fontWeight="semibold">
+        <Link asChild color="blue.fg" fontWeight="semibold">
           <NextLink href="/revisionlab">Open your review workspace</NextLink>
         </Link>
       </Stack>

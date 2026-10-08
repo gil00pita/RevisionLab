@@ -1,3 +1,4 @@
+import { EmptyStateIllustration } from "../../EmptyStateIllustration/index.js";
 import { TicketSkeleton } from "./TicketSkeleton.js";
 import { Badge, Button, Flex, Heading, Stack, Text } from "@chakra-ui/react";
 import type { ReviewTicket } from "../../../feedback-review.js";
@@ -51,15 +52,16 @@ export function TicketDrafts({
         <Stack
           p="6"
           borderWidth="1px"
-          borderColor="gray.300"
+          borderColor="border.emphasized"
           rounded="lg"
-          bg="gray.50"
+          bg="bg.subtle"
           gap="2"
         >
+          <EmptyStateIllustration variant="documents" size="sm" />
           <Heading as="h3" size="md">
             Turn feedback into next steps
           </Heading>
-          <Text fontSize="sm" color="gray.600">
+          <Text fontSize="sm" color="fg.muted">
             Select feedback and ask Codex to consolidate related issues. Your
             editable drafts and linked evidence will live here.
           </Text>
@@ -82,7 +84,7 @@ export function TicketDrafts({
           >
             <Stack gap="1" align="start" minW="0">
               <Text overflowWrap="anywhere">{ticket.summary}</Text>
-              <Text fontSize="xs" color="gray.600">
+              <Text fontSize="xs" color="fg.muted">
                 {ticket.priority} ·{" "}
                 {ticket.status === "fixed"
                   ? "Fixed"

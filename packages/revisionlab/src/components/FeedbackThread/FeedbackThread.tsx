@@ -1,5 +1,7 @@
 "use client";
 
+import { IllustratedEmptyState } from "../IllustratedEmptyState/index.js";
+
 import { useState } from "react";
 import {
   Badge,
@@ -10,7 +12,7 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { ArrowLeft, MessageSquare } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { apiRequest } from "../../client/api.js";
 import type { RevisionLabComment } from "../../server/types.js";
 import { CommentComposer } from "./components/CommentComposer.js";
@@ -119,7 +121,7 @@ export function FeedbackThread({
     <Stack gap="4" minW="0">
       {presentation === "panel" && (
         <>
-          <Flex align="center" justify="space-between" gap="2">
+          <Flex align="center" justify="space-between" gap="2" wrap="wrap">
             <Heading as="h2" size="md">
               {selected ? "Discussion" : "Feedback"}
             </Heading>
@@ -127,7 +129,7 @@ export function FeedbackThread({
               {roots.filter((comment) => comment.status === "open").length} open
             </Badge>
           </Flex>
-          <Text fontSize="xs" color="gray.600" overflowWrap="anywhere">
+          <Text fontSize="xs" color="fg.muted" overflowWrap="anywhere">
             {edgeId
               ? "Comments on this connection"
               : stepId
@@ -138,7 +140,7 @@ export function FeedbackThread({
         </>
       )}
       {error && (
-        <Text role="alert" color="red.700">
+        <Text role="alert" color="red.fg">
           {error}
         </Text>
       )}
@@ -147,6 +149,12 @@ export function FeedbackThread({
           {presentation === "panel" && (
             <Button
               alignSelf="start"
+              maxW="full"
+              minH="11"
+              h="auto"
+              py="2"
+              whiteSpace="normal"
+              textAlign="start"
               variant="ghost"
               size="sm"
               onClick={() => select(null)}
@@ -162,6 +170,7 @@ export function FeedbackThread({
             </Button>
           )}
           <CommentMessage
+            apiPath={apiPath}
             presentation={presentation === "bubble" ? "plain" : "card"}
             comment={selected}
             pinNumber={pinNumber(selected)}
@@ -176,7 +185,11 @@ export function FeedbackThread({
                 {replies.length} {replies.length === 1 ? "reply" : "replies"}
               </Heading>
               {replies.map((reply) => (
-                <CommentMessage key={reply.id} comment={reply} />
+                <CommentMessage
+                  apiPath={apiPath}
+                  key={reply.id}
+                  comment={reply}
+                />
               ))}
             </Stack>
           )}
@@ -187,7 +200,7 @@ export function FeedbackThread({
           {allowNewComments ? (
             composer
           ) : (
-            <Text color="gray.600" fontSize="sm">
+            <Text color="fg.muted" fontSize="sm">
               This connection was removed. Existing discussions remain available
               for replies.
             </Text>
@@ -196,6 +209,7 @@ export function FeedbackThread({
             <Stack gap="4" aria-label="Comments">
               {roots.map((comment) => (
                 <CommentMessage
+                  apiPath={apiPath}
                   key={comment.id}
                   comment={comment}
                   pinNumber={pinNumber(comment)}
@@ -212,12 +226,11 @@ export function FeedbackThread({
               ))}
             </Stack>
           ) : (
-            <Stack gap="2" py="6" align="start" color="gray.600">
-              <Icon size="lg">
-                <MessageSquare />
-              </Icon>
-              <Text>No feedback yet. Start the conversation.</Text>
-            </Stack>
+            <IllustratedEmptyState
+              illustration="messages"
+              size="sm"
+              description="No feedback yet. Start the conversation."
+            />
           )}
         </>
       )}

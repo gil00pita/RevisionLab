@@ -210,6 +210,7 @@ function Widget({
       )}
       {data && live.showBalloons && !live.anchor && !open && (
         <LiveCommentBalloons
+          apiPath={apiPath}
           key={route}
           comments={pageComments}
           color={settings.commentBubbleColor}
@@ -297,7 +298,7 @@ function Widget({
                   }}
                 />
                 {recorder.error && (
-                  <Text role="alert" color="red.700">
+                  <Text role="alert" color="red.fg">
                     {recorder.error}
                   </Text>
                 )}
@@ -344,7 +345,7 @@ function Widget({
             <Button onClick={beginCommenting} size="sm">
               Comment on an element
             </Button>
-            <Link href={commentsHref} color="blue.700" fontSize="sm">
+            <Link href={commentsHref} color="blue.fg" fontSize="sm">
               All comments on this page
             </Link>
           </Stack>

@@ -63,7 +63,7 @@ export function FlowReview({
         gap="1"
         align="center"
         borderBottomWidth="1px"
-        borderColor="gray.200"
+        borderColor="border"
       >
         <Tabs.List
           aria-label="Flow view"

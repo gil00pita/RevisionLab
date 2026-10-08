@@ -55,7 +55,7 @@ export function CustomSmtpFields({
             ).map(([security, label]) => (
               <RadioGroup.Item key={security} value={security}>
                 <RadioGroup.ItemHiddenInput />
-                <RadioGroup.ItemIndicator borderColor="gray.500" />
+                <RadioGroup.ItemIndicator borderColor="fg.muted" />
                 <RadioGroup.ItemText>{label}</RadioGroup.ItemText>
               </RadioGroup.Item>
             ))}

@@ -19,7 +19,7 @@ export function NotificationInput({
     <Field.Root disabled={disabled}>
       <Field.Label>{label}</Field.Label>
       <Input
-        borderColor="gray.500"
+        borderColor="fg.muted"
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -49,7 +49,7 @@ export function NotificationToggle({
       colorPalette="blue"
     >
       <Checkbox.HiddenInput />
-      <Checkbox.Control borderColor="gray.500">
+      <Checkbox.Control borderColor="fg.muted">
         <Checkbox.Indicator />
       </Checkbox.Control>
       <Checkbox.Label>{label}</Checkbox.Label>

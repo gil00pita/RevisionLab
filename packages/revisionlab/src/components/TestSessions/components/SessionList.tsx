@@ -1,3 +1,4 @@
+import { IllustratedEmptyState } from "../../IllustratedEmptyState/index.js";
 import {
   Badge,
   Box,
@@ -9,9 +10,11 @@ import {
 } from "@chakra-ui/react";
 import type { RevisionLabActor } from "../../../server/types.js";
 import type { TestSession } from "../../../test-sessions.js";
+import type { SessionGroup } from "../types.js";
 
 export function SessionList({
   sessions,
+  group,
   actor,
   selected,
   loading,
@@ -20,6 +23,7 @@ export function SessionList({
   onStop,
 }: {
   sessions: TestSession[];
+  group: SessionGroup;
   actor: RevisionLabActor;
   selected: string | null;
   loading: boolean;
@@ -27,92 +31,77 @@ export function SessionList({
   onSelect: (id: string) => void;
   onStop: (session: TestSession) => void;
 }) {
-  const active = sessions.filter(
-    (session) => session.status === "waiting" || session.status === "live",
-  );
-  const previous = sessions.filter(
-    (session) => session.status === "completed" || session.status === "expired",
-  );
   return (
-    <>
-      {[
-        { title: "Current sessions", items: active },
-        { title: "Previous sessions", items: previous },
-      ].map((group) => (
-        <Stack key={group.title} gap="3">
-          <Heading as="h2" size="md">
-            {group.title} ({group.items.length})
-          </Heading>
-          {!loading && !group.items.length && (
-            <Text color="gray.600">
-              {group.title === "Current sessions"
-                ? "Create a test link to invite your first participant."
-                : "Completed and expired tests will appear here."}
+    <Stack gap="3">
+      {!loading && !sessions.length && (
+        <IllustratedEmptyState
+          illustration="inbox"
+          description={group === "current"
+            ? "Create a test link to invite your first participant."
+            : "Completed and expired tests will appear here."}
+        />
+      )}
+      {sessions.map((session) => (
+        <Flex
+          key={session.id}
+          p="4"
+          borderWidth="1px"
+          borderColor={selected === session.id ? "blue.border" : "border"}
+          borderRadius="lg"
+          align="center"
+          justify="space-between"
+          gap="4"
+          flexWrap="wrap"
+        >
+          <Box>
+            <Heading as="h2" size="sm" overflowWrap="anywhere">
+              {session.name}
+            </Heading>
+            <Text color="fg.muted" fontSize="sm">
+              {session.participant ?? "Waiting for participant"} ·{" "}
+              {session.maxMinutes} min maximum
             </Text>
-          )}
-          {group.items.map((session) => (
-            <Flex
-              key={session.id}
-              p="4"
-              borderWidth="1px"
-              borderColor={selected === session.id ? "blue.500" : "gray.200"}
-              borderRadius="lg"
-              align="center"
-              justify="space-between"
-              gap="4"
-              flexWrap="wrap"
+            <Text color="fg.muted" fontSize="xs">
+              Created {new Date(session.createdAt).toLocaleString()}
+              {session.status === "live"
+                ? ` · Ends ${new Date(session.expiresAt).toLocaleTimeString()}`
+                : ""}
+            </Text>
+          </Box>
+          <Flex gap="2" align="center" flexWrap="wrap">
+            <Badge
+              colorPalette={session.status === "live" ? "green" : "gray"}
             >
-              <Box>
-                <Heading as="h3" size="sm">
-                  {session.name}
-                </Heading>
-                <Text color="gray.600" fontSize="sm">
-                  {session.participant ?? "Waiting for participant"} ·{" "}
-                  {session.maxMinutes} min maximum
-                </Text>
-                <Text color="gray.600" fontSize="xs">
-                  Created {new Date(session.createdAt).toLocaleString()}
-                  {session.status === "live"
-                    ? ` · Ends ${new Date(session.expiresAt).toLocaleTimeString()}`
-                    : ""}
-                </Text>
-              </Box>
-              <Flex gap="2" align="center" flexWrap="wrap">
-                <Badge
-                  colorPalette={session.status === "live" ? "green" : "gray"}
-                >
-                  {session.status === "live" ? "Live" : session.status}
-                </Badge>
+              {session.status === "live" ? "Live" : session.status}
+            </Badge>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                onSelect(session.id);
+              }}
+            >
+              View session
+            </Button>
+            {["waiting", "live"].includes(session.status) &&
+              actor.role !== "commenter" &&
+              (session.createdBy === actor.id ||
+                actor.role === "owner") && (
                 <Button
                   size="sm"
+                  colorPalette="red"
                   variant="outline"
-                  onClick={() => {
-                    onSelect(session.id);
-                  }}
+                  loading={stopping}
+                  onClick={() => onStop(session)}
                 >
-                  View session
+                  {session.status === "waiting"
+                    ? "Revoke link"
+                    : "Stop session"}
                 </Button>
-                {["waiting", "live"].includes(session.status) &&
-                  actor.role !== "commenter" &&
-                  (session.createdBy === actor.id ||
-                    actor.role === "owner") && (
-                    <Button
-                      size="sm"
-                      colorPalette="red"
-                      variant="outline"
-                      loading={stopping}
-                      onClick={() => onStop(session)}
-                    >
-                      {session.status === "waiting"
-                        ? "Revoke link"
-                        : "Stop session"}
-                    </Button>
-                  )}
-              </Flex>
-            </Flex>
-          ))}
-        </Stack>
+              )}
+          </Flex>
+        </Flex>
       ))}
-    </>
+    </Stack>
   );
 }

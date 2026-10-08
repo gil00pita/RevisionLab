@@ -55,10 +55,10 @@ export function CursorTrail({
             top={`${from.y}px`}
             w={`${Math.hypot(dx, dy)}px`}
             h="2px"
-            bg="pink.600"
+            bg="pink.solid"
             outlineWidth="1px"
             outlineStyle="solid"
-            outlineColor="white"
+            outlineColor="bg.panel"
             transform={`rotate(${Math.atan2(dy, dx)}rad)`}
             transformOrigin="left center"
           />
@@ -80,9 +80,9 @@ export function CursorTrail({
             justify="center"
             borderRadius="full"
             borderWidth="1px"
-            borderColor="white"
-            bg="pink.700"
-            color="white"
+            borderColor="bg.panel"
+            bg="pink.solid"
+            color="colorPalette.contrast"
             fontSize="10px"
             fontWeight="bold"
           >

@@ -5,7 +5,7 @@ export function WorkspaceSidebarHeader() {
   return (
     <Flex px="6" h="20" gap="3" align="center" flexShrink="0">
       <RevisionLabLogo decorative />
-      <Heading as="h1" size="lg" letterSpacing="0">
+      <Heading as="h1" size="lg" letterSpacing="0" minW="0" overflowWrap="anywhere">
         RevisionLab
       </Heading>
     </Flex>

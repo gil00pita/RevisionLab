@@ -1,3 +1,4 @@
+import { MAX_COMMENT_BODY_BYTES } from "../../comment-rich.js";
 import type { Client } from "@libsql/client";
 import type { ResolvedConfig } from "../config.js";
 import type { RevisionLabActor, RevisionLabState } from "../types.js";
@@ -200,7 +201,14 @@ export async function proxyInstance(
     request.method === "GET"
       ? undefined
       : JSON.stringify(
-          scopeData(await readJson(request, 600_000), String(row.id), "out"),
+          scopeData(
+            await readJson(
+              request,
+              resource[0] === "comments" ? MAX_COMMENT_BODY_BYTES : 600_000,
+            ),
+            String(row.id),
+            "out",
+          ),
         );
   const response = await remoteResponse(
     new URL(
@@ -232,15 +240,22 @@ export async function proxyInstance(
   }
   if (resource[0] === "artifacts") {
     if (
-      !/^image\/(png|jpeg|webp)(;|$)/i.test(
+      !/^(image\/(png|jpeg|webp)|application\/octet-stream)(;|$)/i.test(
         response.headers.get("content-type") ?? "",
       )
     )
       throw new HttpError(
         502,
-        "The source did not return a supported screenshot.",
+        "The source did not return a supported artifact.",
       );
-    return response;
+    const headers = new Headers(response.headers);
+    headers.set("Cache-Control", "private, no-store");
+    headers.set("X-Content-Type-Options", "nosniff");
+    headers.set("Content-Security-Policy", "default-src 'none'; sandbox");
+    headers.set("Cross-Origin-Resource-Policy", "same-origin");
+    if (headers.get("Content-Type")?.startsWith("application/octet-stream"))
+      headers.set("Content-Disposition", "attachment");
+    return new Response(response.body, { status: response.status, headers });
   }
   return json(
     scopeData(await response.json(), String(row.id), "in"),

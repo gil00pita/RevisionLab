@@ -45,15 +45,15 @@ export function LocalWorkspaceAccess({
   if (!available) return null;
 
   return (
-    <Stack gap="3" mb="6" pb="6" borderBottomWidth="1px" borderColor="gray.200">
+    <Stack gap="3" mb="6" pb="6" borderBottomWidth="1px" borderColor="border">
       <Text fontWeight="semibold">Local development</Text>
-      <Text fontSize="sm" color="gray.600">
+      <Text fontSize="sm" color="fg.muted">
         No email is required on this local installation. Opening the workspace
         clears any saved reviewer session in this browser and uses local owner
         access.
       </Text>
       {error && (
-        <Text role="alert" fontSize="sm" color="red.700">
+        <Text role="alert" fontSize="sm" color="red.fg">
           {error}
         </Text>
       )}

@@ -23,8 +23,8 @@ export function FeedbackFilters({
   onFilter: (value: "all" | EvidenceKind) => void;
 }) {
   return (
-    <Flex gap="2" align="center" minW="0">
-      <Field.Root flex="1" minW="0">
+    <Flex gap="2" align="center" minW="0" flexWrap="wrap">
+      <Field.Root flex="1 1 12rem" minW="0" maxW="full">
         <VisuallyHidden asChild>
           <Field.Label>Search feedback</Field.Label>
         </VisuallyHidden>
@@ -32,7 +32,7 @@ export function FeedbackFilters({
           value={search}
           onChange={(event) => onSearch(event.target.value)}
           placeholder="Search feedback"
-          borderColor="gray.500"
+          borderColor="fg.muted"
           size="sm"
           minW="0"
         />
@@ -48,19 +48,22 @@ export function FeedbackFilters({
         }}
         aria-label="Feedback type"
         size="sm"
-        bg="gray.100"
+        bg="bg.muted"
         flexShrink="0"
+        maxW="full"
+        minW="0"
+        overflowX="auto"
       >
         <SegmentGroup.Indicator
-          bg="blue.100"
+          bg="blue.subtle"
           shadow="none"
           _motionReduce={{ transition: "none" }}
         />
         <SegmentGroup.Item
           value="all"
           px="3"
-          color="gray.700"
-          _checked={{ color: "blue.800" }}
+          color="fg.muted"
+          _checked={{ color: "blue.fg" }}
         >
           <SegmentGroup.ItemText>All</SegmentGroup.ItemText>
           <SegmentGroup.ItemHiddenInput aria-label="All" />
@@ -71,8 +74,8 @@ export function FeedbackFilters({
               <SegmentGroup.Item
                 value={type.value}
                 px="2.5"
-                color="gray.700"
-                _checked={{ color: "blue.800" }}
+                color="fg.muted"
+                _checked={{ color: "blue.fg" }}
               >
                 <SegmentGroup.ItemText display="flex" alignItems="center">
                   <Icon size="sm" aria-hidden="true">
@@ -84,8 +87,8 @@ export function FeedbackFilters({
               </SegmentGroup.Item>
             </Tooltip.Trigger>
             <Portal>
-              <Tooltip.Positioner data-revisionlab-ui>
-                <Tooltip.Content bg="gray.900" color="white" fontFamily="body">
+              <Tooltip.Positioner data-revisionlab-ui color="fg" colorPalette="blue">
+                <Tooltip.Content bg="bg.inverted" color="fg.inverted" fontFamily="body">
                   {type.label}
                 </Tooltip.Content>
               </Tooltip.Positioner>

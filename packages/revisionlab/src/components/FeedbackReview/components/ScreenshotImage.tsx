@@ -1,5 +1,6 @@
+import { IllustratedEmptyState } from "../../IllustratedEmptyState/index.js";
 import { useState } from "react";
-import { Box, Icon, IconButton, Image, Skeleton, Text } from "@chakra-ui/react";
+import { Box, Icon, IconButton, Image, Skeleton } from "@chakra-ui/react";
 import { ZoomIn } from "lucide-react";
 import type { ReviewEvidence } from "../../../feedback-review.js";
 
@@ -16,19 +17,21 @@ export function ScreenshotImage({
   const [ratio, setRatio] = useState(1);
   if (!item.screenshot || state === "error")
     return (
-      <Text fontSize="sm" color="gray.600">
-        {item.screenshot
+      <IllustratedEmptyState
+        illustration="images"
+        size={thumbnail ? "sm" : "md"}
+        description={item.screenshot
           ? "Screenshot unavailable. Saved feedback and location remain below."
           : "No screenshot was saved for this feedback."}
-      </Text>
+      />
     );
   return (
     <Box
       position="relative"
       w={thumbnail ? `min(100%, ${Math.round(192 * ratio)}px)` : "full"}
       borderWidth="1px"
-      borderColor="gray.300"
-      bg="gray.50"
+      borderColor="border.emphasized"
+      bg="bg.subtle"
       rounded="md"
       overflow="hidden"
     >
@@ -67,10 +70,10 @@ export function ScreenshotImage({
           w="7"
           h="7"
           rounded="full"
-          bg="blue.700"
-          color="white"
+          bg="blue.solid"
+          color="colorPalette.contrast"
           borderWidth="2px"
-          borderColor="white"
+          borderColor="bg.panel"
           shadow="md"
           display="flex"
           alignItems="center"
@@ -89,12 +92,12 @@ export function ScreenshotImage({
           right="2"
           size="sm"
           variant="outline"
-          bg="white"
-          color="blue.700"
-          borderColor="gray.300"
+          bg="bg.panel"
+          color="blue.fg"
+          borderColor="border.emphasized"
           shadow="sm"
           focusRing="outside"
-          _hover={{ bg: "blue.50" }}
+          _hover={{ bg: "blue.subtle" }}
           aria-label={`Zoom screenshot · ${item.screen ?? item.route}`}
           title="Zoom screenshot"
           onClick={(event) => onZoom(event.currentTarget)}

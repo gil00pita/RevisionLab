@@ -35,7 +35,7 @@ export function DashboardReviewAcknowledgement({
       pt="6"
       pb="8"
       borderTopWidth="1px"
-      borderColor="gray.100"
+      borderColor="border.muted"
       align="center"
       justify="space-between"
       gap="4"
@@ -44,7 +44,7 @@ export function DashboardReviewAcknowledgement({
       <Flex gap="3" align="start" minW="0" maxW="full" flex="1">
         <Icon
           size="md"
-          color={complete ? "green.700" : "blue.600"}
+          color={complete ? "green.fg" : "blue.fg"}
           mt="1"
           flexShrink="0"
           aria-hidden="true"
@@ -53,7 +53,7 @@ export function DashboardReviewAcknowledgement({
         </Icon>
         <Stack gap="1" minW="0">
           <Text
-            color="gray.900"
+            color="fg"
             fontSize="sm"
             fontWeight="medium"
             lineHeight="tall"
@@ -61,7 +61,7 @@ export function DashboardReviewAcknowledgement({
           >
             {complete ? "Feedback, followed through." : "Comment review progress"}
           </Text>
-          <Text color="gray.600" fontSize="lg" lineHeight="tall" overflowWrap="anywhere">
+          <Text color="fg.muted" fontSize="lg" lineHeight="tall" overflowWrap="anywhere">
             {description}
           </Text>
         </Stack>
@@ -77,12 +77,12 @@ export function DashboardReviewAcknowledgement({
         px="3"
         py="2"
         whiteSpace="normal"
-        color="blue.700"
-        borderColor="blue.600"
-        bg="blue.50"
-        _hover={{ bg: "blue.100" }}
+        color="blue.fg"
+        borderColor="blue.border"
+        bg="blue.subtle"
+        _hover={{ bg: "blue.subtle" }}
         focusRing="outside"
-        focusRingColor="blue.600"
+        focusRingColor="blue.focusRing"
         onClick={onReviewComments}
         disabled={disabled}
       >

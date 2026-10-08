@@ -26,7 +26,7 @@ export function ScreenCommentToolbar({
 }: ScreenCommentToolbarProps) {
   return (
     <Flex align="center" justify="space-between" gap="3" flexWrap="wrap">
-      <Text id={instructionsId} color="gray.600" fontSize="xs">
+      <Text id={instructionsId} color="fg.muted" fontSize="xs">
         Comments stay beside their pins. Open a bubble to reply. To add a pin,
         click the image or focus it and press Enter.
       </Text>
