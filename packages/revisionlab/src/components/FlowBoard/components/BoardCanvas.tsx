@@ -3,7 +3,12 @@ import type {
   RevisionLabComment,
   RevisionLabFlow,
 } from "../../../server/types.js";
-import { boardBounds, connectionLanes } from "../geometry.js";
+import {
+  boardBounds,
+  clickPreviewRect,
+  connectionLanes,
+  type ClickPreviewRect,
+} from "../geometry.js";
 import type { useBoardViewport } from "../hooks/useBoardViewport.js";
 import type { FlowBoardData } from "../types.js";
 import { BoardConnector } from "./BoardConnector.js";
@@ -62,6 +67,40 @@ export function BoardCanvas({
   const lanes = connectionLanes(board.nodes, board.edges);
   const nodes = new Map(board.nodes.map((node) => [node.stepId, node]));
   const names = new Map(flow.steps.map((step) => [step.id, step.title]));
+  const steps = new Map(flow.steps.map((step) => [step.id, step]));
+  const clickTargets = new Map<string, {
+    rect: ClickPreviewRect;
+    label: string;
+  }>();
+  const clickTargetsByStep = new Map<
+    string,
+    { edgeId: string; rect: ClickPreviewRect; label: string }[]
+  >();
+  for (const edge of board.edges) {
+    if (edge.kind !== "recorded") continue;
+    const source = steps.get(edge.sourceStepId);
+    if (!source) continue;
+    for (const visit of flow.transitions ?? []) {
+      if (
+        visit.sourceStepId !== edge.sourceStepId ||
+        visit.targetStepId !== edge.targetStepId
+      )
+        continue;
+      const rect = clickPreviewRect(source, visit.interaction);
+      if (!rect || !visit.interaction) continue;
+      const target = {
+        edgeId: edge.id,
+        rect,
+        label: visit.interaction.target.label,
+      };
+      clickTargets.set(edge.id, target);
+      clickTargetsByStep.set(edge.sourceStepId, [
+        ...(clickTargetsByStep.get(edge.sourceStepId) ?? []),
+        target,
+      ]);
+      break;
+    }
+  }
   const screenCounts = new Map<string, number>();
   const edgeCounts = new Map<string, number>();
   for (const comment of comments) {
@@ -131,31 +170,6 @@ export function BoardCanvas({
             transformOrigin="top left"
             pointerEvents="none"
           >
-            {board.edges.map((edge) => {
-              const source = nodes.get(edge.sourceStepId);
-              const target = nodes.get(edge.targetStepId);
-              if (!source || !target) return null;
-              return (
-                <Box key={edge.id}>
-                  <BoardConnector
-                    edge={edge}
-                    source={source}
-                    target={target}
-                    lane={lanes.get(edge.id)}
-                  />
-                  <BoardConnectionTarget
-                    lane={lanes.get(edge.id)}
-                    edge={edge}
-                    source={source}
-                    target={target}
-                    name={`${names.get(edge.sourceStepId)} to ${names.get(edge.targetStepId)}`}
-                    comments={edgeCounts.get(edge.id) ?? 0}
-                    selected={selectedEdgeId === edge.id}
-                    onSelect={() => onConnection(edge.id)}
-                  />
-                </Box>
-              );
-            })}
             {flow.steps.map((step, index) => {
               const node = nodes.get(step.id);
               return node ? (
@@ -163,6 +177,7 @@ export function BoardCanvas({
                   <BoardScreen
                     step={step}
                     showCursor={showCursor}
+                    clickTargets={clickTargetsByStep.get(step.id) ?? []}
                     node={node}
                     number={index + 1}
                     comments={screenCounts.get(step.id) ?? 0}
@@ -179,6 +194,33 @@ export function BoardCanvas({
                   />
                 </Box>
               ) : null;
+            })}
+            {board.edges.map((edge) => {
+              const source = nodes.get(edge.sourceStepId);
+              const target = nodes.get(edge.targetStepId);
+              if (!source || !target) return null;
+              const clickTarget = clickTargets.get(edge.id);
+              return (
+                <Box key={edge.id}>
+                  <BoardConnector
+                    edge={edge}
+                    source={source}
+                    target={target}
+                    click={clickTarget?.rect}
+                    lane={lanes.get(edge.id)}
+                  />
+                  <BoardConnectionTarget
+                    lane={lanes.get(edge.id)}
+                    edge={edge}
+                    source={source}
+                    target={target}
+                    name={`${names.get(edge.sourceStepId)} to ${names.get(edge.targetStepId)}${clickTarget ? ` via recorded click on ${clickTarget.label}` : ""}`}
+                    comments={edgeCounts.get(edge.id) ?? 0}
+                    selected={selectedEdgeId === edge.id}
+                    onSelect={() => onConnection(edge.id)}
+                  />
+                </Box>
+              );
             })}
           </Box>
         </Box>
