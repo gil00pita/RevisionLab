@@ -72,6 +72,54 @@ export const schema = [
     description TEXT NOT NULL DEFAULT '', archived_at TEXT,
     created_at TEXT NOT NULL, updated_at TEXT NOT NULL
   )`,
+  `CREATE TABLE IF NOT EXISTS persona_sections (
+    id TEXT PRIMARY KEY, persona_id TEXT REFERENCES personas(id) ON DELETE CASCADE,
+    name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', position INTEGER NOT NULL, hidden INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS persona_fields (
+    id TEXT PRIMARY KEY, section_id TEXT NOT NULL REFERENCES persona_sections(id),
+    persona_id TEXT REFERENCES personas(id) ON DELETE CASCADE,
+    name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', type TEXT NOT NULL, options_json TEXT NOT NULL DEFAULT '[]',
+    placeholder TEXT NOT NULL DEFAULT '', required INTEGER NOT NULL DEFAULT 0,
+    hidden INTEGER NOT NULL DEFAULT 0, position INTEGER NOT NULL,
+    validation_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS persona_values (
+    id TEXT PRIMARY KEY, persona_id TEXT NOT NULL REFERENCES personas(id) ON DELETE CASCADE,
+    field_id TEXT NOT NULL REFERENCES persona_fields(id), value_json TEXT NOT NULL,
+    position INTEGER NOT NULL DEFAULT 0, illustrative INTEGER NOT NULL DEFAULT 0,
+    deleted_at TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+  )`,
+  "CREATE INDEX IF NOT EXISTS idx_persona_values_persona ON persona_values(persona_id, field_id, deleted_at)",
+  "CREATE INDEX IF NOT EXISTS idx_persona_values_field ON persona_values(field_id, deleted_at, persona_id)",
+  `CREATE TABLE IF NOT EXISTS persona_evidence (
+    id TEXT PRIMARY KEY, persona_id TEXT NOT NULL REFERENCES personas(id) ON DELETE CASCADE,
+    title TEXT NOT NULL, type TEXT NOT NULL, source_reference TEXT NOT NULL DEFAULT '',
+    url TEXT NOT NULL DEFAULT '', evidence_date TEXT, confidence TEXT NOT NULL,
+    notes TEXT NOT NULL DEFAULT '', feedback_id TEXT, created_at TEXT NOT NULL,
+    UNIQUE(persona_id, feedback_id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS persona_evidence_links (
+    evidence_id TEXT NOT NULL REFERENCES persona_evidence(id) ON DELETE CASCADE,
+    value_id TEXT NOT NULL REFERENCES persona_values(id),
+    PRIMARY KEY(evidence_id, value_id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS persona_templates (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
+    source_persona_id TEXT REFERENCES personas(id) ON DELETE SET NULL, source_template_id TEXT,
+    profile_json TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS persona_activity (
+    id TEXT PRIMARY KEY, persona_id TEXT NOT NULL REFERENCES personas(id) ON DELETE CASCADE,
+    actor_id TEXT NOT NULL, actor_name TEXT NOT NULL, action TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS persona_files (
+    id TEXT PRIMARY KEY, persona_id TEXT NOT NULL REFERENCES personas(id) ON DELETE CASCADE,
+    artifact_id TEXT NOT NULL UNIQUE REFERENCES artifacts(id), name TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  )`,
   `CREATE TABLE IF NOT EXISTS installation (id INTEGER PRIMARY KEY CHECK(id = 1), project_id TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS reviewers (
     id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, name TEXT NOT NULL, created_at TEXT NOT NULL

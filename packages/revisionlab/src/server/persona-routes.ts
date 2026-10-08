@@ -1,4 +1,5 @@
 import { personaAvatarIds } from "../persona-avatars.js";
+import { builtInPersonaSuggestions } from "../persona-template-suggestions.js";
 import { randomUUID } from "node:crypto";
 import type { Client, Transaction } from "@libsql/client";
 import { z } from "zod";
@@ -13,11 +14,13 @@ import {
   readJson,
 } from "./security.js";
 import type { RevisionLabActor, RevisionLabPersona } from "./types.js";
+import { applyBuiltInPersonaTemplate, applySavedPersonaTemplate, handlePersonaProfileRoutes } from "./persona-profile-routes.js";
 
 const personaSchema = z.strictObject({
   name: z.string().trim().min(1).max(120),
   description: z.string().trim().max(1000).default(""),
   avatar: z.enum(personaAvatarIds).nullable().optional(),
+  templateId: z.string().max(120).optional(),
 });
 
 export async function readPersonas(
@@ -36,6 +39,13 @@ export async function readPersonas(
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
     hasCredentials: Boolean(row.has_credentials),
+    personaType: String(row.persona_type),
+    templateId: row.template_id == null ? null : String(row.template_id),
+    researchStatus: String(row.research_status),
+    confidenceLevel: String(row.confidence_level),
+    lastValidatedAt: row.last_validated_at == null ? null : String(row.last_validated_at),
+    createdBy: row.created_by == null ? null : String(row.created_by),
+    updatedBy: row.updated_by == null ? null : String(row.updated_by),
   }));
 }
 
@@ -68,6 +78,8 @@ export async function handlePersonas(
   actor: RevisionLabActor,
   config: ResolvedConfig,
 ) {
+  const profileResponse = await handlePersonaProfileRoutes(request, path, client, actor, config);
+  if (profileResponse) return profileResponse;
   const credentialRoute =
     path.length === 3 &&
     z.string().uuid().safeParse(path[1]).success &&
@@ -189,8 +201,8 @@ export async function handlePersonas(
     const now = new Date().toISOString();
     if ("archived" in input) {
       await transaction.execute({
-        sql: "UPDATE personas SET archived_at = ?, updated_at = ? WHERE id = ?",
-        args: [input.archived ? now : null, now, id],
+        sql: "UPDATE personas SET archived_at = ?, updated_at = ?, updated_by = ? WHERE id = ?",
+        args: [input.archived ? now : null, now, actor.id, id],
       });
       return;
     }
@@ -206,20 +218,28 @@ export async function handlePersonas(
       );
     if (creating) {
       await transaction.execute({
-        sql: "INSERT INTO personas (id, name, name_key, description, avatar, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        sql: "INSERT INTO personas (id, name, name_key, description, avatar, template_id, created_at, updated_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         args: [
           id,
           input.name,
           key,
           input.description,
           input.avatar ?? null,
+          input.templateId ?? null,
           now,
           now,
+          actor.id,
+          actor.id,
         ],
       });
+      if (input.templateId) {
+        if (builtInPersonaSuggestions.some((template) => template.id === input.templateId))
+          await applyBuiltInPersonaTemplate(transaction, id, input.templateId, now);
+        else await applySavedPersonaTemplate(transaction, id, input.templateId, now);
+      }
     } else {
       await transaction.execute({
-        sql: "UPDATE personas SET name = ?, name_key = ?, description = ?, avatar = CASE WHEN ? THEN ? ELSE avatar END, updated_at = ? WHERE id = ?",
+        sql: "UPDATE personas SET name = ?, name_key = ?, description = ?, avatar = CASE WHEN ? THEN ? ELSE avatar END, updated_at = ?, updated_by = ? WHERE id = ?",
         args: [
           input.name,
           key,
@@ -227,10 +247,12 @@ export async function handlePersonas(
           input.avatar !== undefined ? 1 : 0,
           input.avatar ?? null,
           now,
+          actor.id,
           id,
         ],
       });
     }
+    await transaction.execute({ sql: "INSERT INTO persona_activity (id, persona_id, actor_id, actor_name, action, created_at) VALUES (?, ?, ?, ?, ?, ?)", args: [randomUUID(), id, actor.id, actor.name, creating ? "Created persona" : "Updated basic information", now] });
   });
   return json({ id }, creating ? 201 : 200);
 }

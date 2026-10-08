@@ -61,7 +61,7 @@ export function PersonaForm({
         persona ? `personas/${persona.id}` : "personas",
         {
           method: persona ? "PATCH" : "POST",
-          body: JSON.stringify({ name, description, avatar }),
+          body: JSON.stringify({ name, description, avatar, ...(!persona && template ? { templateId: template.id } : {}) }),
         },
       );
       const personaId = persona?.id ?? result.id;

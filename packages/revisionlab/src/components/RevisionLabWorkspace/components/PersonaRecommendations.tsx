@@ -39,7 +39,7 @@ export function PersonaRecommendations({
     try {
       await apiRequest(apiPath, "personas", {
         method: "POST",
-        body: JSON.stringify(persona),
+        body: JSON.stringify({ name: persona.name, description: persona.description, avatar: persona.avatar, templateId: persona.id }),
       });
       setAdded((previous) => [...previous, persona.name]);
       await onRefresh();

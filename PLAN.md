@@ -1,3 +1,7 @@
+## Research-driven persona profiles — 8 October 2026
+
+Implemented locally: additive persona metadata, typed section/field/value definitions, stable repeatable entries, ten expanded illustrative templates, editable workspace templates, progressive profile editing, research evidence and feedback links, saved-change activity, private persona attachments, history restore, filters including indexed shared-field queries, and migration/permission tests. The basic create flow, existing credentials, connected-workspace routing, and historical recordings remain. PRODUCT.md contains the confirmed behavior; VALIDATION.md records achieved checks and limits. No new component library or authentication system.
+
 ## Persona templates on the Personas page — 8 October 2026
 
 Implemented locally: keep **New persona** as the blank-form action and add an adjacent chevron menu listing the same ten built-in recommendations offered during setup. Choosing one pre-fills the existing create form with its name, description, and avatar; it creates no record until **Save persona**. Preserve cancel, editing, avatar selection, source-scoped permissions, and connected-workspace routing. PRODUCT.md defines the experience; VALIDATION.md records checks.

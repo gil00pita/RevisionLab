@@ -36,6 +36,7 @@ export function WorkspaceHeader({
   creationAction?:
     | {
         kind: "persona";
+        apiPath: string;
         disabled: boolean;
         onClick: () => void;
         onSelectTemplate: (template: PersonaTemplate) => void;
@@ -97,6 +98,7 @@ export function WorkspaceHeader({
           {actions}
           {creationAction?.kind === "persona" ? (
             <PersonaCreateActions
+              apiPath={creationAction.apiPath}
               triggerRef={creationTriggerRef}
               disabled={creationAction.disabled}
               onNew={creationAction.onClick}

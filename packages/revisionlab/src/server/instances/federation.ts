@@ -47,6 +47,8 @@ export async function handleFederation(
       ...(await readWorkspaceState(client, config, actor)),
       instanceId: await installationId(client),
     });
+  if (request.method === "GET" && path[0] === "personas" && (["templates", "filters"].includes(path[1]) || path[2] === "profile"))
+    return handlePersonas(request, path, client, actor, config);
   if (path[0] === "comments" && path[1] === "notifications")
     throw new HttpError(
       403,
@@ -71,7 +73,7 @@ export async function handleFederation(
     z.string().uuid().safeParse(path[1]).success
   )
     return readArtifact(path[1], client, config, true);
-  if (!["POST", "PATCH"].includes(request.method))
+  if (!["POST", "PATCH", "DELETE"].includes(request.method))
     throw new HttpError(404, "Not found.");
   await consumeRateLimit(client, `federation:${actor.id}`, 120, 60_000);
   // Recording must originate in the source prototype; no remote auth/key/connection administration.

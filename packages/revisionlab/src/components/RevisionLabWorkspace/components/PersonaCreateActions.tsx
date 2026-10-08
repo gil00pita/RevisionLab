@@ -1,4 +1,4 @@
-import type { RefObject } from "react";
+import { useState, type RefObject } from "react";
 import {
   Box,
   Button,
@@ -12,6 +12,8 @@ import {
 } from "@chakra-ui/react";
 import { ChevronDown, Plus } from "lucide-react";
 import { PersonaAvatar } from "../../PersonaAvatar/index.js";
+import { apiRequest } from "../../../client/api.js";
+import type { PersonaSavedTemplate } from "../../../persona-profile.js";
 import {
   personaTemplates,
   type PersonaTemplate,
@@ -19,26 +21,33 @@ import {
 
 export function PersonaCreateActions({
   disabled,
+  apiPath,
   triggerRef,
   onNew,
   onSelectTemplate,
 }: {
   disabled: boolean;
+  apiPath: string;
   triggerRef?: RefObject<HTMLButtonElement | null>;
   onNew: () => void;
   onSelectTemplate: (template: PersonaTemplate) => void;
 }) {
+  const [saved, setSaved] = useState<PersonaTemplate[]>([]);
+  const templates = [...saved, ...personaTemplates];
   return (
     <Menu.Root
+      onOpenChange={(event) => {
+        if (event.open) void apiRequest<{ saved: PersonaSavedTemplate[] }>(apiPath, "personas/templates")
+          .then((result) => setSaved(result.saved.map((item) => ({ id: item.id, name: item.name, description: item.description, avatar: null, saved: true }))))
+          .catch(() => setSaved([]));
+      }}
       positioning={{
         placement: "bottom-end",
         strategy: "fixed",
         hideWhenDetached: true,
       }}
       onSelect={(event) => {
-        const template = personaTemplates.find(
-          (item) => item.name === event.value,
-        );
+        const template = templates.find((item) => item.id === event.value);
         if (template) onSelectTemplate(template);
       }}
     >
@@ -104,10 +113,10 @@ export function PersonaCreateActions({
             color="fg"
             fontFamily="body"
           >
-            {personaTemplates.map((template) => (
+            {templates.map((template) => (
               <Menu.Item
-                key={template.name}
-                value={template.name}
+                key={template.id}
+                value={template.id}
                 gap="3"
                 alignItems="start"
               >
@@ -119,7 +128,7 @@ export function PersonaCreateActions({
                 </Box>
                 <Stack gap="0" minW="0">
                   <Menu.ItemText fontWeight="medium" whiteSpace="normal">
-                    {template.name}
+                    {template.name}{template.saved ? " · Saved" : ""}
                   </Menu.ItemText>
                   <Text color="fg.muted" fontSize="xs" lineClamp={2}>
                     {template.description}

@@ -305,6 +305,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             view === "personas" && personaSource && sourceCanEdit(data.actor.role, personaSource)
               ? {
                   kind: "persona",
+                  apiPath: sourceApiPath(apiPath, personaSource),
                   disabled: navigationPending || personaEditor !== null || personaSource.status === "unavailable",
                   onClick: () => setPersonaEditor({ sourceId: personaSource.id }),
                   onSelectTemplate: (template) => setPersonaEditor({ sourceId: personaSource.id, template }),

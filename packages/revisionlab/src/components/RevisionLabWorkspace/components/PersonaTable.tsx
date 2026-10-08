@@ -18,6 +18,7 @@ export function PersonaTable({
           <Table.Row>
             <Table.ColumnHeader>Persona</Table.ColumnHeader>
             <Table.ColumnHeader>Description</Table.ColumnHeader>
+            <Table.ColumnHeader>Research</Table.ColumnHeader>
             {actions && (
               <Table.ColumnHeader textAlign="end">Actions</Table.ColumnHeader>
             )}
@@ -53,6 +54,7 @@ export function PersonaTable({
               >
                 {persona.description || "—"}
               </Table.Cell>
+              <Table.Cell minW="36"><Stack gap="1"><Badge alignSelf="start" colorPalette={persona.researchStatus === "Research-Backed" ? "green" : "orange"}>{persona.researchStatus ?? "Assumption-Based"}</Badge><Text fontSize="xs" color="fg.muted">{persona.personaType ?? "Primary"} · {persona.confidenceLevel ?? "Not Assessed"}</Text></Stack></Table.Cell>
               {actions && <Table.Cell>{actions(persona)}</Table.Cell>}
             </Table.Row>
           ))}

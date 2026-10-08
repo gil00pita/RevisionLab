@@ -171,6 +171,13 @@ export interface RevisionLabPersona {
   createdAt: string;
   updatedAt: string;
   hasCredentials: boolean;
+  personaType?: string;
+  templateId?: string | null;
+  researchStatus?: string;
+  confidenceLevel?: string;
+  lastValidatedAt?: string | null;
+  createdBy?: string | null;
+  updatedBy?: string | null;
 }
 
 export type RevisionLabMembershipStatus =

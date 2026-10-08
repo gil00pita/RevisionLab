@@ -38,7 +38,7 @@ export function createRevisionLabHandler(
     try {
       const config = resolveConfig(initialConfig);
       const { path = [] } = await context.params;
-      if (path.length > 6) throw new HttpError(404, "Not found.");
+      if (path.length > 7) throw new HttpError(404, "Not found.");
       if (request.method !== "GET") assertSameOrigin(request);
       const client = await getDatabase(config);
       if (path[0] === "auth")
@@ -100,6 +100,8 @@ export function createRevisionLabHandler(
       }
       if (request.method === "GET" && path.length === 1 && path[0] === "state")
         return json(await readWorkspaceState(client, config, actor));
+      if (request.method === "GET" && path[0] === "personas" && (["templates", "filters"].includes(path[1]) || path[2] === "profile"))
+        return await handlePersonas(request, path, client, actor, config);
       if (
         request.method === "GET" &&
         path.length === 2 &&
