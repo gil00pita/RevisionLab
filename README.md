@@ -55,6 +55,8 @@ Open **Test sessions** and choose **Create a test session** in its header to set
 
 ## A look inside
 
+The example application's `/` is a visual product marketing website. Interactive Northstar Finance demonstrations show a prototype becoming captured flows, contextual evidence, editable ticket drafts, and a human-reviewed change. The examples are fictional local simulations; `/setup` provides installation guidance and `/revisionlab` opens the actual embedded workspace. The host sales page, installation guide, and font assets are public in production; the workspace and APIs retain their existing access guards.
+
 ![Screenshot placeholders — flow whiteboard and screen comments](docs/assets/screenshots-placeholder.svg)
 
 *Replace these placeholders with real captures of the flow whiteboard and screen review.*
