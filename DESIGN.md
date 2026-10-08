@@ -131,6 +131,12 @@ components:
 
 # Design System: RevisionLab
 
+## Example marketing homepage — 8 October 2026
+
+The host `/` route now has a distinct marketing composition: asymmetric graphite hero, alternating dark/paper sections, self-hosted Manrope display typography and DM Sans body typography, and the original #1E9ADC identity blue expressed as the Chakra `signal` token. One fictional Northstar Finance vehicle-finance journey supplies every product visual. Thin paths connect prototype captures, review evidence, ticket context, and a human-reviewed change; motion explains those relationships rather than decorating the page.
+
+The route composes focused components under `src/app/_components/marketing/`. Its marketing-only Chakra system retains the root defaultSystem provider and the embedded workspace's existing appearance. All presentation uses Chakra v3 style props; global additions are font-face declarations only. Desktop workflow rails and flow boards become vertical sequences on mobile. Motion is pausable, stops offscreen/in background tabs, and has an understandable reduced-motion composition with manually inspectable stages. `PRODUCT.md` defines intended behavior; `VALIDATION.md` records checks and screenshots. The older PrototypeHome component referenced in the historical implementation snapshot below has been replaced by this route.
+
 ## Overview
 
 **Creative North Star: "White paper, navy tools"**
