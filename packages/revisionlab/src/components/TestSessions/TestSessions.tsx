@@ -140,11 +140,12 @@ export function TestSessions({
       colorPalette="blue"
       variant="line"
       w="full"
+      minW="0"
     >
       <Portal container={headerContainer}>
         <SessionTabs current={current.length} previous={previous.length} />
       </Portal>
-      <Stack p={{ base: "4", md: "6" }} gap="6" maxW="7xl" w="full">
+      <Stack p={{ base: "4", md: "6" }} gap="6" w="full" minW="0">
         <Text color="fg.muted">
           Tests for this installation · links, live activity, and saved replays.
         </Text>

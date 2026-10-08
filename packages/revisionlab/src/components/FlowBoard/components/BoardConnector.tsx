@@ -1,6 +1,11 @@
 import { Box, Icon, Text } from "@chakra-ui/react";
 import { ArrowRight } from "lucide-react";
-import { connectionGeometry, manualConnectionPoints } from "../geometry.js";
+import {
+  clickConnectionStart,
+  connectionGeometry,
+  manualConnectionPoints,
+  type ClickPreviewRect,
+} from "../geometry.js";
 import type { BoardEdge, BoardNode } from "../types.js";
 
 export function BoardConnector({
@@ -8,17 +13,25 @@ export function BoardConnector({
   source,
   target,
   lane,
+  click,
 }: {
   edge: BoardEdge;
   source: BoardNode;
   target: BoardNode;
   lane?: number;
+  click?: ClickPreviewRect;
 }) {
   if (edge.kind === "manual" || lane !== undefined) {
     const points = manualConnectionPoints(source, target, lane);
     const middle = { x: (points[1].x + points[2].x) / 2, y: points[1].y };
     return (
       <Box aria-hidden="true" pointerEvents="none">
+        {edge.kind === "recorded" && click && (
+          <ClickLead
+            start={clickConnectionStart(source, target, click)}
+            end={points[0]}
+          />
+        )}
         {points.slice(0, -1).map((point, index) => {
           const next = points[index + 1];
           const length = Math.hypot(next.x - point.x, next.y - point.y);
@@ -80,6 +93,12 @@ export function BoardConnector({
   const color = "fg.muted";
   return (
     <Box aria-hidden="true" pointerEvents="none">
+      {click && (
+        <ClickLead
+          start={clickConnectionStart(source, target, click)}
+          end={geometry.start}
+        />
+      )}
       <Box
         position="absolute"
         left={`${geometry.start.x}px`}
@@ -129,5 +148,30 @@ export function BoardConnector({
         </Text>
       )}
     </Box>
+  );
+}
+
+function ClickLead({
+  start,
+  end,
+}: {
+  start: { x: number; y: number };
+  end: { x: number; y: number };
+}) {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  return (
+    <Box
+      position="absolute"
+      left={`${start.x}px`}
+      top={`${start.y}px`}
+      w={`${Math.hypot(dx, dy)}px`}
+      h="0"
+      transform={`rotate(${(Math.atan2(dy, dx) * 180) / Math.PI}deg)`}
+      transformOrigin="left center"
+      borderTopWidth="2px"
+      borderStyle="solid"
+      borderColor="pink.border"
+    />
   );
 }
