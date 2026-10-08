@@ -122,6 +122,8 @@ Local implementation decisions: retain the title, subtitle, and role-appropriate
 
 Acceptance: both tabs appear inside the top header and only the active group’s list is visible. Live counts and empty states match their groups; keyboard arrow navigation and focus work. Opening/cancelling creation and switching tabs preserve replay position. A linked historical session opens the correct tab; polling can move a finished live test into Previous sessions without changing the selected tab. Layouts fit desktop/mobile/enlarged text in both themes and respect reduced motion. PRODUCT.md records intended behavior; local implementation and validation are recorded in PLAN.md and VALIDATION.md.
 
+Confirmed width correction — 8 October 2026: the Test sessions body must use the full available workspace content width, aligned with its shared header using the existing responsive side padding. Current/Previous lists, empty/loading/error states, and selected session details must keep the same outer width when switching states; remove the body’s independent maximum-width cap. Preserve the creation form’s narrower field layout and existing session behavior. Acceptance: wide desktop layouts have matching left/right body gutters, and desktop/mobile layouts fit the viewport in both themes.
+
 ## Feedback Review — 6 October 2026
 
 Confirmed request: add a dedicated **Feedback Review** workspace section to consolidate comments and test evidence and offer Codex-assisted ticket creation. Repeated feedback across screens should contribute to a shared ticket instead of requiring separate screen-by-screen drafts. Preserve the existing Comments, Test sessions, and per-screen ticket/fix actions.
