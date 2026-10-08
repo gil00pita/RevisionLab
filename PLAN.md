@@ -1,3 +1,7 @@
+## Product marketing homepage — 7 October 2026
+
+Implemented locally — 8 October 2026: replaced the host example homepage with the requested visual RevisionLab sales website, using route-colocated Chakra v3 components and one coherent fictional Northstar Finance journey. The page includes controlled product transformations, flow/comment/accessibility/test demonstrations, editable evidence-to-ticket and reviewed-fix simulations, retained version history, team perspectives, project ownership, and free installation. Motion pauses offscreen or in background tabs and respects reduced motion; responsive layouts preserve the real workspace and setup routes. Fictional examples, local-build availability, local Codex, manual Jira handoff, and automated-check limitations are disclosed. Lint, production build, 42 browser checks, and scoped accessibility scans pass; VALIDATION.md records evidence and limits. PRODUCT.md remains authoritative. No publication or external integration changes.
+
 ## Personas page width — 8 October 2026
 
 Implemented locally: remove the PersonaManager width cap when used by the workspace page's controlled editor, while retaining the contained setup-wizard layout. Match the Comments page's available content width, padding and heading size; preserve form readability and existing persona operations. PRODUCT.md records the requirement; VALIDATION.md records actual checks.
