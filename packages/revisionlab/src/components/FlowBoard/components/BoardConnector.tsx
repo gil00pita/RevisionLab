@@ -8,6 +8,8 @@ import {
 } from "../geometry.js";
 import type { BoardEdge, BoardNode } from "../types.js";
 
+const connectorColor = "fg.muted";
+
 export function BoardConnector({
   edge,
   source,
@@ -51,7 +53,7 @@ export function BoardConnector({
               <Box
                 borderTopWidth="2px"
                 borderStyle={edge.kind === "manual" ? "dashed" : "solid"}
-                borderColor={edge.kind === "manual" ? "blue.border" : "fg.muted"}
+                borderColor={connectorColor}
               />
               {index === 2 && (
                 <Icon
@@ -60,7 +62,7 @@ export function BoardConnector({
                   top="-11px"
                   w="24px"
                   h="24px"
-                  color={edge.kind === "manual" ? "blue.fg" : "fg.muted"}
+                  color={connectorColor}
                 >
                   <ArrowRight />
                 </Icon>
@@ -78,7 +80,7 @@ export function BoardConnector({
           px="2"
           py="1"
           fontSize="xs"
-          color="blue.fg"
+          color={connectorColor}
           borderRadius="sm"
           textAlign="center"
           lineClamp={2}
@@ -90,7 +92,6 @@ export function BoardConnector({
   }
   const geometry = connectionGeometry(source, target);
   if (!geometry) return null;
-  const color = "fg.muted";
   return (
     <Box aria-hidden="true" pointerEvents="none">
       {click && (
@@ -115,7 +116,7 @@ export function BoardConnector({
           top="0"
           borderTopWidth="2px"
           borderStyle="solid"
-          borderColor={color}
+          borderColor={connectorColor}
         />
         <Icon
           position="absolute"
@@ -123,7 +124,7 @@ export function BoardConnector({
           top="-11px"
           w="24px"
           h="24px"
-          color={color}
+          color={connectorColor}
         >
           <ArrowRight />
         </Icon>
@@ -139,7 +140,7 @@ export function BoardConnector({
           px="2"
           py="1"
           fontSize="xs"
-          color={color}
+          color={connectorColor}
           borderRadius="sm"
           textAlign="center"
           lineClamp={2}
@@ -171,7 +172,7 @@ function ClickLead({
       transformOrigin="left center"
       borderTopWidth="2px"
       borderStyle="solid"
-      borderColor="pink.fg"
+      borderColor={connectorColor}
     />
   );
 }
