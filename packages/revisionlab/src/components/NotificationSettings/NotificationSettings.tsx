@@ -1,11 +1,13 @@
 "use client";
+import { WorkspacePageSkeleton } from "../WorkspacePageSkeleton/index.js";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type RefObject } from "react";
 import {
   Accordion,
   Button,
   Heading,
   HStack,
+  Portal,
   Separator,
   Stack,
   Text,
@@ -19,11 +21,13 @@ export function NotificationSettings({
   apiPath,
   onBusyChange,
   onContinue,
+  discardActionContainer,
   disabled = false,
 }: {
   apiPath: string;
   onBusyChange?: (busy: boolean) => void;
   onContinue?: () => Promise<void>;
+  discardActionContainer?: RefObject<HTMLElement | null>;
   disabled?: boolean;
 }) {
   const form = useNotificationSettings(apiPath);
@@ -34,7 +38,7 @@ export function NotificationSettings({
     return () => onBusyChange?.(false);
   }, [busy, onBusyChange]);
   if (form.loading)
-    return <Text role="status">Loading notification settings…</Text>;
+    return <WorkspacePageSkeleton page="notifications" variant="content" />;
   if (!form.configuration || !form.draft)
     return (
       <Stack gap="3">
@@ -47,6 +51,22 @@ export function NotificationSettings({
       </Stack>
     );
   const locked = disabled || busy;
+  const discardAction = form.dirty && (
+    <Button
+      type="button"
+      variant="ghost"
+      alignSelf="start"
+      maxW={discardActionContainer ? "full" : undefined}
+      whiteSpace={discardActionContainer ? "normal" : undefined}
+      h={discardActionContainer ? "auto" : undefined}
+      minH={discardActionContainer ? "10" : undefined}
+      py={discardActionContainer ? "2" : undefined}
+      disabled={locked}
+      onClick={() => void form.load()}
+    >
+      Discard changes and reload settings
+    </Button>
+  );
   return (
     <Stack gap="6">
       <Stack
@@ -188,15 +208,10 @@ export function NotificationSettings({
           </Accordion.Item>
         </Accordion.Root>
       )}
-      {form.dirty && (
-        <Button
-          variant="ghost"
-          alignSelf="start"
-          disabled={locked}
-          onClick={() => void form.load()}
-        >
-          Discard changes and reload settings
-        </Button>
+      {discardActionContainer ? (
+        <Portal container={discardActionContainer}>{discardAction}</Portal>
+      ) : (
+        discardAction
       )}
       {form.error && (
         <Text role="alert" color="red.fg">

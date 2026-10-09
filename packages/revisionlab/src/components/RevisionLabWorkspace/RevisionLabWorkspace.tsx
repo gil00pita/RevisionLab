@@ -27,7 +27,6 @@ import { RevisionLabProvider } from "../RevisionLabProvider/index.js";
 import type { WorkspaceView } from "./components/WorkspaceNavigation.js";
 import { WorkspaceSidebar } from "./components/WorkspaceSidebar.js";
 import { WorkspacePersonas, type WorkspacePersonaEditor } from "./components/WorkspacePersonas.js";
-import { AllComments } from "./components/AllComments.js";
 import { FlowReview } from "./components/FlowReview.js";
 import { EmptyWorkspace } from "./components/EmptyWorkspace.js";
 import { WorkspaceSettings } from "./components/WorkspaceSettings.js";
@@ -36,33 +35,34 @@ import { defaultSettings } from "../../comment-settings.js";
 import { useFlowDeletion } from "./hooks/useFlowDeletion.js";
 import { workspaceViewTitles } from "./constants.js";
 import { WorkspaceDashboard } from "./components/WorkspaceDashboard.js";
-import { WorkspaceLoadingSkeleton } from "./components/WorkspaceLoadingSkeleton/index.js";
+import { getWorkspaceView, getWorkspaceSkeletonPage } from "../../workspace-view.js";
+import { WorkspaceLoadingSkeleton, WorkspaceLoadingFallback } from "./components/WorkspaceLoadingSkeleton/index.js";
 
 export interface RevisionLabWorkspaceProps {
   apiPath?: string;
   basePath?: string;
+  /** Supply the server route query so the first loading shell matches deep links. */
+  initialSearch?: string;
 }
 
 export function RevisionLabWorkspace({
   apiPath = "/api/revisionlab",
   basePath = "/revisionlab",
+  initialSearch,
 }: RevisionLabWorkspaceProps) {
   return (
     <RevisionLabProvider>
-      <Suspense fallback={<WorkspaceLoadingSkeleton />}>
+      <Suspense fallback={<WorkspaceLoadingFallback initialSearch={initialSearch} />}>
         <Workspace apiPath={apiPath} basePath={basePath} />
       </Suspense>
     </RevisionLabProvider>
   );
 }
 
-function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
+function Workspace({ apiPath, basePath }: Required<Pick<RevisionLabWorkspaceProps, "apiPath" | "basePath">>) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const legacyPeopleView = searchParams.get("view") === "people";
-  const requestedView = legacyPeopleView
-    ? "settings"
-    : searchParams.get("view");
   const commentRoute = searchParams.get("route");
   const selection = searchParams.get("workspace") ?? "local";
   const {
@@ -72,18 +72,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
     refresh,
     syncedAt,
   } = useWorkspaceData(apiPath, selection);
-  const view: WorkspaceView =
-    requestedView === "dashboard" ||
-    requestedView === "flows" ||
-    requestedView === "sessions" ||
-    requestedView === "comments" ||
-    requestedView === "feedback" ||
-    requestedView === "personas" ||
-    requestedView === "settings"
-      ? requestedView
-      : searchParams.has("flow")
-        ? "flows"
-        : "dashboard";
+  const view: WorkspaceView = getWorkspaceView(searchParams);
   const [flowId, setFlowId] = useState<string | null>(() =>
     searchParams.get("flow"),
   );
@@ -92,6 +81,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   const [personaBusy, setPersonaBusy] = useState(false);
   const creationTrigger = useRef<HTMLButtonElement>(null);
   const sessionTabsHeader = useRef<HTMLDivElement>(null);
+  const settingsTabsHeader = useRef<HTMLDivElement>(null);
   const [setupFinished, setSetupFinished] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [startingRecording, setStartingRecording] = useState(false);
@@ -181,6 +171,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
     query.set("workspace", next);
     query.delete("flow");
     query.delete("route");
+    query.delete("comment");
     router.replace(`${basePath}?${query}`, { scroll: false });
     setFlowId(null);
   }
@@ -193,7 +184,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
       !(await canLeaveBoard())
     )
       return false;
-    if (next !== view) {
+    if (next !== view || searchParams.has("route") || searchParams.has("comment")) {
       setPersonaEditor(null);
       // Sections share this mounted workspace; sync search params without a
       // server navigation or replacing the sidebar and its local state.
@@ -202,6 +193,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
       query.set("workspace", selection);
       query.delete("flow");
       query.delete("route");
+      query.delete("comment");
       window.history.replaceState(null, "", `${basePath}?${query}`);
     }
     return true;
@@ -226,7 +218,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
   }
 
   if (!data && loading)
-    return <WorkspaceLoadingSkeleton title={workspaceViewTitles[view]} />;
+    return <WorkspaceLoadingSkeleton page={getWorkspaceSkeletonPage(searchParams)} />;
 
   if (!data)
     return (
@@ -300,7 +292,13 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           view={view}
           flow={view === "flows" ? flow : undefined}
           creationTriggerRef={creationTrigger}
-          sessionTabsRef={view === "sessions" ? sessionTabsHeader : undefined}
+          tabsRef={
+            view === "sessions"
+              ? sessionTabsHeader
+              : view === "settings"
+                ? settingsTabsHeader
+                : undefined
+          }
           creationAction={
             view === "personas" && personaSource && sourceCanEdit(data.actor.role, personaSource)
               ? {
@@ -374,7 +372,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             data={data}
             syncedAt={syncedAt}
             syncError={Boolean(error)}
-            onReviewComments={() => void selectView("comments")}
+            onReviewFeedback={() => void selectView("feedback")}
             navigationDisabled={
               completingBoard ||
               signingOut ||
@@ -384,6 +382,15 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           />
         ) : view === "feedback" ? (
           <FeedbackReview
+            commentId={searchParams.get("comment")}
+            route={commentRoute}
+            onClearRoute={() => void selectView("feedback")}
+            onCloseComment={() => {
+              const query = new URLSearchParams(searchParams.toString());
+              query.set("view", "feedback");
+              query.delete("comment");
+              window.history.replaceState(null, "", `${basePath}?${query}`);
+            }}
             data={data}
             apiPath={apiPath}
             basePath={basePath}
@@ -404,6 +411,7 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
           />
         ) : view === "settings" ? (
           <WorkspaceSettings
+            headerContainer={settingsTabsHeader}
             key={selection}
             apiPath={sourceApiPath(apiPath, data.settingsWorkspace)}
             managementApiPath={apiPath}
@@ -442,16 +450,6 @@ function Workspace({ apiPath, basePath }: Required<RevisionLabWorkspaceProps>) {
             data={data}
             apiPath={apiPath}
             onRefresh={refresh}
-          />
-        ) : view === "comments" ? (
-          <AllComments
-            commentId={searchParams.get("comment")}
-            key={`${commentRoute ?? "all"}:${searchParams.get("comment") ?? ""}`}
-            data={data}
-            apiPath={apiPath}
-            onRefresh={refresh}
-            route={commentRoute}
-            basePath={basePath}
           />
         ) : (
           <Flex flex="1" minW="0" direction={{ base: "column", xl: "row" }}>

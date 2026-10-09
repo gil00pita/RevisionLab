@@ -1,10 +1,11 @@
 "use client";
 
-import { IllustratedEmptyState } from "../IllustratedEmptyState/index.js";
+import { FeedbackCollection } from "./components/FeedbackCollection.js";
 
 import { useState } from "react";
 import {
   Badge,
+  Box,
   Button,
   Flex,
   Heading,
@@ -21,6 +22,8 @@ import type { FeedbackThreadProps } from "./types.js";
 
 export function FeedbackThread({
   presentation = "panel",
+  collectionItems = [],
+  showComposer = true,
   apiPath,
   comments,
   route,
@@ -50,8 +53,8 @@ export function FeedbackThread({
   );
   const replies = selected
     ? comments
-        .filter((comment) => comment.parentId === selected.id)
-        .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+      .filter((comment) => comment.parentId === selected.id)
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
     : [];
   const pins = [...roots]
     .filter((comment) => comment.anchor)
@@ -146,7 +149,7 @@ export function FeedbackThread({
       )}
       {selected ? (
         <>
-          {presentation === "panel" && (
+          {presentation !== "bubble" && (
             <Button
               alignSelf="start"
               maxW="full"
@@ -193,45 +196,42 @@ export function FeedbackThread({
               ))}
             </Stack>
           )}
-          {composer}
+          <Box hidden={!showComposer}>{composer}</Box>
         </>
       ) : (
         <>
           {allowNewComments ? (
-            composer
+            <Box hidden={!showComposer}>{composer}</Box>
           ) : (
             <Text color="fg.muted" fontSize="sm">
               This connection was removed. Existing discussions remain available
               for replies.
             </Text>
           )}
-          {roots.length ? (
-            <Stack gap="4" aria-label="Comments">
-              {roots.map((comment) => (
-                <CommentMessage
-                  apiPath={apiPath}
-                  key={comment.id}
-                  comment={comment}
-                  pinNumber={pinNumber(comment)}
-                  replyCount={
-                    comments.filter((reply) => reply.parentId === comment.id)
-                      .length
-                  }
-                  canResolve={canResolve}
-                  busy={busy === comment.id}
-                  onResolve={() => void resolveComment(comment)}
-                  onOpen={() => select(comment.id)}
-                  actions={renderActions?.(comment)}
-                />
-              ))}
-            </Stack>
-          ) : (
-            <IllustratedEmptyState
-              illustration="messages"
-              size="sm"
-              description="No feedback yet. Start the conversation."
-            />
-          )}
+          <FeedbackCollection
+            combined={presentation === "collection"}
+            showEmpty={presentation !== "collection" || showComposer}
+            items={[
+              ...roots.map((comment) => ({
+                id: comment.id,
+                createdAt: comment.createdAt,
+                content: (
+                  <CommentMessage
+                    apiPath={apiPath}
+                    comment={comment}
+                    pinNumber={pinNumber(comment)}
+                    replyCount={comments.filter((reply) => reply.parentId === comment.id).length}
+                    canResolve={canResolve}
+                    busy={busy === comment.id}
+                    onResolve={() => void resolveComment(comment)}
+                    onOpen={() => select(comment.id)}
+                    actions={renderActions?.(comment)}
+                  />
+                ),
+              })),
+              ...collectionItems,
+            ]}
+          />
         </>
       )}
     </Stack>

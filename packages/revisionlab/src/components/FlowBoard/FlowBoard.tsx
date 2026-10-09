@@ -2,7 +2,7 @@
 
 import { useImperativeHandle, useMemo, useState } from "react";
 import { Button, Flex, Grid, Stack, Text } from "@chakra-ui/react";
-import { boardBounds } from "./geometry.js";
+import { boardBounds, displayNode, storedPosition } from "./geometry.js";
 import { useBoardDraft } from "./hooks/useBoardDraft.js";
 import { useBoardViewport } from "./hooks/useBoardViewport.js";
 import { BoardCanvas } from "./components/BoardCanvas.js";
@@ -28,7 +28,11 @@ export function FlowBoard(props: FlowBoardProps) {
     beforeLeaveRef,
   } = props;
   const draft = useBoardDraft(props);
-  const bounds = boardBounds(draft.board.nodes, draft.board.edges);
+  const displayBoard = useMemo(
+    () => ({ ...draft.board, nodes: draft.board.nodes.map(displayNode) }),
+    [draft.board],
+  );
+  const bounds = boardBounds(displayBoard.nodes, displayBoard.edges);
   const camera = useBoardViewport(bounds.width, bounds.height);
   const [editing, setEditing] = useState(false);
   const [showCursor, setShowCursor] = useState(false);
@@ -177,14 +181,17 @@ export function FlowBoard(props: FlowBoardProps) {
         <BoardCanvas
           showCursor={showCursor}
           flow={flow}
-          board={draft.board}
+          board={displayBoard}
           comments={comments}
           camera={camera}
           editing={editing && canEdit && !disabled}
           selectedStepId={selectedStepId}
           selectedEdgeId={selectedEdgeId}
           connectionSource={connectionSource}
-          onMove={draft.moveNode}
+          onMove={(id, x, y) => {
+            const position = storedPosition(x, y);
+            draft.moveNode(id, position.x, position.y);
+          }}
           onMoveStart={draft.beginMove}
           onMoveEnd={draft.endMove}
           onOpen={onOpenScreen}

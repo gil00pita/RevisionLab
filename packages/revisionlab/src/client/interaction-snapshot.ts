@@ -57,6 +57,8 @@ export function pageContentSignature(): string {
   return (hash >>> 0).toString(16);
 }
 
+let activeRenders = 0;
+
 export function takeInteractionSnapshot(
   standard: WcagSettings = defaultWcagSettings,
 ): InteractionSnapshot {
@@ -64,24 +66,35 @@ export function takeInteractionSnapshot(
   const signature = pageContentSignature();
   const title =
     document.querySelector("main h1")?.textContent?.trim() || document.title;
+  const metadata = { ...dimensions, signature, title, accessibility: cachedAccessibility(signature, standard) ?? unavailableAccessibility("not-scanned") };
+  if (activeRenders >= 2) return { ...metadata, image: Promise.resolve({ error: new Error("Capture rendering is busy. The page visit is preserved.") }) };
+  activeRenders += 1;
   // html2canvas clones synchronously before its first await. Host handlers may
   // now remove the original dialog; rendering only reads the detached copy.
   const containers = new Set(
     document.querySelectorAll(".html2canvas-container"),
   );
-  const render = html2canvas(document.body, {
-    ...dimensions,
-    scale: 1,
-    logging: false,
-    useCORS: true,
-    ignoreElements: (element) => element.matches(captureExcluded),
-  });
+  let render: ReturnType<typeof html2canvas>;
+  try {
+    render = html2canvas(document.body, {
+      ...dimensions,
+      scale: 1,
+      logging: false,
+      useCORS: true,
+      ignoreElements: (element) => element.matches(captureExcluded),
+    });
+  } catch (cause) {
+    activeRenders -= 1;
+    return { ...metadata, image: Promise.resolve({ error: cause instanceof Error ? cause : new Error(String(cause)) }) };
+  }
   const ownedContainers = [
     ...document.querySelectorAll(".html2canvas-container"),
   ].filter((container) => !containers.has(container));
   for (const container of ownedContainers)
     container.setAttribute("data-revisionlab-ui", "");
-  const image = render
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const boundedRender = Promise.race([render, new Promise<never>((_, reject) => { timeout = setTimeout(() => reject(new Error("Capture rendering timed out. The page visit is preserved.")), 15_000); })]);
+  const image = boundedRender
     .then((canvas) => {
       const screenshot = canvas.toDataURL("image/png");
       if (screenshot.length > 4_000_000)
@@ -92,6 +105,8 @@ export function takeInteractionSnapshot(
       error: cause instanceof Error ? cause : new Error(String(cause)),
     }))
     .finally(() => {
+      clearTimeout(timeout);
+      activeRenders -= 1;
       // The renderer removes its iframe on success, but not every failure path.
       for (const container of ownedContainers) container.remove();
     });

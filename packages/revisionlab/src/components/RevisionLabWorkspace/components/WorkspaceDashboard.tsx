@@ -19,13 +19,13 @@ export function WorkspaceDashboard({
   data,
   syncedAt,
   syncError,
-  onReviewComments,
+  onReviewFeedback,
   navigationDisabled,
 }: {
   data: WorkspaceState;
   syncedAt: number | null;
   syncError: boolean;
-  onReviewComments: () => void;
+  onReviewFeedback: () => void;
   navigationDisabled: boolean;
 }) {
   const stats = dashboardStatistics(data);
@@ -116,7 +116,7 @@ export function WorkspaceDashboard({
             ))}
           </SimpleGrid>
         </Box>
-        <DashboardReviewAcknowledgement comments={stats.comments} resolvedComments={stats.resolvedComments} current={current} onReviewComments={onReviewComments} disabled={navigationDisabled} />
+        <DashboardReviewAcknowledgement comments={stats.comments} resolvedComments={stats.resolvedComments} current={current} onReviewFeedback={onReviewFeedback} disabled={navigationDisabled} />
       </Stack>
       <Stack as="section" aria-label="Workspace health" minW="0" gap="0" px={{ base: "4", md: "6" }} py="6" borderLeftWidth={{ base: "0", xl: "1px" }} borderTopWidth={{ base: "1px", xl: "0" }} borderColor="border.muted">
         <DashboardResolutionCard comments={stats.comments} resolvedComments={stats.resolvedComments} current={current} />

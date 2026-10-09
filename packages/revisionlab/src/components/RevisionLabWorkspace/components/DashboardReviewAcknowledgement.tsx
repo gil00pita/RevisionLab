@@ -5,13 +5,13 @@ export function DashboardReviewAcknowledgement({
   comments,
   resolvedComments,
   current,
-  onReviewComments,
+  onReviewFeedback,
   disabled,
 }: {
   comments: number | null;
   resolvedComments: number | null;
   current: boolean;
-  onReviewComments: () => void;
+  onReviewFeedback: () => void;
   disabled: boolean;
 }) {
   if (!current || !comments || !resolvedComments) return null;
@@ -83,10 +83,10 @@ export function DashboardReviewAcknowledgement({
         _hover={{ bg: "blue.subtle" }}
         focusRing="outside"
         focusRingColor="blue.focusRing"
-        onClick={onReviewComments}
+        onClick={onReviewFeedback}
         disabled={disabled}
       >
-        View comments
+        View feedback
         <Icon size="sm" flexShrink="0" aria-hidden="true">
           <ArrowRight />
         </Icon>

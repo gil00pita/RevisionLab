@@ -25,7 +25,7 @@ export function WorkspaceHeader({
   actions,
   creationAction,
   creationTriggerRef,
-  sessionTabsRef,
+  tabsRef,
   onSignOut,
   signingOut,
 }: {
@@ -43,7 +43,7 @@ export function WorkspaceHeader({
       }
     | { kind: "test"; disabled: boolean; onClick: () => void };
   creationTriggerRef?: RefObject<HTMLButtonElement | null>;
-  sessionTabsRef?: RefObject<HTMLDivElement | null>;
+  tabsRef?: RefObject<HTMLDivElement | null>;
   onSignOut: () => Promise<void>;
   signingOut: boolean;
 }) {
@@ -61,9 +61,25 @@ export function WorkspaceHeader({
       borderColor="border"
     >
       <Box flex="1" minW={{ base: "full", md: "48" }}>
-        <Heading as="h1" size="lg" overflowWrap="anywhere">
-          {flow?.name ?? workspaceViewTitles[view]}
-        </Heading>
+        <Flex align="center" gap="3" flexWrap="wrap">
+          <Heading
+            as="h1"
+            size={view === "personas" ? "xl" : "lg"}
+            overflowWrap="anywhere"
+          >
+            {flow?.name ?? workspaceViewTitles[view]}
+          </Heading>
+          {view === "personas" && (
+            <Badge
+              aria-label={`${data.personas.filter((persona) => !persona.archivedAt).length} active personas`}
+              colorPalette="gray"
+              size="lg"
+              rounded="full"
+            >
+              {data.personas.filter((persona) => !persona.archivedAt).length}
+            </Badge>
+          )}
+        </Flex>
         {flow ? (
           <Flex gap="2" mt="2" align="center" flexWrap="wrap">
             {flow.workspace && (
@@ -147,9 +163,7 @@ export function WorkspaceHeader({
           )}
         </Flex>
       )}
-      {sessionTabsRef && (
-        <Box ref={sessionTabsRef} w="full" flexBasis="full" mb="-4" />
-      )}
+      {tabsRef && <Box ref={tabsRef} w="full" flexBasis="full" mb="-4" />}
     </Flex>
   );
 }

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { FeedbackCollectionItem } from "./components/FeedbackCollection.js";
 import type {
   RevisionLabComment,
   RevisionLabPoint,
@@ -6,7 +7,9 @@ import type {
 } from "../../server/types.js";
 
 export interface FeedbackThreadProps {
-  presentation?: "panel" | "bubble";
+  presentation?: "panel" | "bubble" | "collection";
+  collectionItems?: FeedbackCollectionItem[];
+  showComposer?: boolean;
   apiPath: string;
   comments: RevisionLabComment[];
   route: string;

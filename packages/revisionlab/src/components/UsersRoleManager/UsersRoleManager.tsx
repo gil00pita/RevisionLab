@@ -14,6 +14,7 @@ import { MembershipList } from "./components/MembershipList.js";
 
 export function UsersRoleManager({
   onBusyChange,
+  variant = "page",
   apiPath,
   basePath,
   memberships,
@@ -21,6 +22,7 @@ export function UsersRoleManager({
   onRefresh,
 }: {
   onBusyChange?: (busy: boolean) => void;
+  variant?: "page" | "embedded";
   apiPath: string;
   basePath: string;
   memberships: RevisionLabMembership[];
@@ -66,7 +68,13 @@ export function UsersRoleManager({
   }
 
   return (
-    <Stack p={{ base: "5", md: "8" }} gap="7" w="full" maxW="5xl">
+    <Stack
+      p={variant === "embedded" ? "0" : { base: "5", md: "8" }}
+      gap="7"
+      w="full"
+      minW="0"
+      maxW={variant === "embedded" ? undefined : "5xl"}
+    >
       <Text color="fg.muted">
         Manage workspace membership, passwordless access, and default roles.
       </Text>

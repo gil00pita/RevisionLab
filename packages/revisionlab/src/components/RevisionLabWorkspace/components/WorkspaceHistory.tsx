@@ -1,3 +1,4 @@
+import { WorkspacePageSkeleton } from "../../WorkspacePageSkeleton/index.js";
 import { IllustratedEmptyState } from "../../IllustratedEmptyState/index.js";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -6,7 +7,6 @@ import {
   Flex,
   Heading,
   HStack,
-  Spinner,
   Stack,
   Text,
 } from "@chakra-ui/react";
@@ -104,6 +104,8 @@ export function WorkspaceHistory({
     }
   }
 
+  if (loading && entries.length === 0) return <WorkspacePageSkeleton page="history" variant="content" />;
+
   return (
     <Stack gap="5">
       <Stack gap="2">
@@ -120,12 +122,7 @@ export function WorkspaceHistory({
           file are not included. Saved design-system choices are included.
         </Text>
       </Stack>
-      {loading ? (
-        <HStack gap="3" color="fg.muted">
-          <Spinner size="sm" />
-          <Text>Loading workspace history…</Text>
-        </HStack>
-      ) : entries.length === 0 ? (
+      {entries.length === 0 ? (
         <IllustratedEmptyState
           illustration={unavailable.length === sources.length ? "connection" : "documents"}
           description={unavailable.length === sources.length

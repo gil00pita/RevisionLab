@@ -7,6 +7,8 @@ import {
   groupEvidence,
   ticketText,
   evidenceReviewPath,
+  matchesFeedbackRoute,
+  type ReviewEvidence,
   type FeedbackReviewData,
 } from "../feedback-review.js";
 import { reviewFixture, TEST_PNG } from "./review-test-fixture.js";
@@ -851,4 +853,30 @@ test("Unwritable template storage retains existing tickets and offers bundled te
   assert.equal(data.templates.length, 3);
   assert.ok(data.templateError);
   assert.equal(data.evidence.length, 2);
+});
+
+
+test("comment evidence opens Feedback Review discussions and page scope excludes recording evidence", () => {
+  const page: ReviewEvidence = {
+    id: "page-feedback", kind: "comment", title: "Clarify the action",
+    body: "Which action does it perform?", route: "/checkout?step=payment",
+    capturedAt: "2026-10-08T12:00:00.000Z", commentId: "comment-1",
+  };
+  const pageLink = new URL(evidenceReviewPath(page, "http://localhost/revisionlab"));
+  assert.equal(pageLink.searchParams.get("view"), "feedback");
+  assert.equal(pageLink.searchParams.get("comment"), page.commentId);
+  assert.equal(pageLink.searchParams.get("route"), page.route);
+  assert.equal(pageLink.searchParams.get("workspace"), "local");
+  const connection = { ...page, flowId: "flow-1" };
+  const edgeLink = new URL(evidenceReviewPath(connection, "http://localhost/revisionlab"));
+  assert.equal(edgeLink.searchParams.get("view"), "feedback");
+  assert.equal(edgeLink.searchParams.get("comment"), page.commentId);
+  assert.equal(edgeLink.searchParams.has("route"), false);
+  assert.equal(matchesFeedbackRoute(page, page.route), true);
+  assert.equal(matchesFeedbackRoute(page, "/other-page"), false);
+  assert.equal(matchesFeedbackRoute(connection, page.route), false);
+  assert.equal(matchesFeedbackRoute({ ...page, kind: "accessibility" }, page.route), false);
+  assert.equal(matchesFeedbackRoute({ ...page, kind: "test" }, page.route), false);
+  assert.equal(matchesFeedbackRoute(connection, null), true);
+  assert.equal(new URL(evidenceReviewPath({ ...page, commentId: undefined }, "http://localhost/revisionlab")).searchParams.get("view"), "feedback");
 });

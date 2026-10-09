@@ -5,9 +5,9 @@ import type {
 } from "../../../server/types.js";
 import {
   boardBounds,
-  clickPreviewRect,
+  clickPreviewPoint,
   connectionLanes,
-  type ClickPreviewRect,
+  type ClickPreviewPoint,
 } from "../geometry.js";
 import type { useBoardViewport } from "../hooks/useBoardViewport.js";
 import type { FlowBoardData } from "../types.js";
@@ -68,13 +68,13 @@ export function BoardCanvas({
   const nodes = new Map(board.nodes.map((node) => [node.stepId, node]));
   const names = new Map(flow.steps.map((step) => [step.id, step.title]));
   const steps = new Map(flow.steps.map((step) => [step.id, step]));
-  const clickTargets = new Map<string, {
-    rect: ClickPreviewRect;
-    label: string;
-  }>();
+  const clickTargets = new Map<
+    string,
+    { point: ClickPreviewPoint; label: string }
+  >();
   const clickTargetsByStep = new Map<
     string,
-    { edgeId: string; rect: ClickPreviewRect; label: string }[]
+    { edgeId: string; point: ClickPreviewPoint; label: string }[]
   >();
   for (const edge of board.edges) {
     if (edge.kind !== "recorded") continue;
@@ -86,11 +86,11 @@ export function BoardCanvas({
         visit.targetStepId !== edge.targetStepId
       )
         continue;
-      const rect = clickPreviewRect(source, visit.interaction);
-      if (!rect || !visit.interaction) continue;
+      const point = clickPreviewPoint(source, visit.interaction);
+      if (!point || !visit.interaction) continue;
       const target = {
         edgeId: edge.id,
-        rect,
+        point,
         label: visit.interaction.target.label,
       };
       clickTargets.set(edge.id, target);
@@ -206,7 +206,7 @@ export function BoardCanvas({
                     edge={edge}
                     source={source}
                     target={target}
-                    click={clickTarget?.rect}
+                    click={clickTarget?.point}
                     lane={lanes.get(edge.id)}
                   />
                   <BoardConnectionTarget

@@ -31,6 +31,8 @@ export async function readFlows(
     route: text(row, "route"),
     position: Number(row.position),
     createdAt: text(row, "created_at"),
+    captureState: text(row, "capture_state") as RevisionLabStep["captureState"],
+    captureFailure: nullable(row, "capture_failure") as RevisionLabStep["captureFailure"],
     capture: row.capture_json ? JSON.parse(String(row.capture_json)) : null,
     screenshot: row.screenshot
       ? String(row.screenshot).startsWith("data:image/")

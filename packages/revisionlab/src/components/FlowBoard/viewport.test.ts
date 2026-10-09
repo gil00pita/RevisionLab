@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   fitBoard,
+  BOARD_CONTROLS_CLEARANCE,
   MAX_BOARD_ZOOM,
   MIN_BOARD_ZOOM,
   wheelZoom,
@@ -69,6 +70,21 @@ test("a very large fitted board zooms smoothly from below ten percent", () => {
     wheelZoom(camera.zoom, 100, 0, 1600, Math.min(resizedMinimum, camera.zoom)),
     camera.zoom,
   );
+});
+
+test("Fit keeps enlarged cards and connection lanes clear of floating controls", () => {
+  for (const [width, height] of [[742, 738], [2904, 786], [50000, 50000]]) {
+    for (const [viewportWidth, viewportHeight] of [[390, 420], [1200, 777]]) {
+      const camera = fitBoard(
+        width, height, viewportWidth, viewportHeight, BOARD_CONTROLS_CLEARANCE,
+      );
+      assert.ok(camera.x >= 0 && camera.y >= 0);
+      assert.ok(camera.x + width * camera.zoom <= viewportWidth);
+      assert.ok(
+        camera.y + height * camera.zoom <= viewportHeight - BOARD_CONTROLS_CLEARANCE,
+      );
+    }
+  }
 });
 
 test("wheel direction and pixel, line, and page units produce equivalent zoom", () => {

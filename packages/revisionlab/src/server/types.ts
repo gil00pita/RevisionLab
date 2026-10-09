@@ -107,6 +107,8 @@ export interface RevisionLabStep {
   position: number;
   createdAt: string;
   capture?: RevisionLabCapture | null;
+  captureState?: "pending" | "saved" | "unavailable";
+  captureFailure?: "left-before-ready" | "not-ready" | "interrupted" | "failed" | null;
 }
 
 export interface RevisionLabCapture {

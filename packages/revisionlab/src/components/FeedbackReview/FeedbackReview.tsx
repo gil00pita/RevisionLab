@@ -1,20 +1,14 @@
 "use client";
-import { EvidencePreviewProvider } from "./components/EvidencePreviewProvider.js";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import {
-  Button,
-  Flex,
-  Grid,
   Heading,
   Link,
-  Spinner,
   Stack,
   Text,
 } from "@chakra-ui/react";
 import type { WorkspaceState } from "../../workspace-instances.js";
-import { useFeedbackReview } from "./hooks/useFeedbackReview.js";
-import { FeedbackInbox } from "./components/FeedbackInbox.js";
-import { TicketDrafts } from "./components/TicketDrafts.js";
+import { CommentDiscussionDialog } from "./components/CommentDiscussionDialog.js";
+import { LocalFeedbackReview } from "./components/LocalFeedbackReview.js";
 
 export function FeedbackReview({
   data,
@@ -22,52 +16,61 @@ export function FeedbackReview({
   basePath,
   onDirtyChange,
   onRefresh,
+  commentId,
+  route,
+  onCloseComment,
+  onClearRoute,
 }: {
   data: WorkspaceState;
   apiPath: string;
   basePath: string;
   onDirtyChange: (dirty: boolean) => void;
   onRefresh: () => Promise<void>;
+  commentId: string | null;
+  route: string | null;
+  onCloseComment: () => void;
+  onClearRoute: () => void;
 }) {
-  if (data.selection !== "local") {
-    return (
-      <Stack gap="4" p={{ base: "5", md: "8" }}>
-        <Heading as="h2" size="lg">
-          Review feedback at its source
-        </Heading>
-        <Text color="fg.muted">
-          Feedback Review keeps evidence and ticket drafts within each
-          installation. Open the source workspace to review its feedback; Codex
-          generation runs from that project on localhost.
-        </Text>
-        {data.workspaces
-          .filter(
-            (source) =>
-              data.selection === "all" || source.id === data.selection,
-          )
-          .map((source) => (
-            <Link
-              key={source.id}
-              color="blue.fg"
-              href={
-                source.id === "local"
-                  ? `${basePath}?view=feedback&workspace=local`
-                  : new URL(
-                      `${source.basePath}?view=feedback&workspace=local`,
-                      source.url,
-                    ).toString()
-              }
-            >
-              Open Feedback Review · {source.name}
-            </Link>
-          ))}
-      </Stack>
-    );
-  }
-  return (
+  const [discussionRevision, setDiscussionRevision] = useState(0);
+  const content = data.selection !== "local" ? (
+    <Stack gap="4" p={{ base: "5", md: "8" }}>
+      <Heading as="h2" size="lg">
+        Review feedback at its source
+      </Heading>
+      <Text color="fg.muted">
+        Feedback Review keeps evidence and ticket drafts within each
+        installation. Open the source workspace to review its feedback; Codex
+        generation runs from that project on localhost.
+      </Text>
+      {data.workspaces
+        .filter(
+          (source) =>
+            data.selection === "all" || source.id === data.selection,
+        )
+        .map((source) => (
+          <Link
+            key={source.id}
+            color="blue.fg"
+            href={
+              source.id === "local"
+                ? `${basePath}?view=feedback&workspace=local`
+                : new URL(
+                    `${source.basePath}?view=feedback&workspace=local`,
+                    source.url,
+                  ).toString()
+            }
+          >
+            Open Feedback Review · {source.name}
+          </Link>
+        ))}
+    </Stack>
+  ) : (
     <LocalFeedbackReview
       apiPath={apiPath}
       basePath={basePath}
+      discussionRevision={discussionRevision}
+      route={route}
+      onClearRoute={onClearRoute}
       canEdit={data.actor.role !== "commenter"}
       flowIds={data.flows.map((flow) => flow.id)}
       personas={data.personas}
@@ -75,141 +78,20 @@ export function FeedbackReview({
       onRefresh={onRefresh}
     />
   );
-}
-
-function LocalFeedbackReview({
-  apiPath,
-  basePath,
-  canEdit,
-  flowIds,
-  personas,
-  onDirtyChange,
-  onRefresh,
-}: {
-  apiPath: string;
-  basePath: string;
-  canEdit: boolean;
-  flowIds: string[];
-  personas: import("../../server/types.js").RevisionLabPersona[];
-  onDirtyChange: (dirty: boolean) => void;
-  onRefresh: () => Promise<void>;
-}) {
-  const review = useFeedbackReview(apiPath);
-  const [ticketEditing, setTicketEditing] = useState(false);
-  const [templateEditing, setTemplateEditing] = useState(false);
-  const editing = ticketEditing || templateEditing;
-  const dirtyChanged = useCallback(
-    (dirty: boolean) => setTicketEditing(dirty),
-    [],
-  );
-  const templateDirtyChanged = useCallback(
-    (dirty: boolean) => setTemplateEditing(dirty),
-    [],
-  );
-  useEffect(() => {
-    onDirtyChange(editing || review.busy);
-    const preventLeave = (event: BeforeUnloadEvent) => {
-      if (editing || review.busy) {
-        event.preventDefault();
-        event.returnValue = "";
-      }
-    };
-    window.addEventListener("beforeunload", preventLeave);
-    return () => {
-      onDirtyChange(false);
-      window.removeEventListener("beforeunload", preventLeave);
-    };
-  }, [editing, review.busy, onDirtyChange]);
   return (
-    <EvidencePreviewProvider>
-      <Stack p={{ base: "5", md: "8" }} pb="40" gap="5" w="full">
-        <Flex justify="space-between" gap="3" flexWrap="wrap" align="center">
-          <Text maxW="3xl" color="fg.muted">
-            One place to review recurring feedback, connect test evidence, and
-            prepare the work that matters.
-          </Text>
-          <Button
-            size="sm"
-            variant="outline"
-            maxW="full"
-            h="auto"
-            minH="10"
-            py="2"
-            whiteSpace="normal"
-            disabled={editing || review.busy}
-            onClick={() => void review.reload()}
-          >
-            Reload feedback
-          </Button>
-        </Flex>
-        {review.error && (
-          <Text role="alert" color="red.fg">
-            {review.error}
-          </Text>
-        )}
-        {review.status && (
-          <Text role="status" color="green.fg">
-            {review.status}
-          </Text>
-        )}
-        {review.loading && (
-          <Flex gap="3" align="center" role="status">
-            <Spinner size="sm" />
-            <Text>Loading feedback and saved drafts…</Text>
-          </Flex>
-        )}
-        {!review.data && !review.loading && (
-          <Button alignSelf="start" onClick={() => void review.reload()}>
-            Try again
-          </Button>
-        )}
-        {review.data && (
-          <Grid
-            templateColumns={{
-              base: "minmax(0, 1fr)",
-              xl: "minmax(0, 1fr) minmax(0, 1fr)",
-            }}
-            gap="8"
-            alignItems="start"
-          >
-            <FeedbackInbox
-              apiPath={apiPath}
-              personas={personas}
-              evidence={review.data.evidence}
-              tickets={review.data.tickets}
-              basePath={basePath}
-              canGenerate={review.data.canGenerate}
-              busy={review.busy}
-              editing={editing}
-              onGenerate={review.generate}
-              onCancel={review.cancel}
-              templates={review.data.templates}
-              canEdit={canEdit}
-              onAddTemplate={review.addTemplate}
-              onTemplateDirtyChange={templateDirtyChanged}
-              templateError={review.data.templateError}
-            />
-            <TicketDrafts
-              tickets={review.data.tickets}
-              selected={review.selectedTicket}
-              editing={editing}
-              busy={review.busy}
-              apiPath={apiPath}
-              basePath={basePath}
-              canEdit={canEdit}
-              onSelect={review.setSelectedTicket}
-              onSaved={(ticket) => {
-                review.saved(ticket);
-                void review.reload();
-                void onRefresh();
-              }}
-              onDirtyChange={dirtyChanged}
-              onConflict={review.reload}
-              flowIds={flowIds}
-            />
-          </Grid>
-        )}
-      </Stack>
-    </EvidencePreviewProvider>
+    <>
+      {content}
+      <CommentDiscussionDialog
+        key={commentId}
+        data={data}
+        commentId={commentId}
+        apiPath={apiPath}
+        onClose={onCloseComment}
+        onRefresh={async () => {
+          await onRefresh();
+          setDiscussionRevision((revision) => revision + 1);
+        }}
+      />
+    </>
   );
 }

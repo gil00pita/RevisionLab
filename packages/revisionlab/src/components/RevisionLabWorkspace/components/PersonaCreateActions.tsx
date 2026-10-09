@@ -4,7 +4,6 @@ import {
   Button,
   Group,
   Icon,
-  IconButton,
   Menu,
   Portal,
   Stack,
@@ -37,9 +36,23 @@ export function PersonaCreateActions({
   return (
     <Menu.Root
       onOpenChange={(event) => {
-        if (event.open) void apiRequest<{ saved: PersonaSavedTemplate[] }>(apiPath, "personas/templates")
-          .then((result) => setSaved(result.saved.map((item) => ({ id: item.id, name: item.name, description: item.description, avatar: null, saved: true }))))
-          .catch(() => setSaved([]));
+        if (event.open)
+          void apiRequest<{ saved: PersonaSavedTemplate[] }>(
+            apiPath,
+            "personas/templates",
+          )
+            .then((result) =>
+              setSaved(
+                result.saved.map((item) => ({
+                  id: item.id,
+                  name: item.name,
+                  description: item.description,
+                  avatar: null,
+                  saved: true,
+                })),
+              ),
+            )
+            .catch(() => setSaved([]));
       }}
       positioning={{
         placement: "bottom-end",
@@ -51,7 +64,7 @@ export function PersonaCreateActions({
         if (template) onSelectTemplate(template);
       }}
     >
-      <Group attached maxW="full">
+      <Group maxW="full" flexWrap="wrap" gap="2">
         <Button
           ref={triggerRef}
           size="sm"
@@ -61,10 +74,7 @@ export function PersonaCreateActions({
           maxW="full"
           whiteSpace="normal"
           colorPalette="blue"
-          variant="outline"
-          color="blue.fg"
-          borderColor="blue.border"
-          _hover={{ bg: "blue.subtle" }}
+          variant="solid"
           focusRing="outside"
           focusRingColor="blue.focusRing"
           disabled={disabled}
@@ -76,24 +86,23 @@ export function PersonaCreateActions({
           New persona
         </Button>
         <Menu.Trigger asChild>
-          <IconButton
+          <Button
             size="sm"
             minH="11"
-            colorPalette="blue"
             variant="outline"
-            color="blue.fg"
-            borderColor="blue.border"
-            _hover={{ bg: "blue.subtle" }}
+            color="fg"
+            borderColor="border"
+            _hover={{ bg: "bg.subtle" }}
             focusRing="outside"
             focusRingColor="blue.focusRing"
             disabled={disabled}
-            aria-label="Add persona from template"
-            title="Add persona from template"
+            aria-label="Start from template"
           >
             <Icon aria-hidden="true">
               <ChevronDown />
             </Icon>
-          </IconButton>
+            Start from template
+          </Button>
         </Menu.Trigger>
       </Group>
       <Portal>
@@ -128,7 +137,8 @@ export function PersonaCreateActions({
                 </Box>
                 <Stack gap="0" minW="0">
                   <Menu.ItemText fontWeight="medium" whiteSpace="normal">
-                    {template.name}{template.saved ? " · Saved" : ""}
+                    {template.name}
+                    {template.saved ? " · Saved" : ""}
                   </Menu.ItemText>
                   <Text color="fg.muted" fontSize="xs" lineClamp={2}>
                     {template.description}

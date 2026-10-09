@@ -127,7 +127,10 @@ async function migrateReviewMetadata(client: Client): Promise<void> {
       steps: [
         ["capture_json", "TEXT"],
         ["capture_key", "TEXT"],
+        ["capture_state", "TEXT NOT NULL DEFAULT 'saved'"],
+        ["capture_failure", "TEXT"],
       ],
+      recording_visits: [["reservation_json", "TEXT"]],
       flows: [
         ["family_id", "TEXT"],
         ["version", "INTEGER NOT NULL DEFAULT 1"],

@@ -2,7 +2,7 @@ import {
   widgetPlacement,
   type WidgetSettings,
 } from "../../../widget-settings.js";
-import { Box, CloseButton, Link, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, CloseButton, Link, Stack, Text } from "@chakra-ui/react";
 import type { useRecording } from "../hooks/useRecording.js";
 
 export function WidgetStatus({
@@ -16,7 +16,7 @@ export function WidgetStatus({
   basePath: string;
   expanded: boolean;
 }) {
-  if (!expanded && recorder.recording && !recorder.error) return null;
+  const compact = !expanded && recorder.recording && !recorder.error && !recorder.progress.warning;
   if (!recorder.recording && !recorder.error && !recorder.notice) return null;
   return (
     <Box
@@ -25,7 +25,7 @@ export function WidgetStatus({
       {...widgetPlacement(settings, true)}
       zIndex="popover"
       maxW="calc(100vw - 1.5rem)"
-      w="80"
+      w={compact ? "auto" : "80"}
       bg="bg.panel"
       color="fg"
       px="3"
@@ -33,7 +33,7 @@ export function WidgetStatus({
       borderRadius="md"
       borderWidth="1px"
       borderColor="border"
-      pointerEvents={recorder.savedRecording ? "auto" : "none"}
+      pointerEvents={recorder.savedRecording || recorder.error ? "auto" : "none"}
     >
       {recorder.savedRecording ? (
         <Stack gap="2" pr="7" py="1">
@@ -63,19 +63,22 @@ export function WidgetStatus({
       ) : (
         <>
           {recorder.recording && (
-            <Text fontSize="xs" lineClamp={1}>
-              {recorder.recording.name} · {recorder.recording.count} screens
-              {recorder.operation === "capture" ? " · Capturing" : ""}
+            <Text fontSize="xs" lineClamp={1} role="status">
+              {compact ? recorder.progress.phase : `${recorder.recording.name} · ${recorder.recording.count} screens · ${recorder.progress.phase}`}
+              {recorder.progress.pending > 0 ? ` · ${recorder.progress.pending} pending` : ""}
             </Text>
           )}
-          <Text
+          {!compact && <Text
             fontSize="xs"
             role={recorder.error ? "alert" : "status"}
             color={recorder.error ? "red.fg" : "fg.muted"}
             overflowWrap="anywhere"
           >
-            {recorder.error || recorder.notice}
-          </Text>
+            {recorder.error || recorder.progress.warning || recorder.notice}
+          </Text>}
+          {recorder.progress.error && !recorder.recording?.finishRequested && (
+            <Button size="xs" variant="outline" mt="2" onClick={() => void recorder.retry()}>Retry recording uploads</Button>
+          )}
         </>
       )}
     </Box>

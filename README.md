@@ -68,7 +68,11 @@ Owners can choose **+ Add workspace** from the sidebar dropdown to connect anoth
 
 Use **Dark mode** or **Light mode** beside Settings in the sidebar to switch the review interface’s appearance. The local build uses theme-aware colors and remembers the choice in your browser; review data and permissions stay the same.
 
-While the workspace first opens, a dashboard-shaped skeleton previews its layout in the selected theme. Loaded content stays visible during background refreshes.
+Personas opens as a research collection with informative cards, compact search/filter/sort controls, and a remembered list view. Inspect a profile in a side panel, open the full profile to work with evidence, and undo an archive. New persona is the main action; templates remain available beside it.
+
+Settings uses the full content width, with its section tabs in the page header below the title, matching Test sessions. Tabs wrap on narrow screens and preserve unsaved edits when switching sections.
+
+While each workspace page opens, a skeleton matches that page’s layout in the selected theme. Loading areas show only placeholders, including the sidebar and header, with an accessible loading status and reduced-motion support. Loaded content stays visible during background refreshes.
 
 Open **Test sessions** and use the header’s **Current sessions** and **Previous sessions** tabs to switch between waiting/live tests and completed/expired tests. Choose **Create a test session** in the same header to set a time limit and share its link; open a session to review its saved flow and replay. See the [test-session guide](WORKSPACE_GUIDE.md#prototype-test-sessions) for privacy and recording limits.
 
@@ -79,6 +83,8 @@ The example application's `/` is a visual product marketing website. Interactive
 ![Screenshot placeholders — flow whiteboard and screen comments](docs/assets/screenshots-placeholder.svg)
 
 *Replace these placeholders with real captures of the flow whiteboard and screen review.*
+
+Screen review uses route-bearing screen cards, a combined comments/accessibility list with icon filters, side-panel display options, and floating zoom/comment controls. Page/capture links and saved metadata share a compact footer row.
 
 ## Try it
 
@@ -103,3 +109,5 @@ The local example includes a five-page Northstar Finance prototype at `/demo` (a
 ## Go deeper
 
 [Workspace guide](WORKSPACE_GUIDE.md) · [Package integration](packages/revisionlab/README.md) · [Product specification](PRODUCT.md) · [Roadmap](PLAN.md) · [Validation](VALIDATION.md) · [Releases](RELEASING.md)
+
+Fast-navigation recording reliability is implemented locally, not yet published. Page visits and connections are journaled before screenshots or audits, so rapid clicks retain intermediate pages. The widget shows passive Capturing/Saving/Ready/Retry progress and offers upload retry. Stop drains pending work; failed saves remain available for Retry saving. Same-origin reloads recover queued metadata/images or show an explicit interrupted capture. Whiteboard and screen review distinguish pending and unavailable images while preserving paths. Normal prototype interaction stays available. Recording remains bounded to 1000 visits, 200 cards including pending placeholders, two concurrent renders and eight queued images; reaching a limit pauses observation visibly so the existing recording can finish. New tabs, cross-origin navigation and query/hash-only routes remain outside this continuity scope.

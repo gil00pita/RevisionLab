@@ -30,6 +30,8 @@ const step = z.object({
   position: z.number(),
   createdAt: text,
   capture: captureMetadataSchema.nullable().optional(),
+  captureState: z.enum(["pending", "saved", "unavailable"]).optional(),
+  captureFailure: z.enum(["left-before-ready", "not-ready", "interrupted", "failed"]).nullable().optional(),
 });
 const flow = z.object({
   id,

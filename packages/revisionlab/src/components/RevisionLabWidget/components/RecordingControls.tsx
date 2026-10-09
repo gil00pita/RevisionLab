@@ -39,7 +39,7 @@ export function RecordingControls({
         </Text>
         <Text fontSize="xs" color="fg.muted" overflowWrap="anywhere">
           {recorder.recording.persona} · {recorder.recording.count}{" "}
-          {recorder.recording.count === 1 ? "screen" : "screens"} captured
+          {recorder.recording.count === 1 ? "screen" : "screens"} saved · {recorder.progress.phase}
         </Text>
         <Button
           size="sm"
@@ -64,7 +64,7 @@ export function RecordingControls({
           </Text>
         )}
         <Text fontSize="xs" color="fg.muted" role="status">
-          {recorder.notice || "Recording in progress"}
+          {recorder.progress.warning || (recorder.progress.pending ? `${recorder.progress.pending} visits pending` : recorder.notice || "Recording in progress")}
         </Text>
       </Stack>
     </Box>

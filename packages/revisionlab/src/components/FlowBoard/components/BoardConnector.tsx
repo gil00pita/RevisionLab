@@ -4,7 +4,7 @@ import {
   clickConnectionStart,
   connectionGeometry,
   manualConnectionPoints,
-  type ClickPreviewRect,
+  type ClickPreviewPoint,
 } from "../geometry.js";
 import type { BoardEdge, BoardNode } from "../types.js";
 
@@ -19,7 +19,7 @@ export function BoardConnector({
   source: BoardNode;
   target: BoardNode;
   lane?: number;
-  click?: ClickPreviewRect;
+  click?: ClickPreviewPoint;
 }) {
   if (edge.kind === "manual" || lane !== undefined) {
     const points = manualConnectionPoints(source, target, lane);
@@ -28,7 +28,7 @@ export function BoardConnector({
       <Box aria-hidden="true" pointerEvents="none">
         {edge.kind === "recorded" && click && (
           <ClickLead
-            start={clickConnectionStart(source, target, click)}
+            start={clickConnectionStart(source, click)}
             end={points[0]}
           />
         )}
@@ -95,7 +95,7 @@ export function BoardConnector({
     <Box aria-hidden="true" pointerEvents="none">
       {click && (
         <ClickLead
-          start={clickConnectionStart(source, target, click)}
+          start={clickConnectionStart(source, click)}
           end={geometry.start}
         />
       )}
@@ -171,7 +171,7 @@ function ClickLead({
       transformOrigin="left center"
       borderTopWidth="2px"
       borderStyle="solid"
-      borderColor="pink.border"
+      borderColor="pink.fg"
     />
   );
 }

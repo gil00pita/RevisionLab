@@ -1,13 +1,14 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import { useSearchParams } from "next/navigation";
-import { Portal, Stack, Tabs, Text } from "@chakra-ui/react";
+import { Flex, Portal, Skeleton, Stack, Tabs, Text } from "@chakra-ui/react";
 import type {
   RevisionLabState,
   RevisionLabPersona,
 } from "../../server/types.js";
 import type { TestDetail, TestSession } from "../../test-sessions.js";
 import { apiRequest } from "../../client/api.js";
+import { WorkspacePageSkeleton } from "../WorkspacePageSkeleton/index.js";
 import { SessionList } from "./components/SessionList.js";
 import { NewTestSession } from "./components/NewTestSession.js";
 import { SessionDetails } from "./components/SessionDetails.js";
@@ -126,7 +127,22 @@ export function TestSessions({
     if (selected !== id) {
       setSelected(id);
       setDetail(null);
+      setError("");
     }
+  }
+
+  if (loading && sessions.length === 0) {
+    return (
+      <>
+        <Portal container={headerContainer}>
+          <Flex gap="5" py="3" aria-hidden="true">
+            <Skeleton h="6" w="36" maxW="45%" _motionReduce={{ animation: "none" }} />
+            <Skeleton h="6" w="36" maxW="45%" _motionReduce={{ animation: "none" }} />
+          </Flex>
+        </Portal>
+        <WorkspacePageSkeleton page={selected ? "session" : "sessions"} />
+      </>
+    );
   }
 
   return (
@@ -160,7 +176,6 @@ export function TestSessions({
         {error && (
           <Text role="alert" color="red.fg">{error}</Text>
         )}
-        {loading && <Text role="status">Loading test sessions…</Text>}
         {[
           { value: "current" as const, sessions: current },
           { value: "previous" as const, sessions: previous },
@@ -181,6 +196,7 @@ export function TestSessions({
         {selected && (
           <SessionDetails
             detail={detail}
+            error={error}
             basePath={basePath}
             onClose={() => {
               setSelected(null);

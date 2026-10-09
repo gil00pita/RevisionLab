@@ -1,6 +1,4 @@
 import { Box, Flex, SimpleGrid, Stack } from "@chakra-ui/react";
-import { WorkspaceSidebarHeader } from "../../WorkspaceSidebarHeader.js";
-import { WorkspaceThemeSwitcher } from "../../WorkspaceThemeSwitcher.js";
 import { LoadingBar } from "./LoadingBar.js";
 
 export function LoadingSidebar() {
@@ -17,9 +15,13 @@ export function LoadingSidebar() {
       direction="column"
       borderRightWidth="1px"
       borderColor="border"
+      aria-hidden="true"
       bg="bg.panel"
     >
-      <WorkspaceSidebarHeader />
+      <Flex px="6" h="20" gap="3" align="center" flexShrink="0">
+        <LoadingBar boxSize="8" />
+        <LoadingBar h="5" w="32" maxW="full" />
+      </Flex>
       <Stack px="3" pb="4" gap="4" aria-hidden="true">
         <LoadingBar h="11" w="full" />
         <LoadingBar h={{ base: "11", lg: "10" }} w="full" />
@@ -34,7 +36,7 @@ export function LoadingSidebar() {
         py="2"
         aria-hidden="true"
       >
-        {Array.from({ length: 6 }, (_, index) => (
+        {Array.from({ length: 5 }, (_, index) => (
           <LoadingBar key={index} h="10" w="full" />
         ))}
       </SimpleGrid>
@@ -43,7 +45,9 @@ export function LoadingSidebar() {
           <Box px="3" py="2" aria-hidden="true">
             <LoadingBar h="6" w="28" maxW="full" />
           </Box>
-          <WorkspaceThemeSwitcher />
+          <Box px="3" py="2">
+            <LoadingBar h="6" w="28" maxW="full" />
+          </Box>
         </Stack>
         <Stack px="3" pb="3" gap="2" hideBelow="lg" aria-hidden="true">
           <LoadingBar h="4" w="24" />

@@ -47,12 +47,15 @@ export function RecordingActions({
           {recorder.recording?.discardRequested ? "Retry discard" : "Discard"}
         </Button>
       </Flex>
+      {recorder.progress.error && !recorder.recording?.finishRequested && (
+        <Button size="sm" variant="outline" onClick={() => void recorder.retry()}>Retry recording uploads</Button>
+      )}
       <Text fontSize="xs" color="fg.muted">
         {recorder.recording?.discardRequested
           ? "Recording is stopped. Retry discard to finish removing it."
           : recorder.recording?.finishRequested
             ? "Recording is stopped. Saving must finish before you leave."
-            : "Stop saves the captured screens. Discard removes this unfinished recording."}
+            : "Stop saves all visits and finishes pending captures. Discard removes this unfinished recording."}
       </Text>
     </>
   );

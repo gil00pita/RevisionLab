@@ -9,6 +9,7 @@ import { NoGPSIllustration } from "./components/NoGPSIllustration.js";
 import { NoImagesIllustration } from "./components/NoImagesIllustration.js";
 import { NoItemsCartIllustration } from "./components/NoItemsCartIllustration.js";
 import { NoMessagesIllustration } from "./components/NoMessagesIllustration.js";
+import { NoPersonasIllustration } from "./components/NoPersonasIllustration.js";
 
 const illustrations = {
   done: DoneIllustration,
@@ -21,6 +22,7 @@ const illustrations = {
   images: NoImagesIllustration,
   cart: NoItemsCartIllustration,
   messages: NoMessagesIllustration,
+  personas: NoPersonasIllustration,
 };
 
 export type EmptyStateIllustrationVariant = keyof typeof illustrations;

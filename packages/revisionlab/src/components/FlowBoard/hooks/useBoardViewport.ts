@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { FocusEvent, KeyboardEvent, PointerEvent } from "react";
 import {
   fitBoard,
+  BOARD_CONTROLS_CLEARANCE,
   MAX_BOARD_ZOOM,
   MIN_BOARD_ZOOM,
   wheelZoom,
@@ -23,7 +24,7 @@ export function useBoardViewport(width: number, height: number) {
   } | null>(null);
   const minZoom = Math.min(
     MIN_BOARD_ZOOM,
-    fitBoard(width, height, size.width, size.height).zoom,
+    fitBoard(width, height, size.width, size.height, BOARD_CONTROLS_CLEARANCE).zoom,
   );
 
   const update = useCallback((next: BoardCamera) => {
@@ -111,7 +112,13 @@ export function useBoardViewport(width: number, height: number) {
   function fit() {
     if (element)
       update(
-        fitBoard(width, height, element.clientWidth, element.clientHeight),
+        fitBoard(
+          width,
+          height,
+          element.clientWidth,
+          element.clientHeight,
+          BOARD_CONTROLS_CLEARANCE,
+        ),
       );
   }
 

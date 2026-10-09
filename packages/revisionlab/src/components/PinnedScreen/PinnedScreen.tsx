@@ -8,7 +8,6 @@ import {
   Icon,
   Image,
   Stack,
-  Switch,
   Text,
 } from "@chakra-ui/react";
 import { ImageOff, MessageSquarePlus } from "lucide-react";
@@ -17,6 +16,7 @@ import type {
   RevisionLabPoint,
   RevisionLabStep,
 } from "../../server/types.js";
+import type { ScreenDisplayOptions } from "./types.js";
 import { layoutCommentBubbles } from "./bubble-layout.js";
 import { ScreenCommentBubbles } from "./components/ScreenCommentBubbles.js";
 import { ScreenCommentToolbar } from "./components/ScreenCommentToolbar.js";
@@ -35,6 +35,8 @@ interface PinnedScreenProps {
   onImageReadyChange: (ready: boolean) => void;
   onPlace: (point: RevisionLabPoint) => void;
   onSelectComment: (id: string) => void;
+  displayOptions: ScreenDisplayOptions;
+  onAddComment: () => void;
 }
 
 export function PinnedScreen({
@@ -49,12 +51,11 @@ export function PinnedScreen({
   onImageReadyChange,
   onPlace,
   onSelectComment,
+  displayOptions: { showBubbles, showResolved, showCursor },
+  onAddComment,
 }: PinnedScreenProps) {
   const instructionsId = useId();
   const [zoom, setZoom] = useState(1);
-  const [showResolved, setShowResolved] = useState(false);
-  const [showBubbles, setShowBubbles] = useState(true);
-  const [showCursor, setShowCursor] = useState(false);
   const [commentMode, setCommentMode] = useState(true);
   const [imageState, setImageState] = useState<"loading" | "ready" | "error">(
     "loading",
@@ -81,31 +82,6 @@ export function PinnedScreen({
 
   return (
     <Stack gap="3" minW="0">
-      <ScreenCommentToolbar
-        instructionsId={instructionsId}
-        commentMode={commentMode}
-        showBubbles={showBubbles}
-        showResolved={showResolved}
-        zoom={zoom}
-        onToggleCommentMode={() => setCommentMode(!commentMode)}
-        onToggleBubbles={() => setShowBubbles(!showBubbles)}
-        onToggleResolved={() => setShowResolved(!showResolved)}
-        onZoomChange={setZoom}
-      />
-      {Boolean(step.capture?.cursor.length) && (
-        <Switch.Root
-          size="sm"
-          colorPalette="pink"
-          checked={showCursor}
-          onCheckedChange={(event) => setShowCursor(event.checked)}
-        >
-          <Switch.HiddenInput />
-          <Switch.Control>
-            <Switch.Thumb />
-          </Switch.Control>
-          <Switch.Label>Cursor path</Switch.Label>
-        </Switch.Root>
-      )}
       {imageState === "error" ? (
         <Stack align="center" py="12" gap="3" color="fg.muted">
           <Icon size="xl">
@@ -123,117 +99,130 @@ export function PinnedScreen({
           </Button>
         </Stack>
       ) : (
-        <Box
-          overflow="auto"
-          maxW="full"
-          borderWidth="1px"
-          borderColor="border.emphasized"
-          borderRadius="lg"
-          bg="bg.panel"
-          p="5"
-          maxH="75dvh"
-          tabIndex={0}
-          aria-label="Captured screen with comment pins"
-          focusRing="inside"
-        >
+        <Box position="relative" minW="0">
           <Box
-            position="relative"
-            w={`${zoom * 100}%`}
-            minH={
-              imageState === "loading"
-                ? "40"
-                : showBubbles
-                  ? `${bubbleLayout.height}px`
-                  : undefined
-            }
+            overflow="auto"
+            maxW="full"
+            borderWidth="1px"
+            borderColor="border.emphasized"
+            borderRadius="lg"
+            bg="bg.panel"
+            p="5"
+            pb="20"
+            maxH="75dvh"
+            tabIndex={0}
+            aria-label="Captured screen with comment pins"
+            focusRing="inside"
           >
-            <Box position="relative">
-              <Image
-                ref={imageRef}
-                src={step.screenshot!}
-                alt={`Captured screen: ${step.title}`}
-                w="full"
-                h="auto"
-                display="block"
-                draggable={false}
-                onLoad={() => {
-                  setImageState("ready");
-                  onImageReadyChange(true);
-                }}
-                onError={() => {
-                  setImageState("error");
-                  onImageReadyChange(false);
-                }}
-              />
-              {imageState === "ready" && showCursor && step.capture && (
-                <CursorTrail capture={step.capture} />
-              )}
-              {imageState === "ready" && commentMode && (
-                <Button
-                  unstyled
-                  position="absolute"
-                  inset="0"
+            <Box
+              position="relative"
+              w={`${zoom * 100}%`}
+              minH={
+                imageState === "loading"
+                  ? "40"
+                  : showBubbles
+                    ? `${bubbleLayout.height}px`
+                    : undefined
+              }
+            >
+              <Box position="relative">
+                <Image
+                  ref={imageRef}
+                  src={step.screenshot!}
+                  alt={`Captured screen: ${step.title}`}
                   w="full"
-                  h="full"
+                  h="auto"
                   display="block"
-                  cursor="crosshair"
-                  focusRing="inside"
-                  aria-label={`Add a comment on ${step.title}`}
-                  aria-describedby={instructionsId}
-                  onClick={(event) => {
-                    const rect = event.currentTarget.getBoundingClientRect();
-                    onPlace(
-                      event.detail === 0
-                        ? { x: 0.5, y: 0.5 }
-                        : {
+                  draggable={false}
+                  onLoad={() => {
+                    setImageState("ready");
+                    onImageReadyChange(true);
+                  }}
+                  onError={() => {
+                    setImageState("error");
+                    onImageReadyChange(false);
+                  }}
+                />
+                {imageState === "ready" && showCursor && step.capture && (
+                  <CursorTrail capture={step.capture} />
+                )}
+                {imageState === "ready" && commentMode && (
+                  <Button
+                    unstyled
+                    position="absolute"
+                    inset="0"
+                    w="full"
+                    h="full"
+                    display="block"
+                    cursor="crosshair"
+                    focusRing="inside"
+                    aria-label={`Add a comment on ${step.title}`}
+                    aria-describedby={instructionsId}
+                    onClick={(event) => {
+                      const rect = event.currentTarget.getBoundingClientRect();
+                      onPlace(
+                        event.detail === 0
+                          ? { x: 0.5, y: 0.5 }
+                          : {
                             x: clamp((event.clientX - rect.left) / rect.width),
                             y: clamp((event.clientY - rect.top) / rect.height),
                           },
-                    );
-                  }}
-                />
-              )}
-              {imageState === "ready" && (
-                <ScreenCommentBubbles
-                  pins={pins}
-                  visiblePins={visiblePins}
-                  layout={bubbleLayout}
-                  showBubbles={showBubbles}
-                  selectedCommentId={selectedCommentId}
-                  open={bubbleOpen}
-                  onOpenChange={onBubbleOpenChange}
-                  onSelect={onSelectComment}
-                  pinElements={pinElements}
-                >
-                  {discussion}
-                </ScreenCommentBubbles>
-              )}
-              {imageState === "ready" && anchor && (
-                <Flex
-                  pointerEvents="none"
-                  position="absolute"
-                  left={`${anchor.x * 100}%`}
-                  top={`${anchor.y * 100}%`}
-                  transform="translate(-50%, -50%)"
-                  zIndex="2"
-                  w="9"
-                  h="9"
-                  align="center"
-                  justify="center"
-                  bg="blue.solid"
-                  color="colorPalette.contrast"
-                  borderWidth="2px"
-                  borderColor="bg.panel"
-                  borderRadius="full"
-                  aria-label="New comment location"
-                >
-                  <Icon>
-                    <MessageSquarePlus />
-                  </Icon>
-                </Flex>
-              )}
+                      );
+                    }}
+                  />
+                )}
+                {imageState === "ready" && (
+                  <ScreenCommentBubbles
+                    pins={pins}
+                    visiblePins={visiblePins}
+                    layout={bubbleLayout}
+                    showBubbles={showBubbles}
+                    selectedCommentId={selectedCommentId}
+                    open={bubbleOpen}
+                    onOpenChange={onBubbleOpenChange}
+                    onSelect={onSelectComment}
+                    pinElements={pinElements}
+                  >
+                    {discussion}
+                  </ScreenCommentBubbles>
+                )}
+                {imageState === "ready" && anchor && (
+                  <Flex
+                    pointerEvents="none"
+                    position="absolute"
+                    left={`${anchor.x * 100}%`}
+                    top={`${anchor.y * 100}%`}
+                    transform="translate(-50%, -50%)"
+                    zIndex="2"
+                    w="9"
+                    h="9"
+                    align="center"
+                    justify="center"
+                    bg="blue.solid"
+                    color="colorPalette.contrast"
+                    borderWidth="2px"
+                    borderColor="bg.panel"
+                    borderRadius="full"
+                    aria-label="New comment location"
+                  >
+                    <Icon>
+                      <MessageSquarePlus />
+                    </Icon>
+                  </Flex>
+                )}
+              </Box>
             </Box>
           </Box>
+          <ScreenCommentToolbar
+            instructionsId={instructionsId}
+            commentMode={commentMode}
+            zoom={zoom}
+            onToggleCommentMode={() => {
+              setCommentMode(!commentMode);
+              if (!commentMode) onAddComment();
+            }}
+            onZoomChange={setZoom}
+          />
         </Box>
       )}
     </Stack>

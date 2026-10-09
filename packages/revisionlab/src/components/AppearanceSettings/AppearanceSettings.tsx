@@ -11,11 +11,13 @@ import { BubbleColorPicker } from "./components/BubbleColorPicker.js";
 
 export function AppearanceSettings({
   section,
+  context = "settings",
   value,
   disabled = false,
   onChange,
 }: {
   section: "widget" | "comments" | "accessibility";
+  context?: "wizard" | "settings";
   value: RevisionLabSettings;
   disabled?: boolean;
   onChange: (patch: Partial<RevisionLabSettings>) => void;
@@ -48,6 +50,19 @@ export function AppearanceSettings({
         <Switch.Label lineHeight="tall">{label}</Switch.Label>
       </Switch.Root>
     </Field.Root>
+  );
+  const auditToggles = (
+    <>
+      {toggle("auditLivePages", "Audit live prototype pages")}
+      {toggle("auditRecordings", "Audit recorded screens")}
+    </>
+  );
+  const showStandard =
+    context !== "wizard" || value.auditLivePages || value.auditRecordings;
+  const targetSummary = (
+    <Text color="fg.muted" fontSize="sm">
+      Selected target: {wcagLabel(value)}. AA includes A; AAA includes A and AA.
+    </Text>
   );
   return (
     <Stack gap="6">
@@ -106,38 +121,44 @@ export function AppearanceSettings({
           <Heading as="h3" size="md">
             Automated accessibility checks
           </Heading>
-          <SegmentedField
-            label="WCAG version"
-            value={value.wcagVersion}
-            disabled={disabled}
-            options={wcagVersions.map((version) => ({
-              value: version,
-              label: version,
-            }))}
-            onChange={(version) => {
-              const wcagVersion = wcagVersions.find((item) => item === version);
-              if (wcagVersion) onChange({ wcagVersion });
-            }}
-          />
-          <SegmentedField
-            label="Conformance level"
-            value={value.wcagLevel}
-            disabled={disabled}
-            options={wcagLevels.map((level) => ({
-              value: level,
-              label: level,
-            }))}
-            onChange={(level) => {
-              const wcagLevel = wcagLevels.find((item) => item === level);
-              if (wcagLevel) onChange({ wcagLevel });
-            }}
-          />
-          {toggle("auditLivePages", "Audit live prototype pages")}
-          {toggle("auditRecordings", "Audit recorded screens")}
-          <Text color="fg.muted" fontSize="sm">
-            Selected target: {wcagLabel(value)}. AA includes A; AAA includes A
-            and AA.
-          </Text>
+          {context === "wizard" && auditToggles}
+          {showStandard && (
+            <>
+              <SegmentedField
+                label="WCAG version"
+                value={value.wcagVersion}
+                disabled={disabled}
+                options={wcagVersions.map((version) => ({
+                  value: version,
+                  label: version,
+                }))}
+                onChange={(version) => {
+                  const wcagVersion = wcagVersions.find((item) => item === version);
+                  if (wcagVersion) onChange({ wcagVersion });
+                }}
+              />
+              <SegmentedField
+                label="Conformance level"
+                value={value.wcagLevel}
+                disabled={disabled}
+                options={wcagLevels.map((level) => ({
+                  value: level,
+                  label: level,
+                }))}
+                onChange={(level) => {
+                  const wcagLevel = wcagLevels.find((item) => item === level);
+                  if (wcagLevel) onChange({ wcagLevel });
+                }}
+              />
+              {context === "wizard" && targetSummary}
+            </>
+          )}
+          {context === "settings" && (
+            <>
+              {auditToggles}
+              {targetSummary}
+            </>
+          )}
           <Text color="fg.muted">
             Run supported checks on live pages and new recordings. Some
             criteria, including many AAA requirements, need manual review.

@@ -1,7 +1,7 @@
 import type {
   RevisionLabComment,
   RevisionLabState,
-} from "../../server/types.js";
+} from "./server/types.js";
 
 export function commentGroupKey(comment: RevisionLabComment): string {
   if (comment.edgeId) return `edge:${comment.flowId}:${comment.edgeId}`;
@@ -22,7 +22,7 @@ export function commentContextLabel(
     const edge =
       comment.edge ??
       flow?.board.edges.find((item) => item.id === comment.edgeId);
-    const source = flow?.steps.find(
+    const sourceStep = flow?.steps.find(
       (step) => step.id === edge?.sourceStepId,
     )?.title;
     const target = flow?.steps.find(
@@ -30,7 +30,7 @@ export function commentContextLabel(
     )?.title;
     const path =
       edge?.label ||
-      (source && target ? `${source} → ${target}` : "Connection");
+      (sourceStep && target ? `${sourceStep} → ${target}` : "Connection");
     return `${source}${flow?.name ?? "Flow"} · v${flow?.version ?? "?"} · ${path}${comment.edge?.archived ? " (removed)" : ""}`;
   }
   const step = flow?.steps.find((item) => item.id === comment.stepId);
