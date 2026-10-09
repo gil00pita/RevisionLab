@@ -1,5 +1,5 @@
 import { NotificationSettings } from "../../NotificationSettings/index.js";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -44,6 +44,7 @@ export function SetupWizard({
 }) {
   const wizard = useSetupWizard(data, apiPath, onRefresh, onComplete);
   const [savingDetails, setSavingDetails] = useState(false);
+  const notificationDiscardContainer = useRef<HTMLDivElement>(null);
   const busy = wizard.busy || savingDetails;
   if (data.actor.role !== "owner")
     return (
@@ -133,6 +134,7 @@ export function SetupWizard({
             )}
             {wizard.step >= 1 && wizard.step <= 3 && (
               <AppearanceSettings
+                context="wizard"
                 section={
                   wizard.step === 1
                     ? "widget"
@@ -153,6 +155,7 @@ export function SetupWizard({
                     : `${data.personas.filter((persona) => !persona.archivedAt).length} active personas in your workspace.`}
                 </Text>
                 <PersonaManager
+                  layout="wizard"
                   onBusyChange={setSavingDetails}
                   apiPath={apiPath}
                   personas={data.personas}
@@ -174,6 +177,7 @@ export function SetupWizard({
                 onBusyChange={setSavingDetails}
                 disabled={wizard.busy}
                 onContinue={() => wizard.save()}
+                discardActionContainer={notificationDiscardContainer}
               />
             )}
             {wizard.step === 6 && data.accessSettings && (
@@ -201,7 +205,7 @@ export function SetupWizard({
             >
               Back
             </Button>
-            <Flex gap="3" wrap="wrap">
+            <Flex gap="3" wrap="wrap" minW="0" maxW="full">
               {wizard.progress.step >= 1 && (
                 <Button
                   variant="ghost"
@@ -210,6 +214,9 @@ export function SetupWizard({
                 >
                   Skip remaining steps
                 </Button>
+              )}
+              {wizard.step === 5 && (
+                <Box ref={notificationDiscardContainer} display="contents" />
               )}
               <Button
                 colorPalette="blue"

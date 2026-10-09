@@ -78,6 +78,8 @@ const snapshotTables = {
     "created_at",
     "capture_json",
     "capture_key",
+    "capture_state",
+    "capture_failure",
   ],
   recording_visits: [
     "id",
@@ -86,6 +88,7 @@ const snapshotTables = {
     "step_id",
     "position",
     "interaction_json",
+    "reservation_json",
   ],
   board_edges: [
     "flow_id",
@@ -183,6 +186,7 @@ export function historyAction(method: string, path: string[]): string | null {
   if (path[2] === "discard") return "Discarded a recording";
   if (path[2] === "finish") return "Stopped a recording";
   if (path[2] === "board") return "Edited a flow board";
+  if (path[2] === "visits") return null;
   if (path[2] === "steps") return "Captured a screen";
   if (path[2] === "versions") return "Started a new flow version";
   if (method === "PATCH") return "Changed recording status";
@@ -335,6 +339,7 @@ async function insertRows(
       sql,
       args: columns.map((column) =>
         column === "description" && table !== "personas" ? (row[column] ?? "")
+          : column === "capture_state" ? (row[column] ?? "saved")
           : column === "persona_type" ? (row[column] ?? "Primary")
           : column === "research_status" ? (row[column] ?? "Assumption-Based")
           : column === "confidence_level" ? (row[column] ?? "Not Assessed")
@@ -342,6 +347,8 @@ async function insertRows(
           ? (row[column] ?? "[]")
           : [
                 "ai_instructions_json",
+                "capture_failure",
+                "reservation_json",
                 "avatar",
                 "display_name",
                 "screenshot",

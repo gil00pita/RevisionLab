@@ -71,14 +71,15 @@ export function PersonaRecommendations({
                   {error}
                 </Text>
               )}
-              <Table.ScrollArea>
-                <Table.Root size="sm">
+              <Table.ScrollArea maxW="full" minW="0">
+                <Table.Root size="sm" tableLayout="fixed" whiteSpace="normal" w="full">
                   <Table.Caption>Optional recommended personas</Table.Caption>
                   <Table.Header>
                     <Table.Row>
                       <Table.ColumnHeader>Persona</Table.ColumnHeader>
-                      <Table.ColumnHeader>Description</Table.ColumnHeader>
-                      <Table.ColumnHeader>Add</Table.ColumnHeader>
+                      <Table.ColumnHeader w="24" hideBelow="md">
+                        Add
+                      </Table.ColumnHeader>
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
@@ -90,32 +91,45 @@ export function PersonaRecommendations({
                             saved.name.toLowerCase() ===
                             persona.name.toLowerCase(),
                         );
+                      const addButton = (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          maxW="full"
+                          whiteSpace="normal"
+                          h="auto"
+                          py="2"
+                          aria-label={`${exists ? "Added" : "Add"} ${persona.name}`}
+                          disabled={Boolean(busy) || exists}
+                          loading={busy === persona.name}
+                          onClick={() => void add(persona)}
+                        >
+                          {exists ? "Added" : "Add"}
+                        </Button>
+                      );
                       return (
                         <Table.Row key={persona.name}>
-                          <Table.Cell minW="48">
-                            <HStack gap="3">
+                          <Table.Cell minW="0" verticalAlign="top">
+                            <HStack gap="3" align="start" minW="0">
                               <PersonaAvatar
                                 name={persona.name}
                                 avatar={persona.avatar}
                               />
-                              <Text fontWeight="medium">{persona.name}</Text>
+                              <Stack gap="1" minW="0">
+                                <Text fontWeight="medium" overflowWrap="anywhere">
+                                  {persona.name}
+                                </Text>
+                                <Text color="fg.muted" whiteSpace="normal" overflowWrap="anywhere">
+                                  {persona.description}
+                                </Text>
+                              </Stack>
                             </HStack>
+                            <Stack hideFrom="md" align="start" mt="3" minW="0">
+                              {addButton}
+                            </Stack>
                           </Table.Cell>
-                          <Table.Cell minW="40" color="fg.muted">
-                            {persona.description}
-                          </Table.Cell>
-                          <Table.Cell>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              flexShrink="0"
-                              aria-label={`${exists ? "Added" : "Add"} ${persona.name}`}
-                              disabled={Boolean(busy) || exists}
-                              loading={busy === persona.name}
-                              onClick={() => void add(persona)}
-                            >
-                              {exists ? "Added" : "Add"}
-                            </Button>
+                          <Table.Cell verticalAlign="top" hideBelow="md">
+                            {addButton}
                           </Table.Cell>
                         </Table.Row>
                       );

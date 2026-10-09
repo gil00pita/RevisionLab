@@ -170,7 +170,7 @@ export function CommentNotifications({
                     <Link
                       color="blue.fg"
                       minH="11"
-                      href={`${basePath}?${new URLSearchParams({ view: "comments", workspace: "local", comment: item.commentId })}`}
+                      href={`${basePath}?${new URLSearchParams({ view: "feedback", workspace: "local", comment: item.commentId })}`}
                     >
                       Open comment
                     </Link>

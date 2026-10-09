@@ -100,7 +100,7 @@ export function WorkspaceSidebar({
           py="2"
           whiteSpace="normal"
           colorPalette="blue"
-          variant="solid"
+          variant={view === "personas" ? "ghost" : "solid"}
           justifyContent="flex-start"
           focusRing="inside"
         >

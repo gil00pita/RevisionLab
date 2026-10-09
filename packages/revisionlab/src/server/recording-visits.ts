@@ -36,6 +36,7 @@ export async function recordVisit({
   stepIds,
   stepId,
   interaction,
+  visitId,
 }: {
   transaction: Transaction;
   flowId: string;
@@ -43,6 +44,7 @@ export async function recordVisit({
   stepIds: string[];
   stepId: string;
   interaction?: z.infer<typeof interactionSchema>;
+  visitId?: string;
 }) {
   const visits = await transaction.execute({
     sql: "SELECT * FROM recording_visits WHERE flow_id = ? ORDER BY position",
@@ -103,7 +105,7 @@ export async function recordVisit({
   await transaction.execute({
     sql: "INSERT INTO recording_visits (id, flow_id, source_step_id, step_id, position, interaction_json) VALUES (?, ?, ?, ?, ?, ?)",
     args: [
-      randomUUID(),
+      visitId ?? randomUUID(),
       flowId,
       sourceId,
       stepId,

@@ -5,11 +5,13 @@ import { loadRecording, saveRecording } from "./recording.js";
 export async function finishPendingRecording(
   apiPath: string,
   pendingCapture: Promise<boolean> | null,
+  drain?: () => Promise<void>,
 ) {
   const target = loadRecording();
   if (!target || target.discardRequested) return null;
   saveRecording({ ...target, finishRequested: true });
   await pendingCapture;
+  await drain?.();
   if (loadRecording()?.flowId !== target.flowId) return null;
   const { outcome } = await apiRequest<{ outcome: "saved" | "empty" }>(
     apiPath,

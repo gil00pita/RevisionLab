@@ -1,3 +1,4 @@
+import { WorkspacePageSkeleton } from "../../WorkspacePageSkeleton/index.js";
 import { AI_INSTRUCTIONS_MAX_LENGTH } from "../../../ai-instructions.js";
 import {
   Box,
@@ -46,24 +47,20 @@ export function AiInstructionsSettings({
     discard,
   } = useAiInstructions({ apiPath, value, canEdit, onRefresh });
 
+  if (!filePath && loading) return <WorkspacePageSkeleton page="instructions" variant="content" />;
+
   if (!filePath)
     return (
       <Stack gap="4" aria-busy={loading}>
         <Heading as="h2" size="md">
           AI Instructions
         </Heading>
-        {loading ? (
-          <Text role="status">Loading AI instructions...</Text>
-        ) : (
-          <>
-            <Text role="alert" color="red.fg">
-              {error}
-            </Text>
-            <Button variant="outline" alignSelf="start" onClick={retry}>
-              Retry loading instructions
-            </Button>
-          </>
-        )}
+        <Text role="alert" color="red.fg">
+          {error}
+        </Text>
+        <Button variant="outline" alignSelf="start" onClick={retry}>
+          Retry loading instructions
+        </Button>
       </Stack>
     );
 

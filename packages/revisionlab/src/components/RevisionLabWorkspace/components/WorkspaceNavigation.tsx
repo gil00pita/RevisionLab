@@ -2,7 +2,6 @@ import { Badge, Icon, Stack } from "@chakra-ui/react";
 import {
   GitBranch,
   FlaskConical,
-  MessageSquare,
   ContactRound,
   LayoutDashboard,
   ClipboardList,
@@ -11,14 +10,8 @@ import type { RefObject } from "react";
 import { WorkspaceNavigationButton as NavigationButton } from "./WorkspaceNavigationButton.js";
 import type { RevisionLabState } from "../../../server/types.js";
 
-export type WorkspaceView =
-  | "dashboard"
-  | "sessions"
-  | "flows"
-  | "comments"
-  | "feedback"
-  | "personas"
-  | "settings";
+import type { WorkspaceView } from "../../../workspace-view.js";
+export type { WorkspaceView } from "../../../workspace-view.js";
 
 export function WorkspaceNavigation({
   data,
@@ -71,22 +64,6 @@ export function WorkspaceNavigation({
           <FlaskConical />
         </Icon>
         Test sessions
-      </NavigationButton>
-      <NavigationButton
-        active={view === "comments"}
-        onClick={() => onViewChange("comments")}
-      >
-        <Icon>
-          <MessageSquare />
-        </Icon>
-        Comments
-        <Badge ml="auto" colorPalette="blue" bg="blue.subtle" color="blue.fg">
-          {
-            data.comments.filter(
-              (comment) => !comment.parentId && comment.status === "open",
-            ).length
-          } open
-        </Badge>
       </NavigationButton>
       <NavigationButton
         active={view === "feedback"}

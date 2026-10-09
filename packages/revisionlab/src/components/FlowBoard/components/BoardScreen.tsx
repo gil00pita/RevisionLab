@@ -6,7 +6,6 @@ import {
   Flex,
   Icon,
   IconButton,
-  Image,
   Text,
 } from "@chakra-ui/react";
 import { Grip, ImageOff, MessageCircle, Trash2 } from "lucide-react";
@@ -16,11 +15,13 @@ import {
   CARD_HEADER_HEIGHT,
   CARD_HEIGHT,
   CARD_WIDTH,
-  type ClickPreviewRect,
 } from "../geometry.js";
 import type { BoardNode } from "../types.js";
 import { useBoardNodeDrag } from "../hooks/useBoardNodeDrag.js";
-import { CursorTrail } from "../../CursorTrail/index.js";
+import {
+  BoardScreenPreview,
+  type BoardClickTarget,
+} from "./BoardScreenPreview.js";
 import { AccessibilityStatus } from "../../AccessibilityStatus/index.js";
 
 interface BoardScreenProps {
@@ -39,7 +40,7 @@ interface BoardScreenProps {
   onConnect?: () => void;
   onRemove?: () => void;
   showCursor: boolean;
-  clickTargets: { edgeId: string; rect: ClickPreviewRect; label: string }[];
+  clickTargets: BoardClickTarget[];
 }
 
 export function BoardScreen({
@@ -144,6 +145,7 @@ export function BoardScreen({
       </Flex>
       <Button
         variant="plain"
+        borderWidth="0"
         w="full"
         h={`calc(100% - ${CARD_HEADER_HEIGHT}px)`}
         p="0"
@@ -163,46 +165,11 @@ export function BoardScreen({
         _hover={{ bg: "blue.subtle" }}
       >
         {step.screenshot ? (
-          <Box
-            position="relative"
-            flex="1"
-            minH="0"
-            w="full"
-            flexShrink="0"
-            overflow="hidden"
-          >
-            <Image
-              src={step.screenshot}
-              alt=""
-              h="full"
-              w="full"
-              objectFit="cover"
-              objectPosition="top"
-              loading="lazy"
-              draggable={false}
-            />
-            {showCursor && step.capture && (
-              <CursorTrail capture={step.capture} cover />
-            )}
-            {clickTargets.map(({ edgeId, rect, label }) => (
-              <Box
-                key={edgeId}
-                aria-hidden="true"
-                title={`Recorded click: ${label}`}
-                position="absolute"
-                left={`${rect.x - 1}px`}
-                top={`${rect.y - CARD_HEADER_HEIGHT - 1}px`}
-                w={`${rect.width}px`}
-                h={`${rect.height}px`}
-                borderWidth="2px"
-                borderStyle="solid"
-                borderColor="pink.border"
-                bg="pink.solid/10"
-                borderRadius="md"
-                pointerEvents="none"
-              />
-            ))}
-          </Box>
+          <BoardScreenPreview
+            step={step}
+            showCursor={showCursor}
+            clickTargets={clickTargets}
+          />
         ) : (
           <Flex
             flex="1"
@@ -216,7 +183,7 @@ export function BoardScreen({
             <Icon>
               <ImageOff />
             </Icon>
-            <Text fontSize="xs">No capture</Text>
+            <Text fontSize="xs">{step.captureState === "pending" ? "Capture pending" : step.captureState === "unavailable" ? "Capture unavailable" : "No capture"}</Text>
           </Flex>
         )}
         <Box

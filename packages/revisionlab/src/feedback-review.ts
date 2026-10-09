@@ -85,6 +85,11 @@ export function groupEvidence(evidence: ReviewEvidence[]): EvidenceGroup[] {
   return [...groups.values()];
 }
 
+export function matchesFeedbackRoute(item: ReviewEvidence, route: string | null) {
+  return route === null ||
+    (item.kind === "comment" && item.route === route && !item.flowId);
+}
+
 export function evidenceReviewPath(item: ReviewEvidence, basePath: string) {
   const query = new URLSearchParams({ workspace: "local" });
   if (item.kind === "test" && item.sessionId) {
@@ -94,8 +99,8 @@ export function evidenceReviewPath(item: ReviewEvidence, basePath: string) {
     query.set("flow", item.flowId);
     query.set("screen", item.stepId);
   } else {
-    query.set("view", "comments");
-    // The Comments route filter only supports page comments, not flow edges.
+    query.set("view", "feedback");
+    if (item.commentId) query.set("comment", item.commentId);
     if (!item.flowId) query.set("route", item.route);
   }
   return `${basePath}?${query}`;

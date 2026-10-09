@@ -6,6 +6,8 @@ export interface BoardCamera {
 
 export const MIN_BOARD_ZOOM = 0.1;
 export const MAX_BOARD_ZOOM = 3;
+// Keep fitted connections above the floating zoom controls, including on mobile.
+export const BOARD_CONTROLS_CLEARANCE = 72;
 
 const WHEEL_LINE_HEIGHT = 16;
 const MAX_WHEEL_DELTA = 100;
@@ -45,6 +47,7 @@ export function fitBoard(
   height: number,
   viewportWidth: number,
   viewportHeight: number,
+  bottomInset = 0,
 ): BoardCamera {
   if (
     [width, height, viewportWidth, viewportHeight].some(
@@ -54,15 +57,19 @@ export function fitBoard(
     return { zoom: 1, x: 0, y: 0 };
   }
 
+  const availableHeight = Math.max(
+    1,
+    viewportHeight - Math.max(0, finite(bottomInset)),
+  );
   // A large board can require less than the ordinary manual zoom minimum.
   const zoom = Math.max(
     Number.MIN_VALUE,
-    Math.min(1, viewportWidth / width, viewportHeight / height),
+    Math.min(1, viewportWidth / width, availableHeight / height),
   );
   return {
     zoom,
     x: (viewportWidth - width * zoom) / 2,
-    y: (viewportHeight - height * zoom) / 2,
+    y: (availableHeight - height * zoom) / 2,
   };
 }
 

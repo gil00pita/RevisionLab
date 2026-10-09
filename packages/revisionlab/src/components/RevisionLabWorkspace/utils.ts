@@ -1,5 +1,5 @@
 import type { RevisionLabState } from "../../server/types.js";
-import { commentContextLabel } from "./comment-context.js";
+import { commentContextLabel } from "../../comment-context.js";
 
 export function downloadReport(data: RevisionLabState) {
   const markdown = [

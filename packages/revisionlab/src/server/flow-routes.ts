@@ -1,3 +1,5 @@
+import { journalVisit, completeJournalCapture, updateJournalAudit } from "./recording-journal.js";
+import { assertRecordingDrained } from "./recording-finish.js";
 import { notifyReviewEvent } from "./notifications/events.js";
 import { createHash, randomUUID } from "node:crypto";
 import type { Client, Transaction } from "@libsql/client";
@@ -22,16 +24,8 @@ import { interactionSchema, recordVisit } from "./recording-visits.js";
 import { HttpError, json, readJson } from "./security.js";
 import type { RevisionLabActor } from "./types.js";
 
-export const routeSchema = z
-  .string()
-  .trim()
-  .min(1)
-  .max(500)
-  .regex(/^\/(?!\/)/, "Use a same-origin pathname.")
-  .refine(
-    (route) => !/[\\\u0000-\u001f]/.test(route),
-    "Use a same-origin pathname.",
-  );
+export { routeSchema } from "./prototype-route.js";
+import { routeSchema } from "./prototype-route.js";
 const flowSchema = z.object({
   name: z.string().trim().min(1).max(120),
   persona: z.string().trim().min(1).max(120).optional(),
@@ -80,7 +74,7 @@ export async function handleFlows(
     throw new HttpError(404, "Recording not found.");
   if (
     (path.length === 2 && request.method === "PATCH") ||
-    ["steps", "discard", "finish"].includes(path[2])
+    ["steps", "visits", "discard", "finish"].includes(path[2])
   ) {
     const test = await client.execute({
       sql: "SELECT id FROM test_sessions WHERE flow_id = ?",
@@ -97,6 +91,14 @@ export async function handleFlows(
   }
   if (request.method === "PATCH" && path.length === 3 && path[2] === "board") {
     return saveBoard(request, path[1], client);
+  }
+  if (path[2] === "visits") {
+    if (request.method === "POST" && path.length === 3)
+      return journalVisit(request, path[1], client);
+    if (request.method === "PATCH" && z.string().uuid().safeParse(path[3]).success) {
+      if (path.length === 4) return completeJournalCapture(request, path[1], path[3], client, config);
+      if (path.length === 5 && path[4] === "audit") return updateJournalAudit(request, path[1], path[3], client, config);
+    }
   }
   if (request.method === "POST" && path.length === 3 && path[2] === "steps") {
     return captureStep(request, path[1], client, config);
@@ -164,6 +166,7 @@ export async function handleFlows(
           "Completed versions are preserved. Start a new version to record changes.",
         );
       }
+      if (input.status === "complete") await assertRecordingDrained(transaction, path[1]);
       await transaction.execute({
         sql: "UPDATE flows SET status = ?, updated_at = ? WHERE id = ?",
         args: [input.status, new Date().toISOString(), path[1]],
@@ -230,7 +233,7 @@ export async function captureStep(
             input.title,
             input.route,
             artifact?.id ?? null,
-            count,
+            result.rows.length ? Math.max(...result.rows.map((row) => Number(row.position))) + 1 : 0,
             now,
             input.capture ? JSON.stringify(input.capture) : null,
             key,

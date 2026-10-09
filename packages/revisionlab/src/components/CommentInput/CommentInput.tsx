@@ -6,8 +6,8 @@ import {
   createListCollection,
   Field,
   Stack,
-  Textarea,
 } from "@chakra-ui/react";
+import { ControlledCommentTextarea } from "./components/ControlledCommentTextarea.js";
 import { CommentSuggestions } from "./components/CommentSuggestions.js";
 import { commentChoices } from "./choices.js";
 import { CommentComposerTools } from "./components/CommentComposerTools.js";
@@ -64,7 +64,7 @@ export function CommentInput({
   const [dismissed, setDismissed] = useState<string | null>(null);
   const open = focused && items.length > 0 && dismissed !== value;
   const textarea = (
-    <Textarea
+    <ControlledCommentTextarea
       ref={inputRef}
       id={id}
       value={value}

@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Button, Flex, Heading, Stack, Text } from "@chakra-ui/react";
 import {
   groupEvidence,
+  matchesFeedbackRoute,
   type EvidenceKind,
   type ReviewEvidence,
   type ReviewTicket,
@@ -16,6 +17,8 @@ import type { RevisionLabPersona } from "../../../server/types.js";
 
 export function FeedbackInbox({
   evidence,
+  route,
+  onClearRoute,
   tickets,
   basePath,
   apiPath,
@@ -32,6 +35,8 @@ export function FeedbackInbox({
   templateError,
 }: {
   evidence: ReviewEvidence[];
+  route: string | null;
+  onClearRoute: () => void;
   tickets: ReviewTicket[];
   basePath: string;
   apiPath: string;
@@ -59,7 +64,8 @@ export function FeedbackInbox({
   const [sort, setSort] = useState<FeedbackSort>("newest");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const inbox = useRef<HTMLDivElement>(null);
-  const groups = groupEvidence(evidence);
+  const pageEvidence = evidence.filter((item) => matchesFeedbackRoute(item, route));
+  const groups = groupEvidence(pageEvidence);
   const entries = sortFeedbackTimeline(
     groups.filter(
       (group) =>
@@ -114,6 +120,16 @@ export function FeedbackInbox({
         shared tickets. Fixed tickets hide their linked feedback; their evidence
         stays in the ticket.
       </Text>
+      {route !== null && (
+        <Flex gap="3" align="center" justify="space-between" flexWrap="wrap">
+          <Text fontSize="sm" color="fg.muted" overflowWrap="anywhere">
+            Page feedback: {route}
+          </Text>
+          <Button size="sm" variant="outline" disabled={editing || busy} onClick={onClearRoute}>
+            All feedback
+          </Button>
+        </Flex>
+      )}
       <FeedbackFilters
         search={search}
         onSearch={setSearch}
@@ -168,7 +184,7 @@ export function FeedbackInbox({
         apiPath={apiPath}
         personas={personas}
         entries={entries}
-        hasEvidence={Boolean(evidence.length)}
+        hasEvidence={Boolean(pageEvidence.length)}
         basePath={basePath}
         selected={selected}
         covered={covered}

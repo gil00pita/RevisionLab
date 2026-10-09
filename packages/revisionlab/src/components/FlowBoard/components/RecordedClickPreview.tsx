@@ -3,14 +3,13 @@ import {
   Box,
   createListCollection,
   Field,
-  Icon,
   Image,
   Portal,
   Select,
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { MousePointer2 } from "lucide-react";
+import { recordedClickPoint } from "../geometry.js";
 import type {
   RevisionLabStep,
   RevisionLabTransition,
@@ -27,7 +26,8 @@ export function RecordedClickPreview({
   const visit =
     transitions.find((item) => item.id === selected) ?? transitions[0];
   const interaction = visit?.interaction;
-  const pointY = interaction?.point?.y;
+  const point = recordedClickPoint(interaction ?? null);
+  const pointY = point?.y;
   const viewport = useRef<HTMLDivElement>(null);
   const image = useRef<HTMLDivElement>(null);
   const collection = createListCollection({
@@ -123,52 +123,32 @@ export function RecordedClickPreview({
                   h="full"
                   draggable={false}
                 />
-                {interaction.bounds && (
-                  <Box
-                    aria-hidden="true"
-                    position="absolute"
-                    pointerEvents="none"
-                    left={`${interaction.bounds.x * 100}%`}
-                    top={`${interaction.bounds.y * 100}%`}
-                    w={`${interaction.bounds.width * 100}%`}
-                    h={`${interaction.bounds.height * 100}%`}
-                    borderWidth="2px"
-                    borderColor="pink.border"
-                    bg="pink.solid/10"
-                  />
-                )}
-                {interaction.point && (
+                {point && (
                   <Box
                     role="img"
                     aria-label={
                       interaction.activation === "keyboard"
                         ? "Activated element center"
-                        : "Click position"
+                        : interaction.point
+                          ? "Click position"
+                          : "Recorded target center"
                     }
                     position="absolute"
                     pointerEvents="none"
-                    left={`${interaction.point.x * 100}%`}
-                    top={`${interaction.point.y * 100}%`}
+                    left={`${point.x * 100}%`}
+                    top={`${point.y * 100}%`}
                     transform="translate(-50%, -50%)"
-                    boxSize="6"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
+                    boxSize="10px"
                     bg="pink.solid"
-                    color="colorPalette.contrast"
                     borderWidth="1px"
                     borderColor="bg.panel"
                     borderRadius="full"
-                  >
-                    <Icon boxSize="4">
-                      <MousePointer2 />
-                    </Icon>
-                  </Box>
+                  />
                 )}
               </Box>
             </Box>
           )}
-          {!interaction.point && (
+          {!point && (
             <Text fontSize="xs" color="fg.muted">
               The click was outside the captured image.
             </Text>

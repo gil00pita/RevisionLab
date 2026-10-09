@@ -72,7 +72,7 @@ function Widget({
   );
   const settings = data?.settings ?? defaultSettings;
   const live = useLiveFeedback(route, settings.showCommentBubbles);
-  const commentsHref = `${basePath}?${new URLSearchParams({ view: "comments", route })}`;
+  const commentsHref = `${basePath}?${new URLSearchParams({ view: "feedback", route })}`;
   const pageComments =
     data?.comments.filter(
       (comment) =>

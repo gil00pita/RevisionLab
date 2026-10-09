@@ -37,11 +37,11 @@ export function WorkspacePersonas({
       source.status !== "unavailable",
   );
   return (
-    <Stack gap="4">
+    <Stack gap="4" bg="bg.subtle" flex="1">
       {sources.map((source) => (
         <Stack key={source.id} gap="0">
           {sources.length > 1 && (
-            <Heading as="h2" size="md" px={{ base: "5", md: "8" }} pt="5">
+            <Heading as="h2" size="md" px={{ base: "4", md: "6" }} pt="5">
               {source.name}
             </Heading>
           )}

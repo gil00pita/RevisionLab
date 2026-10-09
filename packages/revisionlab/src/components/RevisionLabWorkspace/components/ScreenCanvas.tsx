@@ -3,7 +3,6 @@ import { IllustratedEmptyState } from "../../IllustratedEmptyState/index.js";
 import type { ReactNode, RefObject } from "react";
 import {
   Badge,
-  Box,
   Button,
   Flex,
   Heading,
@@ -20,7 +19,7 @@ import type {
   RevisionLabPoint,
 } from "../../../server/types.js";
 import { safePrototypeRoute } from "../../../client/recording.js";
-import { PinnedScreen } from "../../PinnedScreen/index.js";
+import { PinnedScreen, type ScreenDisplayOptions } from "../../PinnedScreen/index.js";
 
 export function ScreenCanvas({
   flow,
@@ -37,6 +36,8 @@ export function ScreenCanvas({
   onImageReadyChange,
   onPlace,
   onSelectComment,
+  displayOptions,
+  onAddComment,
 }: {
   flow: RevisionLabFlow;
   step?: RevisionLabStep;
@@ -52,6 +53,8 @@ export function ScreenCanvas({
   onImageReadyChange: (ready: boolean) => void;
   onPlace: (point: RevisionLabPoint) => void;
   onSelectComment: (id: string) => void;
+  displayOptions: ScreenDisplayOptions;
+  onAddComment: () => void;
 }) {
   return (
     <Stack gap="0" flex="1" minW="0" bg="bg.subtle">
@@ -71,7 +74,10 @@ export function ScreenCanvas({
             flexShrink="0"
             h="auto"
             p="3"
-            maxW="60"
+            maxW="72"
+            minW="48"
+            justifyContent="start"
+            textAlign="start"
             bg={screen.id === step?.id ? "blue.subtle" : "bg.panel"}
             borderColor={screen.id === step?.id ? "blue.border" : "border.emphasized"}
             color="fg"
@@ -81,7 +87,12 @@ export function ScreenCanvas({
             <Badge colorPalette={screen.id === step?.id ? "blue" : "gray"}>
               {index + 1}
             </Badge>
-            <Text truncate>{screen.title}</Text>
+            <Stack gap="1" minW="0">
+              <Text truncate fontWeight="medium">{screen.title}</Text>
+              <Text truncate fontFamily="mono" fontSize="xs" color="fg.muted" title={screen.route}>
+                {screen.route}
+              </Text>
+            </Stack>
           </Button>
         ))}
         {flow.steps.length === 0 && (
@@ -95,44 +106,12 @@ export function ScreenCanvas({
       </Flex>
       {step ? (
         <Stack gap="4" p={{ base: "4", md: "6" }}>
-          <Flex justify="space-between" align="start" gap="4" flexWrap="wrap">
-            <Box minW="0">
-              <Heading as="h2" size="lg" overflowWrap="anywhere">
-                {step.title}
-              </Heading>
-              <Text
-                color="fg.muted"
-                fontFamily="mono"
-                fontSize="xs"
-                mt="2"
-                overflowWrap="anywhere"
-              >
-                {step.route}
-              </Text>
-            </Box>
-            <Link
-              href={
-                flow.workspace && flow.workspace.id !== "local"
-                  ? new URL(
-                      safePrototypeRoute(step.route, flow.workspace.basePath),
-                      flow.workspace.url,
-                    ).toString()
-                  : safePrototypeRoute(step.route, basePath)
-              }
-              color="blue.fg"
-              fontSize="sm"
-              flexShrink="0"
-            >
-              Open page
-              <Icon>
-                <ArrowUpRight />
-              </Icon>
-            </Link>
-          </Flex>
           {step.screenshot ? (
             <PinnedScreen
               key={step.id}
               step={step}
+              displayOptions={displayOptions}
+              onAddComment={onAddComment}
               comments={comments}
               anchor={anchor}
               selectedCommentId={selectedCommentId}
@@ -145,27 +124,36 @@ export function ScreenCanvas({
               onSelectComment={onSelectComment}
             />
           ) : (
-            <IllustratedEmptyState illustration="images" description="This step has no captured image." />
+            <IllustratedEmptyState illustration="images" description={step.captureState === "pending" ? "This page visit is saved. Its image capture is pending." : step.captureState === "unavailable" ? "This page visit and its connections are saved, but its image capture is unavailable." : "This step has no captured image."} />
           )}
-          {step.screenshot && (
+          <Flex align="center" gap="3" flexWrap="wrap" fontSize="xs" color="fg.muted">
             <Link
-              href={step.screenshot}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={
+                flow.workspace && flow.workspace.id !== "local"
+                  ? new URL(
+                    safePrototypeRoute(step.route, flow.workspace.basePath),
+                    flow.workspace.url,
+                  ).toString()
+                  : safePrototypeRoute(step.route, basePath)
+              }
               color="blue.fg"
-              fontSize="sm"
-              alignSelf="start"
+              fontSize="xs"
+              flexShrink="0"
             >
-              View full-size capture
+              Open page
               <Icon>
                 <ArrowUpRight />
               </Icon>
             </Link>
-          )}
-          <Text fontSize="xs" color="fg.muted">
-            Captured {new Date(step.createdAt).toLocaleString()} ·{" "}
-            {flow.persona} · version {flow.version}
-          </Text>
+            {step.screenshot && (
+              <Link href={step.screenshot} target="_blank" rel="noopener noreferrer" color="blue.fg" fontSize="xs" flexShrink="0">
+                View full-size capture <Icon><ArrowUpRight /></Icon>
+              </Link>
+            )}
+            <Text>
+              {step.screenshot ? "Captured" : "Visited"} {new Date(step.createdAt).toLocaleString()} · {flow.persona} · version {flow.version}
+            </Text>
+          </Flex>
         </Stack>
       ) : (
         <Stack

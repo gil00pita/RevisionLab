@@ -1,85 +1,115 @@
 import type { RevisionLabClick, RevisionLabStep } from "../../server/types.js";
 import type { BoardEdge, BoardNode } from "./types.js";
 
-export const CARD_WIDTH = 300;
-export const CARD_HEIGHT = 300;
+export const BOARD_LAYOUT_SCALE = 2;
 export const BOARD_PADDING = 48;
 export const CARD_HEADER_HEIGHT = 32;
 export const CARD_DETAILS_HEIGHT = 56;
-export const CARD_IMAGE_WIDTH = CARD_WIDTH - 2;
-export const CARD_IMAGE_HEIGHT =
-  CARD_HEIGHT - 2 - CARD_HEADER_HEIGHT - CARD_DETAILS_HEIGHT;
+export const CARD_IMAGE_WIDTH = 298 * BOARD_LAYOUT_SCALE;
+export const CARD_IMAGE_HEIGHT = 210 * BOARD_LAYOUT_SCALE;
+export const CARD_WIDTH = CARD_IMAGE_WIDTH + 2;
+export const CARD_HEIGHT =
+  CARD_IMAGE_HEIGHT + 2 + CARD_HEADER_HEIGHT + CARD_DETAILS_HEIGHT;
 
-export interface ClickPreviewRect {
+export interface PreviewFrame {
   x: number;
   y: number;
   width: number;
   height: number;
 }
 
-/** Match the screenshot's top-aligned, centered object-fit: cover crop. */
-export function clickPreviewRect(
+export interface ClickPreviewPoint {
+  x: number;
+  y: number;
+}
+
+/** Keep persisted coordinates unchanged while spacing the enlarged cards apart. */
+export function displayNode(node: BoardNode): BoardNode {
+  return {
+    ...node,
+    x: node.x * BOARD_LAYOUT_SCALE,
+    y: node.y * BOARD_LAYOUT_SCALE,
+  };
+}
+
+export function storedPosition(x: number, y: number) {
+  return { x: x / BOARD_LAYOUT_SCALE, y: y / BOARD_LAYOUT_SCALE };
+}
+
+/** Match the full screenshot's top-aligned, centered object-fit: contain. */
+export function screenshotPreviewFrame(
   step: RevisionLabStep,
-  click: RevisionLabClick | null,
-): ClickPreviewRect | null {
+): PreviewFrame | null {
   const capture = step.capture;
-  if (!step.screenshot || !capture || !click) return null;
-  if (!(capture.width > 0 && capture.height > 0)) return null;
-  const bounds = click.bounds;
-  const point = click.point;
-  const values = bounds
-    ? [bounds.x, bounds.y, bounds.width, bounds.height]
-    : point
-      ? [point.x, point.y]
-      : [];
-  if (!values.length || values.some((value) => !Number.isFinite(value)))
+  if (
+    !capture ||
+    ![capture.width, capture.height].every(
+      (value) => Number.isFinite(value) && value > 0,
+    )
+  )
     return null;
-  const scale = Math.max(
+  const scale = Math.min(
     CARD_IMAGE_WIDTH / capture.width,
     CARD_IMAGE_HEIGHT / capture.height,
   );
-  const cropX = (capture.width * scale - CARD_IMAGE_WIDTH) / 2;
-  const left = bounds
-    ? bounds.x * capture.width * scale - cropX
-    : point!.x * capture.width * scale - cropX - 9;
-  const top = bounds
-    ? bounds.y * capture.height * scale
-    : point!.y * capture.height * scale - 9;
-  const right = left + (bounds ? bounds.width * capture.width * scale : 18);
-  const bottom = top + (bounds ? bounds.height * capture.height * scale : 18);
-  if (
-    right <= 0 ||
-    left >= CARD_IMAGE_WIDTH ||
-    bottom <= 0 ||
-    top >= CARD_IMAGE_HEIGHT
-  )
-    return null;
-  const x = Math.max(0, left);
-  const y = Math.max(0, top);
+  const width = capture.width * scale;
   return {
-    x: x + 1,
-    y: y + CARD_HEADER_HEIGHT + 1,
-    width: Math.max(1, Math.min(CARD_IMAGE_WIDTH, right) - x),
-    height: Math.max(1, Math.min(CARD_IMAGE_HEIGHT, bottom) - y),
+    x: (CARD_IMAGE_WIDTH - width) / 2,
+    y: 0,
+    width,
+    height: capture.height * scale,
+  };
+}
+
+export function recordedClickPoint(
+  click: RevisionLabClick | null,
+): ClickPreviewPoint | null {
+  if (!click) return null;
+  const bounds = click.bounds;
+  const validBounds =
+    bounds &&
+    [bounds.x, bounds.y, bounds.width, bounds.height].every(Number.isFinite) &&
+    bounds.width > 0 &&
+    bounds.height > 0 &&
+    bounds.x >= 0 &&
+    bounds.y >= 0 &&
+    bounds.x + bounds.width <= 1 &&
+    bounds.y + bounds.height <= 1;
+  const point = click.point ??
+    (validBounds
+      ? {
+          x: bounds.x + bounds.width / 2,
+          y: bounds.y + bounds.height / 2,
+        }
+      : null);
+  return point &&
+    [point.x, point.y].every(
+      (value) => Number.isFinite(value) && value >= 0 && value <= 1,
+    )
+    ? point
+    : null;
+}
+
+export function clickPreviewPoint(
+  step: RevisionLabStep,
+  click: RevisionLabClick | null,
+): ClickPreviewPoint | null {
+  const frame = screenshotPreviewFrame(step);
+  const point = recordedClickPoint(click);
+  if (!step.screenshot || !frame || !point) return null;
+  return {
+    x: frame.x + point.x * frame.width + 1,
+    y: point.y * frame.height + CARD_HEADER_HEIGHT + 1,
   };
 }
 
 export function clickConnectionStart(
   source: BoardNode,
-  target: BoardNode,
-  click: ClickPreviewRect,
+  click: ClickPreviewPoint,
 ) {
-  const dx = target.x - source.x;
-  const dy = target.y - source.y;
-  if (Math.abs(dx) >= Math.abs(dy)) {
-    return {
-      x: source.x + click.x + (dx >= 0 ? click.width : 0),
-      y: source.y + click.y + click.height / 2,
-    };
-  }
   return {
-    x: source.x + click.x + click.width / 2,
-    y: source.y + click.y + (dy >= 0 ? click.height : 0),
+    x: source.x + click.x,
+    y: source.y + click.y,
   };
 }
 
@@ -98,11 +128,19 @@ export function arrangeNodes(stepIds: string[]): BoardNode[] {
 export function connectionLanes(nodes: BoardNode[], edges: BoardEdge[]) {
   const lanes = new Map<string, number>();
   const positions = new Map(nodes.map((node, index) => [node.stepId, index]));
+  const byId = new Map(nodes.map((node) => [node.stepId, node]));
   const bottom = Math.max(0, ...nodes.map((node) => node.y + CARD_HEIGHT));
   for (const edge of edges) {
     const source = positions.get(edge.sourceStepId) ?? -1;
     const target = positions.get(edge.targetStepId) ?? -1;
-    if (edge.kind === "manual" || target !== source + 1)
+    const from = byId.get(edge.sourceStepId);
+    const to = byId.get(edge.targetStepId);
+    if (!from || !to) continue;
+    if (
+      edge.kind === "manual" ||
+      target !== source + 1 ||
+      !connectionGeometry(from, to)
+    )
       lanes.set(edge.id, bottom + 40 + lanes.size * 44);
   }
   return lanes;

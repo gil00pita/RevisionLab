@@ -9,10 +9,8 @@ import {
   saveRecording,
   type ActiveRecording,
 } from "../../../client/recording.js";
-import {
-  captureRecordingScreens,
-  type AutomaticCaptureRequest,
-} from "../../../client/recording-capture.js";
+import { recordingJournal } from "../../../client/recording-journal/journal.js";
+import type { JournalStatus } from "../../../client/recording-journal/types.js";
 import {
   defaultWcagSettings,
   type WcagSettings,
@@ -29,7 +27,6 @@ export function useRecording(
   standard: WcagSettings = defaultWcagSettings,
   auditRecordings = true,
 ) {
-  const { wcagVersion, wcagLevel } = standard;
   const [recording, setRecording] = useState<ActiveRecording | null>(null);
   const [operation, setOperation] = useState<RecordingOperation>(null);
   const [error, setError] = useState("");
@@ -39,11 +36,7 @@ export function useRecording(
     name: string;
   } | null>(null);
   const activeOperation = useRef<RecordingOperation>(null);
-  const generation = useRef(0);
-  const pendingCapture = useRef<Promise<boolean> | null>(null);
-  const lastContent = useRef<{ flowId: string; signature: string } | null>(
-    null,
-  );
+  const [progress, setProgress] = useState<JournalStatus>({ pending: 0, phase: "Ready", error: "", warning: "" });
 
   const updateOperation = useCallback((next: RecordingOperation) => {
     activeOperation.current = next;
@@ -57,90 +50,28 @@ export function useRecording(
     return () => window.removeEventListener("revisionlab:recording", sync);
   }, []);
 
-  const capture = useCallback(
-    (
-      active?: ActiveRecording,
-      title?: string,
-      automatic?: AutomaticCaptureRequest,
-    ): Promise<boolean> => {
-      const target = active ?? loadRecording();
-      if (
-        !target ||
-        target.discardRequested ||
-        target.finishRequested ||
-        activeOperation.current ||
-        !enabled
-      )
-        return Promise.resolve(false);
-      const captureGeneration = generation.current;
-      const isCurrent = () =>
-        generation.current === captureGeneration &&
-        loadRecording()?.flowId === target.flowId &&
-        !loadRecording()?.discardRequested;
-      updateOperation("capture");
-      setError("");
-      const task = (async () => {
-        try {
-          return await captureRecordingScreens({
-            standard: { wcagVersion, wcagLevel },
-            apiPath,
-            auditRecordings,
-            flowId: target.flowId,
-            route,
-            title,
-            automatic,
-            isCurrent,
-            lastSignature:
-              lastContent.current?.flowId === target.flowId
-                ? lastContent.current.signature
-                : undefined,
-            onSaved: (signature, count) => {
-              lastContent.current = { flowId: target.flowId, signature };
-              setNotice(`Screen ${count} captured. Stop recording to save.`);
-            },
-          });
-        } catch (cause) {
-          if (
-            isCurrent() &&
-            !(cause instanceof Error && cause.name === "AbortError")
-          )
-            setError(
-              cause instanceof Error
-                ? cause.message
-                : "Could not capture this screen. Try again.",
-            );
-          return false;
-        } finally {
-          if (
-            generation.current === captureGeneration &&
-            activeOperation.current === "capture"
-          )
-            updateOperation(null);
-        }
-      })();
-      pendingCapture.current = task;
-      return task;
-    },
-    [
-      apiPath,
-      enabled,
-      route,
-      updateOperation,
-      auditRecordings,
-      wcagVersion,
-      wcagLevel,
-    ],
-  );
+  useEffect(() => {
+    const sync = () => {
+      const active = loadRecording();
+      if (active) setProgress(recordingJournal(apiPath, active.flowId).status());
+      else setProgress({ pending: 0, phase: "Ready", error: "", warning: "" });
+    };
+    sync();
+    window.addEventListener("revisionlab:recording-progress", sync);
+    window.addEventListener("revisionlab:recording", sync);
+    return () => {
+      window.removeEventListener("revisionlab:recording-progress", sync);
+      window.removeEventListener("revisionlab:recording", sync);
+    };
+  }, [apiPath]);
 
-  useAutomaticCapture({
-    standard,
-    flowId: recording?.flowId,
-    route,
-    enabled,
-    paused,
-    busy: () => Boolean(activeOperation.current),
-    capture: (request) => capture(undefined, undefined, request),
-  });
+  const manualCapture = useAutomaticCapture({ apiPath, standard, flowId: recording?.flowId, route, enabled, paused, auditRecordings });
+  const capture = (_active?: ActiveRecording, title?: string) => Promise.resolve(manualCapture.current(title));
+  const retry = async () => {
+    const active = loadRecording();
+    if (!active) return;
+    await recordingJournal(apiPath, active.flowId).retry();
+  };
 
   async function start(
     name: string,
@@ -161,7 +92,6 @@ export function useRecording(
           body: JSON.stringify({ name, personaId, route, replaceFlowId }),
         },
       );
-      generation.current += 1;
       saveRecording({ flowId: id, name, persona, count: 0, lastRoute: "" });
       setNotice(
         "Recording started. The first screen will be captured automatically.",
@@ -194,10 +124,11 @@ export function useRecording(
     try {
       const result = await finishPendingRecording(
         apiPath,
-        pendingCapture.current,
+        null,
+        () => recordingJournal(apiPath, target.flowId).drain(),
       );
       if (!result) return false;
-      generation.current += 1;
+      recordingJournal(apiPath, target.flowId).clear();
       setError("");
       setSavedRecording(
         result.outcome === "saved" ? { id: result.id, name: result.name } : null,
@@ -231,14 +162,13 @@ export function useRecording(
     }
     if (activeOperation.current && activeOperation.current !== "capture")
       return false;
-    generation.current += 1;
     updateOperation("discard");
     setError("");
     try {
       // A failed response can mean the draft is already removed but cleanup needs retry.
       saveRecording({ ...target, discardRequested: true });
       // Include an upload already underway in the server's durable cleanup queue.
-      await pendingCapture.current;
+      await recordingJournal(apiPath, target.flowId).discard();
       await apiRequest(apiPath, `flows/${target.flowId}/discard`, {
         method: "POST",
         body: "{}",
@@ -263,8 +193,10 @@ export function useRecording(
     busy: operation !== null,
     operation,
     canCapture:
-      enabled && !recording?.discardRequested && !recording?.finishRequested,
-    error,
+      enabled && !progress.limited && !recording?.discardRequested && !recording?.finishRequested,
+    error: error || progress.error,
+    progress,
+    retry,
     notice,
     savedRecording,
     dismissSaved: () => {

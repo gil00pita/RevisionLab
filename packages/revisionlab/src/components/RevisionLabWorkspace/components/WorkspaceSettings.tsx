@@ -9,8 +9,8 @@ import type {
 import { GeneralSettings } from "./GeneralSettings.js";
 import { WorkspaceInstancesSettings } from "./WorkspaceInstancesSettings.js";
 import { WorkspaceHistory } from "./WorkspaceHistory.js";
-import { useRef, useState } from "react";
-import { Badge, Separator, Stack, Tabs, Text } from "@chakra-ui/react";
+import { useRef, useState, type RefObject } from "react";
+import { Badge, Portal, Separator, Stack, Tabs, Text } from "@chakra-ui/react";
 import { apiRequest } from "../../../client/api.js";
 import type { RevisionLabSettings } from "../../../comment-settings.js";
 import { WidgetSettingsForm } from "./WidgetSettingsForm.js";
@@ -20,6 +20,7 @@ import { UsersRoleManager } from "../../UsersRoleManager/index.js";
 import { AppearanceSettings } from "../../AppearanceSettings/index.js";
 import { SystemUrlSettings } from "./SystemUrlSettings.js";
 import { AiInstructionsSettings } from "./AiInstructionsSettings.js";
+import { SettingsTabs } from "./SettingsTabs.js";
 
 export function WorkspaceSettings({
   apiPath,
@@ -37,6 +38,7 @@ export function WorkspaceSettings({
   accessSettings,
   basePath,
   initialTab = "system",
+  headerContainer,
   onRefresh,
 }: {
   apiPath: string;
@@ -54,6 +56,7 @@ export function WorkspaceSettings({
   accessSettings: RevisionLabAccessSettings | null;
   basePath: string;
   initialTab?: "system" | "users";
+  headerContainer: RefObject<HTMLDivElement | null>;
   onRefresh: () => Promise<void>;
 }) {
   const [selectedTab, setSelectedTab] = useState<string>(initialTab);
@@ -108,10 +111,10 @@ export function WorkspaceSettings({
 
   return (
     <Stack
-      p={{ base: "5", md: "8" }}
+      p={{ base: "4", md: "6" }}
       gap="6"
       w="full"
-      maxW="3xl"
+      minW="0"
       aria-busy={busy}
     >
       <Text fontSize="sm" color="fg.muted">
@@ -128,40 +131,12 @@ export function WorkspaceSettings({
         colorPalette="blue"
         variant="line"
       >
-        <Tabs.List aria-label="Settings sections" mb="6" flexWrap="wrap">
-          {invitations && (
-            <Tabs.Trigger value="general" px={{ base: "3", md: "4" }}>
-              General
-            </Tabs.Trigger>
-          )}
-          <Tabs.Trigger value="system" px={{ base: "3", md: "4" }}>
-            Widget
-          </Tabs.Trigger>
-          {canManageInstallation && (
-            <Tabs.Trigger value="notifications" px={{ base: "3", md: "4" }}>
-              Notifications
-            </Tabs.Trigger>
-          )}
-          <Tabs.Trigger value="comments" px={{ base: "3", md: "4" }}>
-            Comments
-          </Tabs.Trigger>
-          <Tabs.Trigger value="audit" px={{ base: "3", md: "4" }}>
-            Audit
-          </Tabs.Trigger>
-          <Tabs.Trigger value="history" px={{ base: "3", md: "4" }}>
-            History
-          </Tabs.Trigger>
-          {canManageInstallation && accessSettings && (
-            <Tabs.Trigger value="users" px={{ base: "3", md: "4" }}>
-              Users &amp; Roles
-            </Tabs.Trigger>
-          )}
-          {invitations && (
-            <Tabs.Trigger value="instances" px={{ base: "3", md: "4" }}>
-              Workspace Instances
-            </Tabs.Trigger>
-          )}
-        </Tabs.List>
+        <Portal container={headerContainer}>
+          <SettingsTabs
+            canManageInstallation={canManageInstallation}
+            canManageAccess={canManageInstallation && Boolean(accessSettings)}
+          />
+        </Portal>
         {invitations && (
           <Tabs.Content value="general" p="0">
             <Stack gap="7">
@@ -251,6 +226,7 @@ export function WorkspaceSettings({
         {canManageInstallation && accessSettings && (
           <Tabs.Content value="users" p="0">
             <UsersRoleManager
+              variant="embedded"
               apiPath={managementApiPath}
               basePath={basePath}
               memberships={memberships}

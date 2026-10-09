@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Box, Button, Flex, Heading, Stack, Text } from "@chakra-ui/react";
+import { Box, Flex, Stack } from "@chakra-ui/react";
 import { FeedbackThread } from "../../FeedbackThread/index.js";
 import type {
   RevisionLabComment,
@@ -8,7 +8,10 @@ import type {
   RevisionLabStep,
 } from "../../../server/types.js";
 import { ScreenCanvas } from "./ScreenCanvas.js";
-import { ScreenFeedbackTabs } from "./ScreenFeedbackTabs.js";
+import { ScreenFeedbackControls, type ScreenFeedbackFilter } from "./ScreenFeedbackControls.js";
+import { ScreenAccessibility } from "./ScreenAccessibility.js";
+import { ScreenAccessibilityIssue } from "./ScreenAccessibilityIssue.js";
+import type { ScreenDisplayOptions } from "../../PinnedScreen/index.js";
 import { ReviewItemActions } from "../../ReviewAutomation/index.js";
 
 export function ScreenReview({
@@ -34,15 +37,26 @@ export function ScreenReview({
   const [selected, setSelected] = useState<string | null>(null);
   const [bubbleOpen, setBubbleOpen] = useState(false);
   const [imageReady, setImageReady] = useState(false);
-  const [feedbackTab, setFeedbackTab] = useState("comments");
+  const [displayOptions, setDisplayOptions] = useState<ScreenDisplayOptions>({ showBubbles: true, showResolved: false, showCursor: false });
+  const [feedbackFilter, setFeedbackFilter] = useState<ScreenFeedbackFilter>("all");
   const feedback = useRef<HTMLDivElement>(null);
   const pinElements = useRef(new Map<string, HTMLButtonElement>());
   const selectedPin = comments.find(
     (comment) => comment.id === selected && comment.anchor && !comment.parentId,
   );
 
+  const report = step?.capture?.accessibility;
+  const showComments = feedbackFilter !== "accessibility";
+  const accessibilityItems = feedbackFilter === "comments" || report?.status === "unavailable"
+    ? []
+    : (report?.issues ?? []).map((issue) => ({
+      id: `accessibility-${issue.id}`,
+      createdAt: report?.checkedAt ?? step?.createdAt ?? "",
+      content: <ScreenAccessibilityIssue issue={issue} />,
+    }));
+
   function selectComment(id: string | null) {
-    setFeedbackTab("comments");
+    if (feedbackFilter === "accessibility") setFeedbackFilter("comments");
     setAnchor(null);
     setSelected(id);
     setBubbleOpen(
@@ -72,6 +86,11 @@ export function ScreenReview({
       <ScreenCanvas
         flow={flow}
         step={step}
+        displayOptions={displayOptions}
+        onAddComment={() => {
+          setFeedbackFilter("comments");
+          selectComment(null);
+        }}
         onSelect={onSelectStep}
         basePath={basePath}
         comments={comments}
@@ -103,11 +122,12 @@ export function ScreenReview({
           )
         }
         onPlace={(point) => {
-          setFeedbackTab("comments");
+          setFeedbackFilter("comments");
           setSelected(null);
           setBubbleOpen(false);
           setAnchor(point);
           revealFeedback();
+          requestAnimationFrame(() => feedback.current?.querySelector("textarea")?.focus());
         }}
         onSelectComment={selectComment}
       />
@@ -123,73 +143,50 @@ export function ScreenReview({
         borderColor="border"
         p="5"
       >
-        {step && canResolve && (
-          <Stack mb="4" gap="2">
-            <Heading as="h3" size="sm">
-              Fix screen feedback
-            </Heading>
-            <ReviewItemActions target={{ kind: "screen" }} />
-          </Stack>
-        )}
-        <ScreenFeedbackTabs
-          value={feedbackTab}
-          onChange={setFeedbackTab}
-          report={step?.capture?.accessibility}
-          comments={
-            comments.filter(
-              (comment) => !comment.parentId && comment.status === "open",
-            ).length
-          }
-        >
-          {selectedPin && imageReady ? (
-            <Stack gap="4">
-              <Heading as="h2" size="md">
-                Screen feedback
-              </Heading>
-              <Text color="fg.muted">
-                This discussion opens beside its pin on the screen. Read and
-                reply there without losing the location.
-              </Text>
-              <Button variant="outline" onClick={() => revealComment(selected)}>
-                Open pinned discussion
-              </Button>
-              <Button variant="ghost" onClick={() => selectComment(null)}>
-                All screen comments
-              </Button>
-            </Stack>
-          ) : (
-            <FeedbackThread
-              apiPath={apiPath}
-              flowId={flow.id}
-              stepId={step?.id}
-              route={step?.route ?? flow.route}
-              comments={comments}
-              canResolve={canResolve}
-              onRefresh={onRefresh}
-              anchor={anchor}
-              onAnchorChange={setAnchor}
-              onCancelAnchor={() => setAnchor(null)}
-              selectedCommentId={selected}
-              renderActions={(comment) => (
-                <ReviewItemActions
-                  target={{ kind: "comment", commentId: comment.id }}
-                />
-              )}
-              onSelectComment={revealComment}
-              onCommentCreated={(id) => {
-                setSelected(id);
-                setBubbleOpen(Boolean(anchor));
-                setAnchor(null);
-                // The refreshed comment's pin mounts after this state update.
-                requestAnimationFrame(() =>
-                  pinElements.current
-                    .get(id)
-                    ?.scrollIntoView({ block: "center", inline: "nearest" }),
-                );
-              }}
-            />
-          )}
-        </ScreenFeedbackTabs>
+        <Stack gap="4">
+          <ScreenFeedbackControls
+            value={feedbackFilter}
+            onChange={setFeedbackFilter}
+            displayOptions={displayOptions}
+            onDisplayOptionsChange={setDisplayOptions}
+            hasCapture={Boolean(step?.screenshot)}
+            hasCursor={Boolean(step?.capture?.cursor.length)}
+          />
+          {feedbackFilter !== "comments" && <ScreenAccessibility report={report} />}
+          <FeedbackThread
+            presentation="collection"
+            collectionItems={accessibilityItems}
+            showComposer={showComments}
+            apiPath={apiPath}
+            flowId={flow.id}
+            stepId={step?.id}
+            route={step?.route ?? flow.route}
+            comments={showComments ? comments : []}
+            canResolve={canResolve}
+            onRefresh={onRefresh}
+            anchor={anchor}
+            onAnchorChange={setAnchor}
+            onCancelAnchor={() => setAnchor(null)}
+            selectedCommentId={selectedPin && imageReady ? null : selected}
+            renderActions={(comment) => (
+              <ReviewItemActions
+                target={{ kind: "comment", commentId: comment.id }}
+              />
+            )}
+            onSelectComment={revealComment}
+            onCommentCreated={(id) => {
+              setSelected(id);
+              setBubbleOpen(Boolean(anchor));
+              setAnchor(null);
+              // The refreshed comment's pin mounts after this state update.
+              requestAnimationFrame(() =>
+                pinElements.current
+                  .get(id)
+                  ?.scrollIntoView({ block: "center", inline: "nearest" }),
+              );
+            }}
+          />
+        </Stack>
       </Box>
     </Flex>
   );

@@ -342,6 +342,7 @@ test("ordinary recording finish cannot discard or complete a live test flow", as
       );
       assert.equal(captured.status, 201);
     }
+    assert.equal((await f.call(`flows/${flowId}/visits`, "POST", {})).status, 409);
     const response = await f.call(`flows/${flowId}/finish`, "POST");
     assert.equal(response.status, 409);
     assert.equal((await f.state()).flows[0].status, "recording");
